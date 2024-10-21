@@ -1,0 +1,22 @@
+# dependencies
+/node_modules
+
+# production
+/build
+/dist
+
+# misc
+/.DS_Store
+.pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea
+
+# environment vars
+.env
+
+# caches
+*.cache
+
+# styling 
+.prettierrc.json
