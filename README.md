@@ -1,6 +1,6 @@
 # Matchpoint Master
 
-**Game Vision**  
+## Game Vision
 *Matchpoint Master* is a single-player, text-based table tennis management game where the player manages a **school squad**. The game centers around building a reputation for the school, which affects the quality of new player intakes. A high reputation attracts better players, while a low reputation results in new players who are mostly brand new to the game.
 
 The player negotiates with the school board to improve facilities, hire better coaches, and secure equipment. The willingness of the school board to invest is based on the team’s success and the game’s difficulty setting.
