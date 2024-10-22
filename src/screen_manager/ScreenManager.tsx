@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import LoadScreen from '../screens/LoadScreen'
-import NewGameScreen from '../screens/NewGameScreen'
+import NewGameScreen from '../screens/new_game/NewGameScreen'
 import { Screens } from './screens'
 
 const ScreenManager: React.FC = () => {
