@@ -1,5 +1,6 @@
 export enum Screens {
-  LOAD = 'LOAD'
+  LOAD = 'LOAD',
+  NEW_GAME = 'NEW_GAME'
 }
 
 export type ScreenProps = {

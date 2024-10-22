@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import LoadScreen from '../screens/LoadScreen'
+import NewGameScreen from '../screens/NewGameScreen'
 import { Screens } from './screens'
 
 const ScreenManager: React.FC = () => {
@@ -12,7 +13,8 @@ const ScreenManager: React.FC = () => {
   const screenComponents: {
     [key in Screens]: React.FC<{ changeScreen: (screen: Screens) => void }>
   } = {
-    [Screens.LOAD]: LoadScreen
+    [Screens.LOAD]: LoadScreen,
+    [Screens.NEW_GAME]: NewGameScreen
   }
 
   const ScreenComponent = screenComponents[currentScreen]
