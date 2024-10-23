@@ -3,6 +3,7 @@ import BackgroundImage from '../../assets/tabletennisphoto.jpg'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
+import { ManagerProfile } from './types'
 
 enum Step {
   Manager = 'Manager',
@@ -11,11 +12,11 @@ enum Step {
 
 const NewGameScreen: React.FC = () => {
   const [step, setStep] = useState<Step>(Step.Manager)
-  const [managerData, setManagerData] = useState({
+  const [managerData, setManagerData] = useState<ManagerProfile>({
     name: '',
     shortName: '',
     gender: '',
-    profileImage: null as File | null,
+    profileImagePath: undefined,
     forehandRubber: '',
     backhandRubber: '',
     grip: '',
