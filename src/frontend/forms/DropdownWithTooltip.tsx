@@ -9,7 +9,7 @@ const DropdownWithTooltip: React.FC<{
 }> = ({ label, options, selectedValue, onChange }) => (
   <Form.Group controlId={label}>
     <OverlayTrigger
-      placement="auto"
+      placement="right"
       overlay={<Tooltip>{options[selectedValue] || `Select ${label}`}</Tooltip>}
     >
       <Form.Select
