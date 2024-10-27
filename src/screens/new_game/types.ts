@@ -1,7 +1,9 @@
+import { Gender } from '../../services/savegame/types'
+
 export type ManagerProfile = {
   name: string
   shortName: string
-  gender: string
+  gender: Gender
   profileImagePath: string | undefined
   forehandRubber: string
   backhandRubber: string
@@ -9,4 +11,10 @@ export type ManagerProfile = {
   favors: string
   playStyle: string
   handedness: string
+}
+
+export type SchoolProfile = {
+  name: string
+  profileImagePath: string
+  colors: string
 }

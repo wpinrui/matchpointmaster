@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import BackgroundImage from '../../assets/tabletennisphoto.jpg'
+import { Gender } from '../../services/savegame/types'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
@@ -15,7 +16,7 @@ const NewGameScreen: React.FC = () => {
   const [managerData, setManagerData] = useState<ManagerProfile>({
     name: '',
     shortName: '',
-    gender: '',
+    gender: Gender.MALE,
     profileImagePath: undefined,
     forehandRubber: '',
     backhandRubber: '',
