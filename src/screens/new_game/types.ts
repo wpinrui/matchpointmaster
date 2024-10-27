@@ -15,6 +15,6 @@ export type ManagerProfile = {
 
 export type SchoolProfile = {
   name: string
-  profileImagePath: string
+  crestImagePath: string
   colors: string
 }

@@ -27,7 +27,7 @@ const NewGameScreen: React.FC = () => {
   })
   const [schoolData, setSchoolData] = useState({
     name: '',
-    crest: null as File | null,
+    crestImagePath: '',
     colors: ''
   })
 

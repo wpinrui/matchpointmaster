@@ -5,7 +5,7 @@ import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
 import { SchoolProfile } from './types'
 
 const onSelectImage = (imagePath: string, data: SchoolProfile): void => {
-  data.profileImagePath = imagePath
+  data.crestImagePath = imagePath
 }
 
 const SchoolForm: React.FC<{
