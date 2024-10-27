@@ -104,3 +104,10 @@ The MVP aims to establish the core mechanics of *Matchpoint Master* by allowing 
 
 # Play the Game
 The game will be live [here](https://matchpointmaster.com)!
+
+---
+
+# Dev Log
+
+### 27 October 2024
+Implemented school form and JSON saving. Next task: Handle form saving to localstorage and start game.
