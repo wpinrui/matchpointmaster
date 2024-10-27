@@ -38,15 +38,14 @@ const SchoolForm: React.FC<{
           />
         </Form.Group>
         <Form.Group controlId="schoolCrest">
-          <Form.Label>School Crest</Form.Label>
-          <Form.Control
-            type="file"
-            accept="image/*"
-            onChange={(e: any) =>
-              onChange('crest', e.target.files ? e.target.files[0] : null)
-            }
+          {data.crestImagePath && <img src={data.crestImagePath} alt="schoolCrest" />}
+          <Button
+            variant="secondary"
+            onClick={() => setIsDialogPickerOpen(true)}
             className="mb-2"
-          />
+          >
+            Pick School Crest
+          </Button>
         </Form.Group>
         <Form.Group controlId="schoolColors">
           <Form.Control
