@@ -111,3 +111,6 @@ The game will be live [here](https://matchpointmaster.com)!
 
 ### 27 October 2024
 Implemented school form and JSON saving. Next task: Handle form saving to localstorage and start game.
+
+### 1 November 2024
+Implemented savegame using context. Next task: Instead of loading a JSON file, load from localstorage to go to the home page with data already loaded. Then, create the player draft.
