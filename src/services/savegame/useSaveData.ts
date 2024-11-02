@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { initialSaveData } from './initialSaveData'
 import {
   FavourStyle,
@@ -11,10 +11,14 @@ import {
 } from './types'
 
 export const useSaveData = () => {
-  const [saveData, setSaveData] = useState<SaveData>(initialSaveData)
+  const [saveData, setSaveData] = useState<SaveData>(() => {
+    const savedData = localStorage.getItem('saveData')
+    return savedData ? JSON.parse(savedData) : initialSaveData
+  })
 
-  const manager = saveData.manager
-  const school = saveData.school
+  useEffect(() => {
+    localStorage.setItem('saveData', JSON.stringify(saveData))
+  }, [saveData])
 
   const updateAttribute = <T extends keyof SaveData, K extends keyof SaveData[T]>(
     category: T,
@@ -81,8 +85,8 @@ export const useSaveData = () => {
 
   return {
     saveData,
-    manager,
-    school,
+    manager: saveData.manager,
+    school: saveData.school,
     updateManager,
     updateSchool,
     saveToFile,

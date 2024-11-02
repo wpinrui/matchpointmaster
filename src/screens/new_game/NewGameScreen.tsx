@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import BackgroundImage from '../../assets/tabletennisphoto.jpg'
+import { ScreenProps, Screens } from '../../screen_manager/screens'
+import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import {
   FavourStyle,
   Gender,
@@ -18,7 +20,7 @@ enum Step {
   School = 'School'
 }
 
-const NewGameScreen: React.FC = () => {
+const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [step, setStep] = useState<Step>(Step.Manager)
   const [managerData, setManagerData] = useState<SaveData['manager']>({
     fullName: '',
@@ -37,6 +39,26 @@ const NewGameScreen: React.FC = () => {
     crestPath: '',
     color: ''
   })
+  const { updateManager, updateSchool } = useSaveDataContext()
+
+  const saveManagerStateToLocalStorage = () => {
+    updateManager.fullName(managerData.fullName)
+    updateManager.shortName(managerData.shortName)
+    updateManager.gender(managerData.gender)
+    updateManager.imagePath(managerData.imagePath)
+    updateManager.handedness(managerData.handedness)
+    updateManager.forehandRubber(managerData.forehandRubber)
+    updateManager.backhandRubber(managerData.backhandRubber)
+    updateManager.gripStyle(managerData.gripStyle)
+    updateManager.forehandBackhandTendency(managerData.forehandBackhandTendency)
+    updateManager.playStyle(managerData.playStyle)
+  }
+
+  const saveSchoolStateToLocalStorage = () => {
+    updateSchool.name(schoolData.name)
+    updateSchool.crestPath(schoolData.crestPath)
+    updateSchool.schoolColor(schoolData.color)
+  }
 
   const handleManagerDataChange = (key: string, value: string | File | null) => {
     setManagerData((prev) => ({ ...prev, [key]: value }))
@@ -47,7 +69,8 @@ const NewGameScreen: React.FC = () => {
   }
 
   const handleStartGame = () => {
-    // put data in context
+    saveSchoolStateToLocalStorage()
+    changeScreen(Screens.HOME)
   }
 
   const isManagerDataValid = (): boolean => {
@@ -56,6 +79,7 @@ const NewGameScreen: React.FC = () => {
 
   const handleNextStep = () => {
     if (isManagerDataValid()) {
+      saveManagerStateToLocalStorage()
       setStep(Step.School)
     } else {
       alert('Please fill in all fields.')
