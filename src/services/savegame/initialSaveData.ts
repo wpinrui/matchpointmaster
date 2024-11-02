@@ -24,6 +24,6 @@ export const initialSaveData: SaveData = {
   school: {
     name: '',
     crestPath: '',
-    colors: ''
+    color: ''
   }
 }
