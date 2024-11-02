@@ -1,10 +1,17 @@
 import React, { useState } from 'react'
 import BackgroundImage from '../../assets/tabletennisphoto.jpg'
-import { Gender } from '../../services/savegame/types'
+import {
+  FavourStyle,
+  Gender,
+  GripStyle,
+  Handedness,
+  PlayStyle,
+  RubberType,
+  SaveData
+} from '../../services/savegame/types'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
-import { ManagerProfile } from './types'
 
 enum Step {
   Manager = 'Manager',
@@ -13,22 +20,22 @@ enum Step {
 
 const NewGameScreen: React.FC = () => {
   const [step, setStep] = useState<Step>(Step.Manager)
-  const [managerData, setManagerData] = useState<ManagerProfile>({
-    name: '',
+  const [managerData, setManagerData] = useState<SaveData['manager']>({
+    fullName: '',
     shortName: '',
     gender: Gender.MALE,
-    profileImagePath: undefined,
-    forehandRubber: '',
-    backhandRubber: '',
-    grip: '',
-    favors: '',
-    playStyle: '',
-    handedness: ''
+    imagePath: '',
+    handedness: Handedness.RIGHT,
+    forehandRubber: RubberType.SPIN_RUBBER,
+    backhandRubber: RubberType.SPIN_RUBBER,
+    gripStyle: GripStyle.SHAKE_HAND,
+    forehandBackhandTendency: FavourStyle.BALANCED,
+    playStyle: PlayStyle.ALL_ROUNDER
   })
-  const [schoolData, setSchoolData] = useState({
+  const [schoolData, setSchoolData] = useState<SaveData['school']>({
     name: '',
-    crestImagePath: '',
-    colors: ''
+    crestPath: '',
+    color: ''
   })
 
   const handleManagerDataChange = (key: string, value: string | File | null) => {

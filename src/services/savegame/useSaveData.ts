@@ -52,7 +52,9 @@ export const useSaveData = () => {
   }
 
   const updateSchool = {
-    // Add school-specific updates here
+    name: (newName: string) => updateAttribute('school', 'name', newName),
+    crestPath: (crestPath: string) => updateAttribute('school', 'crestPath', crestPath),
+    schoolColor: (color: string) => updateAttribute('school', 'color', color)
   }
 
   const saveToFile = () => {

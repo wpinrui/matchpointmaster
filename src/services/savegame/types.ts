@@ -14,7 +14,7 @@ export type SaveData = {
   school: {
     name: string
     crestPath: string
-    colors: string
+    color: string
   }
 }
 

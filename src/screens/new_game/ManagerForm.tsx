@@ -3,16 +3,16 @@ import { Button, Form } from 'react-bootstrap'
 import { CONSTANTS } from '../../constants'
 import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
 import DropdownWithTooltip from '../../frontend/forms/DropdownWithTooltip'
+import { SaveData } from '../../services/savegame/types'
 import { newGameTextRecords } from './newGameTextRecords'
-import { ManagerProfile } from './types'
 
-const onSelectImage = (imagePath: string, data: ManagerProfile): void => {
-  data.profileImagePath = imagePath
+const onSelectImage = (imagePath: string, data: SaveData['manager']): void => {
+  data.imagePath = imagePath
 }
 
 const ManagerForm: React.FC<{
-  data: ManagerProfile
-  onChange: (key: string, value: string | File | null) => void
+  data: SaveData['manager']
+  onChange: (key: keyof SaveData['manager'], value: string | File | null) => void
   onNext: () => void
 }> = ({ data, onChange, onNext }) => {
   const [isDialogPickerOpen, setIsDialogPickerOpen] = useState(false)
@@ -32,8 +32,8 @@ const ManagerForm: React.FC<{
           <Form.Control
             type="text"
             placeholder="Manager Name"
-            value={data.name}
-            onChange={(e) => onChange('name', e.target.value)}
+            value={data.fullName}
+            onChange={(e) => onChange('fullName', e.target.value)}
             className="mb-2"
           />
         </Form.Group>
@@ -58,7 +58,7 @@ const ManagerForm: React.FC<{
           </Form.Select>
         </Form.Group>
         <Form.Group controlId="profileImage">
-          {data.profileImagePath && <img src={data.profileImagePath} alt="Profile" />}
+          {data.imagePath && <img src={data.imagePath} alt="Profile" />}
           <Button
             variant="secondary"
             onClick={() => setIsDialogPickerOpen(true)}
@@ -88,14 +88,14 @@ const ManagerForm: React.FC<{
         <DropdownWithTooltip
           label="Grip Style"
           options={newGameTextRecords.gripDescriptions}
-          selectedValue={data.grip}
-          onChange={(value) => onChange('grip', value)}
+          selectedValue={data.gripStyle}
+          onChange={(value) => onChange('gripStyle', value)}
         />
         <DropdownWithTooltip
           label="Favors"
           options={newGameTextRecords.favoursDescriptions}
-          selectedValue={data.favors}
-          onChange={(value) => onChange('favors', value)}
+          selectedValue={data.forehandBackhandTendency}
+          onChange={(value) => onChange('forehandBackhandTendency', value)}
         />
         <DropdownWithTooltip
           label="Playing Style"

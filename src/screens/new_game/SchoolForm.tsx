@@ -2,15 +2,15 @@ import React, { useState } from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { CONSTANTS } from '../../constants'
 import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
-import { SchoolProfile } from './types'
+import { SaveData } from '../../services/savegame/types'
 
-const onSelectImage = (imagePath: string, data: SchoolProfile): void => {
-  data.crestImagePath = imagePath
+const onSelectImage = (imagePath: string, data: SaveData['school']): void => {
+  data.crestPath = imagePath
 }
 
 const SchoolForm: React.FC<{
-  data: SchoolProfile
-  onChange: (key: string, value: string) => void
+  data: SaveData['school']
+  onChange: (key: keyof SaveData['school'], value: string) => void
   onStartGame: () => void
   onBack: () => void
 }> = ({ data, onChange, onStartGame, onBack }) => {
@@ -38,7 +38,7 @@ const SchoolForm: React.FC<{
           />
         </Form.Group>
         <Form.Group controlId="schoolCrest">
-          {data.crestImagePath && <img src={data.crestImagePath} alt="schoolCrest" />}
+          {data.crestPath && <img src={data.crestPath} alt="schoolCrest" />}
           <Button
             variant="secondary"
             onClick={() => setIsDialogPickerOpen(true)}
@@ -50,9 +50,9 @@ const SchoolForm: React.FC<{
         <Form.Group controlId="schoolColors">
           <Form.Control
             type="text"
-            placeholder="School Colors"
-            value={data.colors}
-            onChange={(e) => onChange('colors', e.target.value)}
+            placeholder="School Color"
+            value={data.color}
+            onChange={(e) => onChange('color', e.target.value)}
             className="mb-2"
           />
         </Form.Group>
