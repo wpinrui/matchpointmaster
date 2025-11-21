@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import Home from '../screens/Home'
+import HomeScreen from '../screens/HomeScreen'
 import LoadScreen from '../screens/LoadScreen'
 import NewGameScreen from '../screens/new_game/NewGameScreen'
 import PlayersScreen from '../screens/PlayersScreen'
@@ -23,7 +24,7 @@ const ScreenManager: React.FC = () => {
   } = {
     [Screens.LOAD]: LoadScreen,
     [Screens.NEW_GAME]: NewGameScreen,
-    [Screens.HOME]: Home,
+    [Screens.HOME]: HomeScreen,
     [Screens.PLAYERS]: PlayersScreen,
     [Screens.SAVE_MANAGER]: SaveManagerScreen,
     [Screens.DRAFT]: DraftScreen,
@@ -36,6 +37,7 @@ const ScreenManager: React.FC = () => {
 
   // Screens that use the main layout with sidebar
   const layoutScreens = [
+    Screens.HOME,
     Screens.TEAM_OVERVIEW,
     Screens.PROFILE,
     Screens.SETTINGS,

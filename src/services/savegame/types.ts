@@ -30,6 +30,12 @@ export type SaveData = {
   }
   players: Player[] // All available players (draft pool + team)
   teamRoster: string[] // Array of player IDs that are on the team (max 7)
+  season: {
+    year: number
+    month: number // 1-12
+    phase: string // GamePhase enum value (stored as string for flexibility)
+  } // Current season data
+  draftCompleted: boolean // Whether draft phase has been completed for this season
 }
 
 export enum Gender {

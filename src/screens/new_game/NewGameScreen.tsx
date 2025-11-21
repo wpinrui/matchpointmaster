@@ -6,6 +6,7 @@ import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { SaveData } from '../../services/savegame/types'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import { theme } from '../../theme/theme'
+import { initializeSeasonData } from '../../utils/gamePhases'
 import {
   ManagerValidationErrors,
   SchoolValidationErrors,
@@ -94,10 +95,12 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         manager: managerData,
         school: schoolData,
         players: [], // Initialize with empty players array
-        teamRoster: [] // Initialize with empty team roster
+        teamRoster: [], // Initialize with empty team roster
+        season: initializeSeasonData(),
+        draftCompleted: false
       }
       createNewSave(saveName, combinedData)
-      changeScreen(Screens.TEAM_OVERVIEW)
+      changeScreen(Screens.HOME)
     } else {
       setSchoolErrors(validation.errors)
       // Scroll to first error

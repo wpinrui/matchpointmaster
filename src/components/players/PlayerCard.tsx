@@ -65,7 +65,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
             >
               <span>{player.gender}</span>
               <span>•</span>
-              <span>Year {player.year}</span>
+              <span>Secondary {player.year}</span>
               <span>•</span>
               <span>Age {player.age}</span>
               <span>•</span>

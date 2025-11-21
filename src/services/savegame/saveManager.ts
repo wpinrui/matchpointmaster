@@ -2,8 +2,9 @@
  * Save Manager - Handles multiple save slots in localStorage
  */
 
-import { SaveData } from './types'
+import { initializeSeasonData } from '../../utils/gamePhases'
 import { initialSaveData } from './initialSaveData'
+import { SaveData } from './types'
 
 export type SaveSlot = {
   id: string
@@ -165,16 +166,26 @@ export const getCurrentSaveData = (): SaveData => {
   if (data.school.reputation === undefined) {
     data.school.reputation = 15
   }
-  
+  // Ensure backward compatibility: add season data if missing
+  if (!data.season) {
+    data.season = initializeSeasonData()
+  }
+  // Ensure backward compatibility: add draftCompleted if missing
+  if (data.draftCompleted === undefined) {
+    data.draftCompleted = false
+  }
+
   // Update the slot with migrated data if needed
   if (
     !slot.data.manager.stats ||
     !slot.data.teamRoster ||
-    slot.data.school.reputation === undefined
+    slot.data.school.reputation === undefined ||
+    !slot.data.season ||
+    slot.data.draftCompleted === undefined
   ) {
     updateSaveSlot(currentSaveId, data)
   }
-  
+
   return data
 }
 

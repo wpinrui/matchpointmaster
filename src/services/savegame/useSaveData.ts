@@ -38,13 +38,23 @@ export const useSaveData = () => {
     key: K,
     value: SaveData[T][K]
   ) => {
-    setSaveData((prevData) => ({
-      ...prevData,
-      [category]: {
-        ...prevData[category],
-        [key]: value
+    setSaveData((prevData) => {
+      const categoryData = prevData[category]
+      if (
+        typeof categoryData === 'object' &&
+        categoryData !== null &&
+        !Array.isArray(categoryData)
+      ) {
+        return {
+          ...prevData,
+          [category]: {
+            ...categoryData,
+            [key]: value
+          }
+        }
       }
-    }))
+      return prevData
+    })
   }
 
   const updateManager = {
@@ -76,7 +86,8 @@ export const useSaveData = () => {
     primaryColor: (color: string) => updateAttribute('school', 'primaryColor', color),
     secondaryColor: (color: string) => updateAttribute('school', 'secondaryColor', color),
     accentColor: (color: string) => updateAttribute('school', 'accentColor', color),
-    reputation: (reputation: number) => updateAttribute('school', 'reputation', reputation)
+    reputation: (reputation: number) =>
+      updateAttribute('school', 'reputation', reputation)
   }
 
   const updatePlayers = {
@@ -223,17 +234,56 @@ export const useSaveData = () => {
     setCurrentSaveId(null)
   }
 
+  const updateSeason = {
+    setPhase: (phase: string) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        season: {
+          ...prevData.season,
+          phase
+        }
+      }))
+    },
+    setMonth: (month: number) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        season: {
+          ...prevData.season,
+          month
+        }
+      }))
+    },
+    setYear: (year: number) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        season: {
+          ...prevData.season,
+          year
+        }
+      }))
+    },
+    setDraftCompleted: (completed: boolean) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        draftCompleted: completed
+      }))
+    }
+  }
+
   return {
     saveData,
     manager: saveData.manager,
     school: saveData.school,
     players: saveData.players,
     teamRoster: saveData.teamRoster,
+    season: saveData.season,
+    draftCompleted: saveData.draftCompleted,
     currentSaveId,
     updateManager,
     updateSchool,
     updatePlayers,
     updateTeamRoster,
+    updateSeason,
     exportToJson,
     loadSaveSlot,
     createNewSave,

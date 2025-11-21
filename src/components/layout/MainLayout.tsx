@@ -11,8 +11,13 @@ interface MainLayoutProps {
   children: ReactNode
 }
 
-const MainLayout: React.FC<MainLayoutProps> = ({ currentScreen, changeScreen, children }) => {
+const MainLayout: React.FC<MainLayoutProps> = ({
+  currentScreen,
+  changeScreen,
+  children
+}) => {
   const sidebarItems = [
+    { screen: Screens.HOME, label: 'Home', icon: '🏠' },
     { screen: Screens.TEAM_OVERVIEW, label: 'Team Overview', icon: '👥' },
     { screen: Screens.PROFILE, label: 'Profile', icon: '👤' },
     { screen: Screens.SETTINGS, label: 'Settings', icon: '⚙️' }
@@ -147,4 +152,3 @@ const MainLayout: React.FC<MainLayoutProps> = ({ currentScreen, changeScreen, ch
 }
 
 export default MainLayout
-

@@ -1,3 +1,4 @@
+import { initializeSeasonData } from '../../utils/gamePhases'
 import {
   FavourStyle,
   Gender,
@@ -34,5 +35,7 @@ export const initialSaveData: SaveData = {
     reputation: 15 // Starting school reputation (low, new school)
   },
   players: [], // All available players
-  teamRoster: [] // Player IDs on the team (max 7)
+  teamRoster: [], // Player IDs on the team (max 7)
+  season: initializeSeasonData(),
+  draftCompleted: false
 }
