@@ -89,7 +89,7 @@ export const deleteSaveSlot = (id: string): void => {
   const slots = getAllSaveSlots()
   const filteredSlots = slots.filter((slot) => slot.id !== id)
   saveAllSaveSlots(filteredSlots)
-  
+
   // If we deleted the current save, clear the current save ID
   const currentSaveId = getCurrentSaveId()
   if (currentSaveId === id) {
@@ -170,4 +170,3 @@ export const importSaveSlotFromJson = (json: string): SaveSlot | null => {
     return null
   }
 }
-

@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { theme } from '../../theme/theme'
 import { generateCrestSvg } from '../../utils/crestGenerator'
-import { OUTSIDE_SHAPES, INSIDE_SHAPES, OutsideShape, InsideShape } from '../../utils/crestConstants'
+import {
+  OUTSIDE_SHAPES,
+  INSIDE_SHAPES,
+  OutsideShape,
+  InsideShape
+} from '../../utils/crestConstants'
 import { ColorPicker } from './ColorPicker'
 import { ShapePicker } from './ShapePicker'
 
@@ -92,11 +97,7 @@ export const CrestCustomizer: React.FC<CrestCustomizerProps> = ({
           color={secondaryColor}
           onChange={setSecondaryColor}
         />
-        <ColorPicker
-          label="Accent Color"
-          color={accentColor}
-          onChange={setAccentColor}
-        />
+        <ColorPicker label="Accent Color" color={accentColor} onChange={setAccentColor} />
       </div>
 
       {/* Shape Pickers */}
@@ -153,4 +154,3 @@ export const CrestCustomizer: React.FC<CrestCustomizerProps> = ({
     </div>
   )
 }
-

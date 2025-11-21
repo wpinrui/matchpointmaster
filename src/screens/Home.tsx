@@ -147,18 +147,10 @@ const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
           >
             Manage Saves
           </GameButton>
-          <GameButton
-            variant="secondary"
-            onClick={handleExport}
-            type="button"
-          >
+          <GameButton variant="secondary" onClick={handleExport} type="button">
             Export Save
           </GameButton>
-          <GameButton
-            variant="secondary"
-            onClick={handleClear}
-            type="button"
-          >
+          <GameButton variant="secondary" onClick={handleClear} type="button">
             Clear Data
           </GameButton>
         </div>

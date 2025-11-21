@@ -66,10 +66,7 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     }
   }
 
-  const handleSchoolDataChange = (
-    key: keyof SaveData['school'],
-    value: string
-  ) => {
+  const handleSchoolDataChange = (key: keyof SaveData['school'], value: string) => {
     setSchoolData((prev) => ({ ...prev, [key]: value }))
     // Clear error for this field when user starts typing
     if (schoolErrors[key as keyof SchoolValidationErrors]) {

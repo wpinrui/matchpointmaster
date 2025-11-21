@@ -69,12 +69,9 @@ export const useSaveData = () => {
 
   const updateSchool = {
     name: (newName: string) => updateAttribute('school', 'name', newName),
-    crestPath: (crestPath: string) =>
-      updateAttribute('school', 'crestPath', crestPath),
-    primaryColor: (color: string) =>
-      updateAttribute('school', 'primaryColor', color),
-    secondaryColor: (color: string) =>
-      updateAttribute('school', 'secondaryColor', color),
+    crestPath: (crestPath: string) => updateAttribute('school', 'crestPath', crestPath),
+    primaryColor: (color: string) => updateAttribute('school', 'primaryColor', color),
+    secondaryColor: (color: string) => updateAttribute('school', 'secondaryColor', color),
     accentColor: (color: string) => updateAttribute('school', 'accentColor', color)
   }
 

@@ -37,7 +37,11 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   const handleDeleteSave = (slotId: string) => {
-    if (window.confirm('Are you sure you want to delete this save? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this save? This action cannot be undone.'
+      )
+    ) {
       deleteSaveSlot(slotId)
       refreshSaveSlots()
     }
@@ -87,7 +91,11 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp)
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return (
+      date.toLocaleDateString() +
+      ' ' +
+      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    )
   }
 
   return (
@@ -147,11 +155,7 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           >
             New Game
           </GameButton>
-          <GameButton
-            variant="secondary"
-            onClick={handleImportSave}
-            type="button"
-          >
+          <GameButton variant="secondary" onClick={handleImportSave} type="button">
             Import Save
           </GameButton>
           <input
@@ -344,4 +348,3 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 }
 
 export default SaveManagerScreen
-

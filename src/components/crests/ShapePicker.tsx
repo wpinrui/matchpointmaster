@@ -82,4 +82,3 @@ export const ShapePicker: React.FC<ShapePickerProps> = ({
     </div>
   )
 }
-
