@@ -1,5 +1,6 @@
 /**
  * Generate a school crest SVG based on selected colors and shapes
+ * Uses high-quality SVG templates instead of generated paths
  */
 import {
   OutsideShape,
@@ -7,6 +8,11 @@ import {
   OUTSIDE_SHAPES,
   INSIDE_SHAPES
 } from './crestConstants'
+import {
+  OUTSIDE_SHAPE_TEMPLATES,
+  INSIDE_SHAPE_TEMPLATES,
+  applyColorsToTemplate
+} from './crestTemplates'
 
 export const generateCrestSvg = (
   primaryColor: string,
@@ -15,37 +21,30 @@ export const generateCrestSvg = (
   outsideShape: OutsideShape,
   insideShape: InsideShape
 ): string => {
-  // Remove # from colors if present for SVG
-  const cleanPrimary = primaryColor.replace('#', '')
-  const cleanSecondary = secondaryColor.replace('#', '')
-  const cleanAccent = accentColor.replace('#', '')
+  // Get templates for outside and inside shapes
+  const outsideTemplate =
+    OUTSIDE_SHAPE_TEMPLATES[outsideShape] ||
+    OUTSIDE_SHAPE_TEMPLATES.circle
+  const insideTemplate =
+    INSIDE_SHAPE_TEMPLATES[insideShape] || INSIDE_SHAPE_TEMPLATES.none
 
-  // Generate outside shape path
-  const outsidePath = getOutsideShapePath(outsideShape)
-
-  // Generate inside shape SVG
-  const insideSvg = getInsideShapeSvg(
-    insideShape,
-    cleanPrimary,
-    cleanSecondary,
-    cleanAccent
+  // Apply colors to templates
+  const outsideSvg = applyColorsToTemplate(
+    outsideTemplate,
+    primaryColor,
+    secondaryColor,
+    accentColor
+  )
+  const insideSvg = applyColorsToTemplate(
+    insideTemplate,
+    primaryColor,
+    secondaryColor,
+    accentColor
   )
 
   const svg = `
     <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <!-- Outside shape -->
-      <path d="${outsidePath}" 
-            fill="#${cleanPrimary}" 
-            stroke="#000000" 
-            stroke-width="4"/>
-      
-      <!-- Secondary color band (inner border) -->
-      <path d="${getInnerPath(outsideShape)}" 
-            fill="none" 
-            stroke="#${cleanSecondary}" 
-            stroke-width="3"/>
-      
-      <!-- Inside shape -->
+      ${outsideSvg}
       ${insideSvg}
     </svg>
   `.trim()
@@ -54,7 +53,8 @@ export const generateCrestSvg = (
 }
 
 /**
- * Get the path for the outside shape
+ * Get the path for the outside shape (legacy - now using templates)
+ * @deprecated Use OUTSIDE_SHAPE_TEMPLATES instead
  */
 function getOutsideShapePath(shape: OutsideShape): string {
   switch (shape) {
