@@ -20,29 +20,69 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!isOpen) {
+      setImagePaths([])
+      setError(null)
+      return
+    }
+
     try {
       const images = import.meta.glob('/src/assets/**/*.{png,jpg,jpeg}', {
         eager: true
       })
-      const imageUrls = Object.keys(images).filter((imagePath) =>
-        imagePath.includes(path)
-      )
+      
+      // Filter by path and extract the actual image URLs
+      // With eager: true, Vite returns the imported modules directly
+      const imageUrls: string[] = []
+      Object.entries(images).forEach(([filePath, module]) => {
+        if (filePath.includes(path)) {
+          // For images, the module is typically a string URL or an object with default
+          let imageUrl: string | undefined
+          
+          if (typeof module === 'string') {
+            imageUrl = module
+          } else if (typeof module === 'object' && module !== null) {
+            // Check for default export
+            if ('default' in module) {
+              imageUrl = (module as { default: string }).default
+            } else if ('src' in module) {
+              imageUrl = (module as { src: string }).src
+            }
+          }
+          
+          if (imageUrl && typeof imageUrl === 'string') {
+            imageUrls.push(imageUrl)
+          }
+        }
+      })
+      
+      console.log('Loaded images:', imageUrls.length, 'for path:', path)
       setImagePaths(imageUrls)
-      setError(null)
+      setError(imageUrls.length === 0 ? 'No images found in this folder' : null)
     } catch (err) {
-      setError('Failed to load images')
       console.error('Error loading images:', err)
+      setError('Failed to load images')
+      setImagePaths([])
     }
-  }, [path])
+  }, [path, isOpen])
 
   const handleImageSelect = (imagePath: string) => {
     onSelectImage(imagePath)
   }
 
+  const handleClose = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) {
+      e.stopPropagation()
+    }
+    onClose()
+  }
+
   return (
     <Modal
       show={isOpen}
-      onHide={onClose}
+      onHide={handleClose}
+      backdrop={true}
+      keyboard={true}
       style={{
         zIndex: theme.zIndex.modal
       }}

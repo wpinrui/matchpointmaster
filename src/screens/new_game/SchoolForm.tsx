@@ -77,8 +77,13 @@ const SchoolForm: React.FC<{
           )}
           <GameButton
             variant="secondary"
-            onClick={openDialog}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              openDialog()
+            }}
             fullWidth
+            type="button"
           >
             {data.crestPath ? 'Change School Crest' : 'Pick School Crest'}
           </GameButton>

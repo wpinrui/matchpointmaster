@@ -126,8 +126,13 @@ const ManagerForm: React.FC<{
           )}
           <GameButton
             variant="secondary"
-            onClick={openDialog}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              openDialog()
+            }}
             fullWidth
+            type="button"
           >
             {data.imagePath ? 'Change Profile Image' : 'Pick Profile Image'}
           </GameButton>
