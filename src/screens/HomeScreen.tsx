@@ -90,37 +90,37 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             paddingRight: theme.spacing.md
           }}
         >
-          {/* Timeline/Agenda Block */}
-          <GameCard
-            style={{
-              padding: theme.spacing.lg,
-              marginBottom: theme.spacing.lg
-            }}
-          >
-            <h2
-              style={{
-                fontFamily: theme.typography.fontFamily.heading,
-                fontSize: theme.typography.fontSize.xl,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                marginBottom: theme.spacing.md
-              }}
-            >
-              Season Timeline
-            </h2>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: theme.spacing.sm
-              }}
-            >
-              <TimelineItem
-                month={1}
-                label="Player Draft"
-                currentMonth={season.month}
-                completed={draftCompleted}
-              />
+      {/* Timeline/Agenda Block */}
+      <GameCard
+        style={{
+          padding: theme.spacing.lg,
+          marginBottom: theme.spacing.lg
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: theme.typography.fontFamily.heading,
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.bold,
+            color: theme.colors.text.primary,
+            marginBottom: theme.spacing.md
+          }}
+        >
+          Season Timeline
+        </h2>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: theme.spacing.sm
+          }}
+        >
+          <TimelineItem
+            month={1}
+            label="Player Draft"
+            currentMonth={season.month}
+            completed={draftCompleted}
+          />
               <TimelineItem
                 month={2}
                 label="Training Phase"
@@ -136,21 +136,21 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 label="Training Phase"
                 currentMonth={season.month}
               />
-              <TimelineItem
-                month={5}
-                label="Intra-Club Round-Robin"
-                currentMonth={season.month}
-              />
-              <TimelineItem
-                month={6}
-                label="Zonal School Tournament"
-                currentMonth={season.month}
-              />
-              <TimelineItem
-                month={7}
-                label="National Championships"
-                currentMonth={season.month}
-              />
+          <TimelineItem
+            month={5}
+            label="Intra-Club Round-Robin"
+            currentMonth={season.month}
+          />
+          <TimelineItem
+            month={6}
+            label="Zonal School Tournament"
+            currentMonth={season.month}
+          />
+          <TimelineItem
+            month={7}
+            label="National Championships"
+            currentMonth={season.month}
+          />
               <TimelineItem
                 month={8}
                 label="Training Phase"
@@ -166,150 +166,150 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 label="Training Phase"
                 currentMonth={season.month}
               />
-              <TimelineItem
-                month={11}
-                label="National Singles Tournament"
-                currentMonth={season.month}
-              />
-              <TimelineItem
-                month={12}
-                label="Graduation & Celebrations"
-                currentMonth={season.month}
-              />
-            </div>
-          </GameCard>
+          <TimelineItem
+            month={11}
+            label="National Singles Tournament"
+            currentMonth={season.month}
+          />
+          <TimelineItem
+            month={12}
+            label="Graduation & Celebrations"
+            currentMonth={season.month}
+          />
+        </div>
+      </GameCard>
 
-          {/* Phase-Specific Content */}
-          {isDraftPhase && (
-            <GameCard
-              style={{
-                padding: theme.spacing.lg,
-                background: theme.colors.primary.light + '20',
-                border: `2px solid ${theme.colors.primary.main}`
-              }}
-            >
-              <h2
-                style={{
-                  fontFamily: theme.typography.fontFamily.heading,
-                  fontSize: theme.typography.fontSize.xl,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.text.primary,
-                  marginBottom: theme.spacing.md
-                }}
-              >
-                Draft Phase
-              </h2>
-              <p
-                style={{
-                  fontSize: theme.typography.fontSize.base,
-                  color: theme.colors.text.secondary,
-                  marginBottom: theme.spacing.lg
-                }}
-              >
-                Select your team for the upcoming season. Once you leave the draft screen,
-                you cannot add more players for the rest of the season.
-              </p>
-              <GameButton
-                variant="primary"
-                onClick={() => changeScreen(Screens.DRAFT)}
-                type="button"
-                size="lg"
-                glow
-              >
-                Go to Draft
-              </GameButton>
-            </GameCard>
-          )}
-
-          {/* Quick Links */}
-          <GameCard
+      {/* Phase-Specific Content */}
+      {isDraftPhase && (
+        <GameCard
+          style={{
+            padding: theme.spacing.lg,
+            background: theme.colors.primary.light + '20',
+            border: `2px solid ${theme.colors.primary.main}`
+          }}
+        >
+          <h2
             style={{
-              padding: theme.spacing.lg
+              fontFamily: theme.typography.fontFamily.heading,
+              fontSize: theme.typography.fontSize.xl,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.text.primary,
+              marginBottom: theme.spacing.md
             }}
           >
-            <h2
-              style={{
-                fontFamily: theme.typography.fontFamily.heading,
-                fontSize: theme.typography.fontSize.xl,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                marginBottom: theme.spacing.md
-              }}
-            >
-              Quick Links
-            </h2>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: theme.spacing.sm
-              }}
-            >
-              <GameButton
-                variant="secondary"
-                onClick={() => changeScreen(Screens.TEAM_OVERVIEW)}
-                type="button"
-              >
-                Team Overview
-              </GameButton>
-              <GameButton
-                variant="secondary"
-                onClick={() => changeScreen(Screens.PROFILE)}
-                type="button"
-              >
-                Profile
-              </GameButton>
-              <GameButton
-                variant="secondary"
-                onClick={() => changeScreen(Screens.SETTINGS)}
-                type="button"
-              >
-                Settings
-              </GameButton>
-            </div>
-          </GameCard>
-        </div>
+            Draft Phase
+          </h2>
+          <p
+            style={{
+              fontSize: theme.typography.fontSize.base,
+              color: theme.colors.text.secondary,
+              marginBottom: theme.spacing.lg
+            }}
+          >
+                Select your team for the upcoming season. Once you leave the draft screen,
+                you cannot add more players for the rest of the season.
+          </p>
+          <GameButton
+            variant="primary"
+            onClick={() => changeScreen(Screens.DRAFT)}
+            type="button"
+            size="lg"
+            glow
+          >
+            Go to Draft
+          </GameButton>
+        </GameCard>
+      )}
 
-        {/* Right Column - Email Preview */}
+      {/* Quick Links */}
+      <GameCard
+        style={{
+          padding: theme.spacing.lg
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: theme.typography.fontFamily.heading,
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.bold,
+            color: theme.colors.text.primary,
+            marginBottom: theme.spacing.md
+          }}
+        >
+          Quick Links
+        </h2>
         <div
           style={{
             display: 'flex',
+            flexDirection: 'column',
+            gap: theme.spacing.sm
+          }}
+        >
+          <GameButton
+            variant="secondary"
+            onClick={() => changeScreen(Screens.TEAM_OVERVIEW)}
+            type="button"
+          >
+            Team Overview
+          </GameButton>
+          <GameButton
+            variant="secondary"
+            onClick={() => changeScreen(Screens.PROFILE)}
+            type="button"
+          >
+            Profile
+          </GameButton>
+          <GameButton
+            variant="secondary"
+            onClick={() => changeScreen(Screens.SETTINGS)}
+            type="button"
+          >
+            Settings
+          </GameButton>
+        </div>
+      </GameCard>
+    </div>
+
+        {/* Right Column - Email Preview */}
+    <div
+      style={{
+        display: 'flex',
             flexDirection: 'column',
             gap: theme.spacing.lg,
             overflow: 'hidden',
             borderLeft: `1px solid ${theme.colors.neutral.gray300}`,
             paddingLeft: theme.spacing.lg
-          }}
-        >
-          <div
-            style={{
+      }}
+    >
+      <div
+        style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
-            }}
-          >
+        }}
+      >
             <h2
-              style={{
+        style={{
                 fontFamily: theme.typography.fontFamily.heading,
                 fontSize: theme.typography.fontSize['2xl'],
                 fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary,
                 margin: 0
-              }}
-            >
+        }}
+      >
               Inbox
               {unreadEmails.length > 0 && (
-                <span
-                  style={{
+        <span
+          style={{
                     marginLeft: theme.spacing.sm,
                     fontSize: theme.typography.fontSize.base,
-                    color: theme.colors.primary.main,
-                    fontWeight: theme.typography.fontWeight.bold
-                  }}
-                >
+            color: theme.colors.primary.main,
+            fontWeight: theme.typography.fontWeight.bold
+          }}
+        >
                   ({unreadEmails.length})
-                </span>
-              )}
+        </span>
+      )}
             </h2>
             <GameButton
               variant="secondary"
@@ -409,18 +409,18 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               }}
             >
               <p
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
+          style={{
+            fontSize: theme.typography.fontSize.sm,
                   color: theme.colors.text.primary,
                   margin: 0,
                   fontWeight: theme.typography.fontWeight.medium
-                }}
-              >
+          }}
+        >
                 💡 <strong>Tip:</strong> Check your inbox regularly for important
                 information about the game world, including rules, news, and updates!
               </p>
             </GameCard>
-          )}
+      )}
         </div>
       </div>
     </div>

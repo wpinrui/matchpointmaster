@@ -116,91 +116,20 @@ Implemented school form and JSON saving. Next task: Handle form saving to locals
 Implemented savegame using context. Next task: Instead of loading a JSON file, load from localstorage to go to the home page with data already loaded. Then, create the player draft.
 
 ### 21 November 2025
-**New Game Setup Flow Implementation**
-- ✅ Implemented comprehensive new game setup flow with manager and school customization
-- ✅ **Manager Profile Creation**:
-  - Face customization using DiceBear API with gender-based randomization
-  - 6 random face options per generation with persistent selection
-  - Form fields: full name, short name, gender, profile image
-  - Inline validation with auto-scroll to errors
-- ✅ **School Customization**:
-  - School crest maker with SVG-based templates
-  - Color pickers for primary, secondary, and accent colors (using react-colorful)
-  - Outside shape selection: circle, shield, wreath, square, diamond, hexagon, oval, star
-  - Inside shape selection: torch, book, star, cross, laurel, crown, scroll, quill, none
-  - Live preview with real-time updates
-  - High-quality heraldic SVG designs
-- ✅ **UI/UX Improvements**:
-  - Modular theme system (centralized colors, typography, spacing, shadows, gradients)
-  - Reusable components: GameButton, GameInput, GameDropdown, GameCard
-  - Improved dialogs with consistent styling
-  - Better tooltips and form UX with helper text
-- ✅ **Save Game System**:
-  - Context API for global state management
-  - Local storage persistence with error handling
-  - Comprehensive TypeScript types
-- ✅ **Code Quality**:
-  - Extracted components, hooks, and utilities into logical modules
-  - Custom hooks: useImagePicker, useImageLoader, useSaveData
-  - Centralized validation utilities
-  - Improved folder structure and organization
+New game setup added with manager and school customization, previews, and validation.  
+UI improved with a modular theme and reusable components.  
+Save system now supports multiple slots, import/export, and clearing data.  
+Player generation implemented with quality tiers, skills, ELO, and management integration.  
+Codebase reorganized with extracted hooks, components, and utilities.
 
-**Next Steps**: Implement player draft system and begin core gameplay mechanics.
+### 22 November 2025
+Draft system implemented with filtering, team limits, and an initial player pool.  
+Team overview shows stats, limits, and allows removals.  
+School team types added and tied to school quality.  
+Reputation, funding, and attractiveness systems completed.  
+Email system built with browsing, viewing, dynamic text, and markdown.  
+Home screen redesigned with timeline and email previews.  
+Code refactored and game phases now progress automatically.
 
-### 21 November 2025 (Evening)
-**Save Handling System Implementation**
-- ✅ **Multiple Save Slots System**:
-  - Refactored save system to support multiple save games in localStorage
-  - Each save slot has unique ID, name, creation date, and last played timestamp
-  - Automatic persistence to localStorage on data changes
-- ✅ **Save Manager Screen**:
-  - New screen to view and manage all save games
-  - Displays save metadata (name, dates, manager, school)
-  - Visual indicator for currently active save
-  - Clickable save cards for easy loading
-  - Load and Delete buttons with confirmation dialogs
-- ✅ **Export/Import Functionality**:
-  - Removed automatic JSON download (was annoying UX)
-  - Manual "Export Save" button for backup/transfer purposes
-  - Import saves from JSON files in Save Manager
-  - Full save slot metadata included in exports
-- ✅ **Clear Data Option**:
-  - Added "Clear Data" button on Home screen
-  - Resets current save to initial state with confirmation
-- ✅ **Navigation Improvements**:
-  - Updated Load Screen to navigate to Save Manager
-  - Added Cancel button to Manager Form to exit new game creation
-  - Better flow: Load → Save Manager → Select/Create → Home
-- ✅ **UI/UX Polish**:
-  - Removed annoying upward hover animation on cards
-  - Made save cards fully clickable
-  - Changed Delete button to red (danger variant)
-  - Improved cursor feedback
 
-**Next Steps**: Continue with player generation and core gameplay features.
-
-### 21 November 2025 (Late Evening)
-**Player Generation System Implementation**
-- ✅ **Random Player Generation**:
-  - Implemented comprehensive player generation utility with intake quality system
-  - Generates players with random attributes: ELO, skills, gender, age, equipment, play style
-  - Supports different intake qualities: Poor, Below Average, Average, Above Average, Excellent
-  - Skill distribution based on quality and gender
-  - Automatic ELO calculation based on skill levels
-- ✅ **Player Card Component**:
-  - Visual display of player information (name, gender, year, age, ELO)
-  - Skill bars for 8 attributes: forehand, backhand, serve, receive, footwork, stamina, mentality, potential
-  - Color-coded skill bars (green for high, yellow for medium, red for low)
-  - Equipment and play style display
-- ✅ **Players Screen**:
-  - Screen to generate and view players
-  - Quality selector for intake quality
-  - Generate 5 players button
-  - Clear all players button
-  - Scrollable grid display of player cards
-- ✅ **Save Data Integration**:
-  - Added players array to SaveData type
-  - Player management methods (add, remove, set, update) in useSaveData
-  - Players persist across sessions
-
-**Next Steps**: Implement Manager Stat System (reputation and coaching effectiveness).
+**Next Steps**: Implement training system and player development mechanics.
