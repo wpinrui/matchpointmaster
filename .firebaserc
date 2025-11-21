@@ -1,6 +1,7 @@
 {
   "projects": {
-    "prod": "matchpointmaster"
+    "prod": "matchpointmaster",
+    "default": "matchpointmaster"
   },
   "targets": {},
   "etags": {}
