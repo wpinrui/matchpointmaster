@@ -68,13 +68,29 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     setSchoolData((prev) => ({ ...prev, [key]: value }))
   }
 
+  const isSchoolDataValid = (): boolean => {
+    return (
+      schoolData.name.trim() !== '' &&
+      schoolData.crestPath !== '' &&
+      schoolData.color.trim() !== ''
+    )
+  }
+
   const handleStartGame = () => {
-    saveSchoolStateToLocalStorage()
-    changeScreen(Screens.HOME)
+    if (isSchoolDataValid()) {
+      saveSchoolStateToLocalStorage()
+      changeScreen(Screens.HOME)
+    } else {
+      alert('Please fill in all fields.')
+    }
   }
 
   const isManagerDataValid = (): boolean => {
-    return Object.values(managerData).every((value) => value !== null && value !== '')
+    return (
+      managerData.fullName.trim() !== '' &&
+      managerData.shortName.trim() !== '' &&
+      managerData.imagePath !== ''
+    )
   }
 
   const handleNextStep = () => {

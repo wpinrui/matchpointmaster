@@ -6,10 +6,6 @@ import DropdownWithTooltip from '../../frontend/forms/DropdownWithTooltip'
 import { SaveData } from '../../services/savegame/types'
 import { newGameTextRecords } from './newGameTextRecords'
 
-const onSelectImage = (imagePath: string, data: SaveData['manager']): void => {
-  data.imagePath = imagePath
-}
-
 const ManagerForm: React.FC<{
   data: SaveData['manager']
   onChange: (key: keyof SaveData['manager'], value: string | File | null) => void
@@ -22,7 +18,10 @@ const ManagerForm: React.FC<{
         <ImagePickerDialog
           isOpen={isDialogPickerOpen}
           path={CONSTANTS.managerFacesPath}
-          onSelectImage={(imagePath) => onSelectImage(imagePath, data)}
+          onSelectImage={(imagePath) => {
+            onChange('imagePath', imagePath)
+            setIsDialogPickerOpen(false)
+          }}
           onClose={() => setIsDialogPickerOpen(false)}
         />
       )}
@@ -53,8 +52,8 @@ const ManagerForm: React.FC<{
             className="mb-2"
           >
             <option value="">Select Gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
           </Form.Select>
         </Form.Group>
         <Form.Group controlId="profileImage">

@@ -4,10 +4,6 @@ import { CONSTANTS } from '../../constants'
 import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
 import { SaveData } from '../../services/savegame/types'
 
-const onSelectImage = (imagePath: string, data: SaveData['school']): void => {
-  data.crestPath = imagePath
-}
-
 const SchoolForm: React.FC<{
   data: SaveData['school']
   onChange: (key: keyof SaveData['school'], value: string) => void
@@ -22,7 +18,10 @@ const SchoolForm: React.FC<{
         <ImagePickerDialog
           isOpen={isDialogPickerOpen}
           path={CONSTANTS.schoolCrestsPath}
-          onSelectImage={(imagePath) => onSelectImage(imagePath, data)}
+          onSelectImage={(imagePath) => {
+            onChange('crestPath', imagePath)
+            setIsDialogPickerOpen(false)
+          }}
           onClose={() => setIsDialogPickerOpen(false)}
         />
       )}
