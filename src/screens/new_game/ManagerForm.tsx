@@ -1,16 +1,17 @@
 import React from 'react'
 import { Form } from 'react-bootstrap'
 import { CONSTANTS } from '../../constants'
-import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
+import { ImagePickerDialog } from '../../components/dialogs/ImagePickerDialog'
 import GameDropdown from '../../components/forms/GameDropdown'
 import { SaveData } from '../../services/savegame/types'
 import { useImagePicker } from '../../hooks/useImagePicker'
-import { GENDER_OPTIONS } from '../../utils/constants'
 import { theme } from '../../theme/theme'
 import GameInput from '../../components/forms/GameInput'
 import GameButton from '../../components/buttons/GameButton'
 import { newGameTextRecords } from './newGameTextRecords'
 import { ManagerValidationErrors } from '../../utils/validation'
+import { ProfileImagePicker } from '../../components/forms/ProfileImagePicker'
+import { GenderSelect } from '../../components/forms/GenderSelect'
 
 const ManagerForm: React.FC<{
   data: SaveData['manager']
@@ -80,104 +81,16 @@ const ManagerForm: React.FC<{
             error={errors.shortName}
           />
         </div>
-        <Form.Group style={{ marginBottom: theme.spacing.lg }}>
-          <Form.Label
-            style={{
-              display: 'block',
-              marginBottom: theme.spacing.sm,
-              fontWeight: theme.typography.fontWeight.medium,
-              color: theme.colors.text.primary,
-              fontSize: theme.typography.fontSize.sm
-            }}
-          >
-            Gender
-          </Form.Label>
-          <Form.Select
-            value={data.gender}
-            onChange={(e) => onChange('gender', e.target.value)}
-            style={{
-              background: theme.colors.neutral.white,
-              border: `2px solid ${theme.colors.neutral.gray300}`,
-              borderRadius: theme.borderRadius.md,
-              padding: `${theme.spacing.md} ${theme.spacing.lg}`,
-              fontSize: theme.typography.fontSize.base,
-              color: theme.colors.text.primary,
-              transition: `all ${theme.transitions.fast}`,
-              width: '100%',
-              boxShadow: theme.shadows.sm
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = theme.colors.primary.main
-              e.target.style.boxShadow = theme.shadows.md
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = theme.colors.neutral.gray300
-              e.target.style.boxShadow = theme.shadows.sm
-            }}
-          >
-            {GENDER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Form.Select>
-        </Form.Group>
+        <GenderSelect
+          value={data.gender}
+          onChange={(value) => onChange('gender', value)}
+        />
         <div className={errors.imagePath ? 'validation-error' : ''}>
-          <Form.Group style={{ marginBottom: theme.spacing.lg }}>
-            {data.imagePath && (
-              <div
-                style={{
-                  marginBottom: theme.spacing.md,
-                  textAlign: 'center'
-                }}
-              >
-                <img
-                  src={data.imagePath}
-                  alt="Profile"
-                  style={{
-                    width: '120px',
-                    height: '120px',
-                    borderRadius: theme.borderRadius.full,
-                    border: `3px solid ${theme.colors.primary.main}`,
-                    objectFit: 'cover',
-                    boxShadow: theme.shadows.lg
-                  }}
-                />
-              </div>
-            )}
-            <GameButton
-              variant="secondary"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                openDialog()
-              }}
-              fullWidth
-              type="button"
-              style={
-                errors.imagePath
-                  ? {
-                      border: `2px solid ${theme.colors.error.main}`,
-                      boxShadow: `0 0 0 0.2rem ${theme.colors.error.light}40`
-                    }
-                  : {}
-              }
-            >
-              {data.imagePath ? 'Change Profile Image' : 'Pick Profile Image'}
-            </GameButton>
-            {errors.imagePath && (
-              <Form.Text
-                style={{
-                  color: theme.colors.error.main,
-                  fontSize: theme.typography.fontSize.sm,
-                  marginTop: theme.spacing.xs,
-                  display: 'block'
-                }}
-              >
-                {errors.imagePath}
-              </Form.Text>
-            )}
-          </Form.Group>
+          <ProfileImagePicker
+            imagePath={data.imagePath}
+            onPickImage={openDialog}
+            error={errors.imagePath}
+          />
         </div>
         <GameDropdown
           label="Handedness"

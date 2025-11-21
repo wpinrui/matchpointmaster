@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Modal } from 'react-bootstrap'
 import { theme } from '../../theme/theme'
-import FaceCustomizer from '../../components/forms/FaceCustomizer'
+import FaceCustomizer from '../forms/FaceCustomizer'
 import { Gender } from '../../services/savegame/types'
+import { useImageLoader } from '../../hooks/useImageLoader'
+import { ImagePickerDialogFooter } from './ImagePickerDialogFooter'
 
 type ImagePickerDialogProps = {
   path: string
@@ -25,63 +27,8 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
   storedFaceOptions = [],
   onFaceOptionsChange
 }) => {
-  const [imagePaths, setImagePaths] = useState<string[]>([])
-  const [error, setError] = useState<string | null>(null)
   const [selectedFaceUrl, setSelectedFaceUrl] = useState<string>('')
-
-  useEffect(() => {
-    if (!isOpen) {
-      setImagePaths([])
-      setError(null)
-      setSelectedFaceUrl('')
-      return
-    }
-
-    // Use face customizer for manager faces
-    if (path.includes('manager_faces')) {
-      return
-    }
-
-    // Load from assets for other paths (like school crests)
-    try {
-      const images = import.meta.glob('/src/assets/**/*.{png,jpg,jpeg}', {
-        eager: true
-      })
-      
-      // Filter by path and extract the actual image URLs
-      // With eager: true, Vite returns the imported modules directly
-      const imageUrls: string[] = []
-      Object.entries(images).forEach(([filePath, module]) => {
-        if (filePath.includes(path)) {
-          // For images, the module is typically a string URL or an object with default
-          let imageUrl: string | undefined
-          
-          if (typeof module === 'string') {
-            imageUrl = module
-          } else if (typeof module === 'object' && module !== null) {
-            // Check for default export
-            if ('default' in module) {
-              imageUrl = (module as { default: string }).default
-            } else if ('src' in module) {
-              imageUrl = (module as { src: string }).src
-            }
-          }
-          
-          if (imageUrl && typeof imageUrl === 'string') {
-            imageUrls.push(imageUrl)
-          }
-        }
-      })
-      
-      console.log('Loaded images:', imageUrls.length, 'for path:', path)
-      setImagePaths(imageUrls)
-      setError(imageUrls.length === 0 ? 'No images found in this folder' : null)
-    } catch (err) {
-      console.error('Error loading images:', err)
-      setError('Failed to load images')
-      setImagePaths([])
-    }
-  }, [path, isOpen])
+  const { imagePaths, error, setError } = useImageLoader(path, isOpen)
 
   const handleFaceChange = (faceUrl: string) => {
     setSelectedFaceUrl(faceUrl)
@@ -103,6 +50,8 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
     }
     onClose()
   }
+
+  const isManagerFaces = path.includes('manager_faces')
 
   return (
     <Modal
@@ -142,7 +91,7 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
           borderRadius: `0 0 ${theme.borderRadius.lg} ${theme.borderRadius.lg}`
         }}
       >
-        {path.includes('manager_faces') ? (
+        {isManagerFaces ? (
           <FaceCustomizer
             initialSeed={`manager-${Date.now()}`}
             onFaceChange={handleFaceChange}
@@ -209,53 +158,14 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
           </div>
         )}
       </Modal.Body>
-      {path.includes('manager_faces') && (
-        <Modal.Footer
-          style={{
-            background: theme.colors.background.primary,
-            borderTop: `1px solid ${theme.colors.neutral.gray300}`,
-            borderRadius: `0 0 ${theme.borderRadius.lg} ${theme.borderRadius.lg}`
-          }}
-        >
-          <button
-            onClick={handleClose}
-            style={{
-              padding: `${theme.spacing.md} ${theme.spacing.xl}`,
-              background: theme.colors.neutral.gray300,
-              color: theme.colors.text.primary,
-              border: 'none',
-              borderRadius: theme.borderRadius.md,
-              cursor: 'pointer',
-              fontSize: theme.typography.fontSize.base,
-              fontWeight: theme.typography.fontWeight.medium,
-              marginRight: theme.spacing.md
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={!selectedFaceUrl}
-            style={{
-              padding: `${theme.spacing.md} ${theme.spacing.xl}`,
-              background: selectedFaceUrl
-                ? theme.gradients.primary
-                : theme.colors.neutral.gray300,
-              color: selectedFaceUrl
-                ? theme.colors.text.inverse
-                : theme.colors.text.secondary,
-              border: 'none',
-              borderRadius: theme.borderRadius.md,
-              cursor: selectedFaceUrl ? 'pointer' : 'not-allowed',
-              fontSize: theme.typography.fontSize.base,
-              fontWeight: theme.typography.fontWeight.medium,
-              opacity: selectedFaceUrl ? 1 : 0.6
-            }}
-          >
-            Confirm
-          </button>
-        </Modal.Footer>
+      {isManagerFaces && (
+        <ImagePickerDialogFooter
+          selectedFaceUrl={selectedFaceUrl}
+          onConfirm={handleConfirm}
+          onCancel={handleClose}
+        />
       )}
     </Modal>
   )
 }
+

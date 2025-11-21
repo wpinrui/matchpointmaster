@@ -3,11 +3,12 @@ import { Form } from 'react-bootstrap'
 import GameButton from '../../components/buttons/GameButton'
 import GameInput from '../../components/forms/GameInput'
 import { CONSTANTS } from '../../constants'
-import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
+import { ImagePickerDialog } from '../../components/dialogs/ImagePickerDialog'
 import { useImagePicker } from '../../hooks/useImagePicker'
 import { SaveData } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import { SchoolValidationErrors } from '../../utils/validation'
+import { CrestImagePicker } from '../../components/forms/CrestImagePicker'
 
 const SchoolForm: React.FC<{
   data: SaveData['school']
@@ -62,63 +63,11 @@ const SchoolForm: React.FC<{
           />
         </div>
         <div className={errors.crestPath ? 'validation-error' : ''}>
-          <Form.Group style={{ marginBottom: theme.spacing.lg }}>
-            {data.crestPath && (
-              <div
-                style={{
-                  marginBottom: theme.spacing.md,
-                  textAlign: 'center'
-                }}
-              >
-                <img
-                  src={data.crestPath}
-                  alt="School Crest"
-                  style={{
-                    width: '150px',
-                    height: '150px',
-                    borderRadius: theme.borderRadius.lg,
-                    border: `3px solid ${theme.colors.secondary.main}`,
-                    objectFit: 'contain',
-                    background: theme.colors.neutral.white,
-                    padding: theme.spacing.sm,
-                    boxShadow: theme.shadows.lg
-                  }}
-                />
-              </div>
-            )}
-            <GameButton
-              variant="secondary"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                openDialog()
-              }}
-              fullWidth
-              type="button"
-              style={
-                errors.crestPath
-                  ? {
-                      border: `2px solid ${theme.colors.error.main}`,
-                      boxShadow: `0 0 0 0.2rem ${theme.colors.error.light}40`
-                    }
-                  : {}
-              }
-            >
-              {data.crestPath ? 'Change School Crest' : 'Pick School Crest'}
-            </GameButton>
-            {errors.crestPath && (
-              <Form.Text
-                style={{
-                  color: theme.colors.error.main,
-                  fontSize: theme.typography.fontSize.sm,
-                  marginTop: theme.spacing.xs,
-                  display: 'block'
-                }}
-              >
-                {errors.crestPath}
-              </Form.Text>
-            )}
-          </Form.Group>
+          <CrestImagePicker
+            crestPath={data.crestPath}
+            onPickCrest={openDialog}
+            error={errors.crestPath}
+          />
         </div>
         <div className={errors.color ? 'validation-error' : ''}>
           <GameInput
