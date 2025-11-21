@@ -7,6 +7,7 @@ import { ScreenProps, Screens } from '../../screen_manager/screens'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
+import { GamePhase, getNextPhase } from '../../utils/gamePhases'
 import { generatePlayer, IntakeQuality } from '../../utils/playerGeneration'
 import {
   attractivenessToIntakeQuality,
@@ -49,6 +50,19 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const handleConfirmLeave = () => {
     updateSeason.setDraftCompleted(true)
     setShowLeaveConfirm(false)
+    changeScreen(Screens.HOME)
+  }
+
+  const handleEndDraft = () => {
+    // Mark draft as completed
+    updateSeason.setDraftCompleted(true)
+
+    // Progress to February training phase
+    const nextPhase = getNextPhase(GamePhase.DRAFT, season.month)
+    updateSeason.setMonth(nextPhase.month)
+    updateSeason.setPhase(nextPhase.phase)
+
+    // Navigate to home
     changeScreen(Screens.HOME)
   }
 
@@ -211,8 +225,8 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           >
             View Team
           </GameButton>
-          <GameButton variant="secondary" onClick={handleBackClick} type="button">
-            Back to Home
+          <GameButton variant="success" onClick={handleEndDraft} type="button">
+            End Draft
           </GameButton>
         </div>
       </div>
