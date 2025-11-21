@@ -2,7 +2,7 @@ import React from 'react'
 import { Form } from 'react-bootstrap'
 import { CONSTANTS } from '../../constants'
 import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
-import DropdownWithTooltip from '../../frontend/forms/DropdownWithTooltip'
+import GameDropdown from '../../components/forms/GameDropdown'
 import { SaveData } from '../../services/savegame/types'
 import { useImagePicker } from '../../hooks/useImagePicker'
 import { GENDER_OPTIONS } from '../../utils/constants'
@@ -48,17 +48,19 @@ const ManagerForm: React.FC<{
       <Form>
         <GameInput
           type="text"
-          placeholder="Manager Name"
+          placeholder="e.g., John Smith"
           value={data.fullName}
           onChange={(e) => onChange('fullName', e.target.value)}
           label="Full Name"
+          helperText="Your complete name (e.g., John Smith, Maria Garcia)"
         />
         <GameInput
           type="text"
-          placeholder="Short Name"
+          placeholder="e.g., John"
           value={data.shortName}
           onChange={(e) => onChange('shortName', e.target.value)}
           label="Short Name"
+          helperText="A shorter version of your name used in game (e.g., John, Maria, Coach J)"
         />
         <Form.Group style={{ marginBottom: theme.spacing.lg }}>
           <Form.Label
@@ -137,41 +139,47 @@ const ManagerForm: React.FC<{
             {data.imagePath ? 'Change Profile Image' : 'Pick Profile Image'}
           </GameButton>
         </Form.Group>
-        <DropdownWithTooltip
+        <GameDropdown
           label="Handedness"
           options={newGameTextRecords.handednessDescriptions}
           selectedValue={data.handedness}
           onChange={(value) => onChange('handedness', value)}
+          description="Your dominant hand affects coaching effectiveness"
         />
-        <DropdownWithTooltip
+        <GameDropdown
           label="Forehand Rubber"
           options={newGameTextRecords.rubberDescriptions}
           selectedValue={data.forehandRubber}
           onChange={(value) => onChange('forehandRubber', value)}
+          description="The rubber type used on your forehand side"
         />
-        <DropdownWithTooltip
+        <GameDropdown
           label="Backhand Rubber"
           options={newGameTextRecords.rubberDescriptions}
           selectedValue={data.backhandRubber}
           onChange={(value) => onChange('backhandRubber', value)}
+          description="The rubber type used on your backhand side"
         />
-        <DropdownWithTooltip
+        <GameDropdown
           label="Grip Style"
           options={newGameTextRecords.gripDescriptions}
           selectedValue={data.gripStyle}
           onChange={(value) => onChange('gripStyle', value)}
+          description="How you hold the paddle affects your playing style"
         />
-        <DropdownWithTooltip
+        <GameDropdown
           label="Favors"
           options={newGameTextRecords.favoursDescriptions}
           selectedValue={data.forehandBackhandTendency}
           onChange={(value) => onChange('forehandBackhandTendency', value)}
+          description="Your preference between forehand and backhand shots"
         />
-        <DropdownWithTooltip
+        <GameDropdown
           label="Playing Style"
           options={newGameTextRecords.playStyleDescriptions}
           selectedValue={data.playStyle}
           onChange={(value) => onChange('playStyle', value)}
+          description="Your overall approach to the game"
         />
         <div style={{ marginTop: theme.spacing.xl }}>
           <GameButton variant="primary" onClick={onNext} size="lg" fullWidth glow>

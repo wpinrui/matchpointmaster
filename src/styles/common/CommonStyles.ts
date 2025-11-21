@@ -26,7 +26,7 @@ const blurStyle: React.CSSProperties = {
 
 const dialogStyle: React.CSSProperties = {
   background: theme.gradients.card,
-  borderRadius: theme.borderRadius.xl,
+  borderRadius: theme.borderRadius.lg,
   padding: theme.spacing['2xl'],
   zIndex: theme.zIndex.modal,
   width: '90%',

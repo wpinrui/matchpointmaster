@@ -86,6 +86,7 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
       style={{
         zIndex: theme.zIndex.modal
       }}
+      contentClassName="image-picker-modal-content"
     >
       <Modal.Header
         closeButton
@@ -93,7 +94,8 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
           background: theme.gradients.primary,
           color: theme.colors.text.inverse,
           borderBottom: 'none',
-          borderRadius: `${theme.borderRadius.xl} ${theme.borderRadius.xl} 0 0`
+          borderRadius: `${theme.borderRadius.lg} ${theme.borderRadius.lg} 0 0`,
+          padding: theme.spacing.lg
         }}
       >
         <Modal.Title
@@ -109,7 +111,8 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
       <Modal.Body
         style={{
           background: theme.colors.background.primary,
-          padding: theme.spacing.xl
+          padding: theme.spacing.xl,
+          borderRadius: `0 0 ${theme.borderRadius.lg} ${theme.borderRadius.lg}`
         }}
       >
         {error ? (

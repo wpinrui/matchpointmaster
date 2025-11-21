@@ -7,7 +7,7 @@ import { theme } from './theme'
 
 export const createCardStyle = (): React.CSSProperties => ({
   background: theme.gradients.card,
-  borderRadius: theme.borderRadius.xl,
+  borderRadius: theme.borderRadius.lg,
   padding: theme.spacing.xl,
   boxShadow: theme.shadows.xl,
   backdropFilter: 'blur(20px)',

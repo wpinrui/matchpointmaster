@@ -18,7 +18,7 @@ const GameCard: React.FC<GameCardProps> = ({
 }) => {
   const cardStyle: CSSProperties = {
     background: theme.gradients.card,
-    borderRadius: theme.borderRadius.xl,
+    borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.xl,
     boxShadow: glow ? theme.shadows.glow : theme.shadows.xl,
     backdropFilter: 'blur(20px)',

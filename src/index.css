@@ -57,6 +57,37 @@ html {
   transform: scale(1.02);
 }
 
+/* Dropdown styling */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
+/* Style dropdown options */
+select option {
+  padding: 12px 16px;
+  background: white;
+  color: #1A1D29;
+  border: none;
+  margin: 2px 0;
+}
+
+select option:hover,
+select option:focus {
+  background: #F5F7FA;
+}
+
+select option:checked {
+  background: #FF6B35;
+  color: white;
+  font-weight: 600;
+}
+
 /* Fade in animation */
 @keyframes fadeIn {
   from {
@@ -145,3 +176,15 @@ img:hover {
   background: linear-gradient(135deg, #E55A2B 0%, #E6821A 100%);
 }
 
+/* Image picker modal styling */
+.image-picker-modal-content {
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  border: none !important;
+}
+
+.image-picker-modal-content .modal-content {
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  border: none !important;
+}
