@@ -3,7 +3,11 @@ export enum Screens {
   NEW_GAME = 'NEW_GAME',
   HOME = 'HOME',
   PLAYERS = 'PLAYERS',
-  SAVE_MANAGER = 'SAVE_MANAGER'
+  SAVE_MANAGER = 'SAVE_MANAGER',
+  DRAFT = 'DRAFT',
+  TEAM_OVERVIEW = 'TEAM_OVERVIEW',
+  PROFILE = 'PROFILE',
+  SETTINGS = 'SETTINGS'
 }
 
 export type ScreenProps = {

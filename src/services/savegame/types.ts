@@ -26,8 +26,10 @@ export type SaveData = {
     primaryColor: string
     secondaryColor: string
     accentColor: string
+    reputation: number // 0-100, school's reputation affects player intake quality
   }
-  players: Player[]
+  players: Player[] // All available players (draft pool + team)
+  teamRoster: string[] // Array of player IDs that are on the team (max 7)
 }
 
 export enum Gender {

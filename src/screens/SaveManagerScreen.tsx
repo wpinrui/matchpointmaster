@@ -33,7 +33,7 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   const handleLoadSave = (slotId: string) => {
     loadSaveSlot(slotId)
-    changeScreen(Screens.HOME)
+    changeScreen(Screens.TEAM_OVERVIEW)
   }
 
   const handleDeleteSave = (slotId: string) => {

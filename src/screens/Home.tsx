@@ -149,25 +149,12 @@ const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
         >
           <GameButton
             variant="primary"
-            onClick={() => changeScreen(Screens.PLAYERS)}
+            onClick={() => changeScreen(Screens.TEAM_OVERVIEW)}
             size="lg"
             glow
             type="button"
           >
-            View Players
-          </GameButton>
-          <GameButton
-            variant="secondary"
-            onClick={() => changeScreen(Screens.SAVE_MANAGER)}
-            type="button"
-          >
-            Manage Saves
-          </GameButton>
-          <GameButton variant="secondary" onClick={handleExport} type="button">
-            Export Save
-          </GameButton>
-          <GameButton variant="secondary" onClick={handleClear} type="button">
-            Clear Data
+            Go to Team Overview
           </GameButton>
         </div>
       </GameCard>

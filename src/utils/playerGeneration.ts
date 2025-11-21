@@ -87,27 +87,13 @@ function generateSkills(quality: IntakeQuality, gender: Gender): PlayerSkills {
 }
 
 /**
- * Calculate ELO based on skills
+ * Calculate ELO - all new players start at 1500
+ * (ELO will change as they play matches)
  */
-function calculateElo(skills: PlayerSkills): number {
-  // Average all skills
-  const avgSkill =
-    (skills.forehand +
-      skills.backhand +
-      skills.footwork +
-      skills.serve +
-      skills.receive +
-      skills.spin +
-      skills.placement +
-      skills.consistency) /
-    8
-
-  // Convert skill (0-100) to ELO (800-2000+)
-  // Base ELO of 800, scale up to 2000+ for high skills
-  const elo = 800 + (avgSkill / 100) * 1200
-
-  // Add some randomness (±50)
-  return Math.round(elo + randomFloat(-50, 50))
+function calculateElo(_skills: PlayerSkills): number {
+  // All new players start at 1500 ELO
+  // This will be adjusted as they play matches
+  return 1500
 }
 
 /**
@@ -173,6 +159,23 @@ function generateName(gender: Gender): { firstName: string; lastName: string } {
 /**
  * Generate a random player
  */
+/**
+ * Calculate intake quality based on manager and school reputation
+ */
+export function calculateIntakeQuality(
+  managerReputation: number,
+  schoolReputation: number
+): IntakeQuality {
+  // Average the two reputations
+  const avgReputation = (managerReputation + schoolReputation) / 2
+
+  if (avgReputation >= 80) return IntakeQuality.EXCELLENT
+  if (avgReputation >= 60) return IntakeQuality.ABOVE_AVERAGE
+  if (avgReputation >= 40) return IntakeQuality.AVERAGE
+  if (avgReputation >= 20) return IntakeQuality.BELOW_AVERAGE
+  return IntakeQuality.POOR
+}
+
 export function generatePlayer(
   quality: IntakeQuality = IntakeQuality.AVERAGE,
   year: number = 1
@@ -196,9 +199,9 @@ export function generatePlayer(
     firstName,
     lastName,
     gender,
-    age: 15 + year - 1, // Start at 15 for year 1
+    age: 13, // All new players are Sec 1 (age 13)
     year,
-    elo,
+    elo: 1500, // All new players start at 1500 ELO
     skills,
     handedness: randomFromArray([Handedness.RIGHT, Handedness.LEFT]),
     gripStyle: randomFromArray([
@@ -276,7 +279,20 @@ function determineForehandBackhandTendency(skills: PlayerSkills): FavourStyle {
 }
 
 /**
- * Generate multiple players
+ * Generate multiple players based on manager and school reputation
+ */
+export function generatePlayersByReputation(
+  count: number,
+  managerReputation: number,
+  schoolReputation: number,
+  startYear: number = 1
+): Player[] {
+  const quality = calculateIntakeQuality(managerReputation, schoolReputation)
+  return Array.from({ length: count }, () => generatePlayer(quality, startYear))
+}
+
+/**
+ * Generate multiple players (legacy function for backward compatibility)
  */
 export function generatePlayers(
   count: number,

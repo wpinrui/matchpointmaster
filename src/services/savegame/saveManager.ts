@@ -156,10 +156,25 @@ export const getCurrentSaveData = (): SaveData => {
       reputation: 15,
       coachingEffectiveness: 15
     }
-    // Update the slot with the migrated data
+  }
+  // Ensure backward compatibility: add teamRoster if missing
+  if (!data.teamRoster) {
+    data.teamRoster = []
+  }
+  // Ensure backward compatibility: add school reputation if missing
+  if (data.school.reputation === undefined) {
+    data.school.reputation = 15
+  }
+  
+  // Update the slot with migrated data if needed
+  if (
+    !slot.data.manager.stats ||
+    !slot.data.teamRoster ||
+    slot.data.school.reputation === undefined
+  ) {
     updateSaveSlot(currentSaveId, data)
   }
-
+  
   return data
 }
 

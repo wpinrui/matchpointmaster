@@ -30,7 +30,9 @@ export const initialSaveData: SaveData = {
     crestPath: '',
     primaryColor: '#FF6B35',
     secondaryColor: '#004E89',
-    accentColor: '#FFD23F'
+    accentColor: '#FFD23F',
+    reputation: 15 // Starting school reputation (low, new school)
   },
-  players: []
+  players: [], // All available players
+  teamRoster: [] // Player IDs on the team (max 7)
 }

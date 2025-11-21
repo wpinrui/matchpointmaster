@@ -93,10 +93,11 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       const combinedData: SaveData = {
         manager: managerData,
         school: schoolData,
-        players: [] // Initialize with empty players array
+        players: [], // Initialize with empty players array
+        teamRoster: [] // Initialize with empty team roster
       }
       createNewSave(saveName, combinedData)
-      changeScreen(Screens.HOME)
+      changeScreen(Screens.TEAM_OVERVIEW)
     } else {
       setSchoolErrors(validation.errors)
       // Scroll to first error

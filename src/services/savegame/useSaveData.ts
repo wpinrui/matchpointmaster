@@ -74,7 +74,8 @@ export const useSaveData = () => {
     crestPath: (crestPath: string) => updateAttribute('school', 'crestPath', crestPath),
     primaryColor: (color: string) => updateAttribute('school', 'primaryColor', color),
     secondaryColor: (color: string) => updateAttribute('school', 'secondaryColor', color),
-    accentColor: (color: string) => updateAttribute('school', 'accentColor', color)
+    accentColor: (color: string) => updateAttribute('school', 'accentColor', color),
+    reputation: (reputation: number) => updateAttribute('school', 'reputation', reputation)
   }
 
   const updatePlayers = {
@@ -87,7 +88,8 @@ export const useSaveData = () => {
     remove: (playerId: string) => {
       setSaveData((prevData) => ({
         ...prevData,
-        players: prevData.players.filter((p) => p.id !== playerId)
+        players: prevData.players.filter((p) => p.id !== playerId),
+        teamRoster: prevData.teamRoster.filter((id) => id !== playerId)
       }))
     },
     set: (players: SaveData['players']) => {
@@ -102,6 +104,43 @@ export const useSaveData = () => {
         players: prevData.players.map((p) =>
           p.id === playerId ? { ...p, ...updates } : p
         )
+      }))
+    }
+  }
+
+  const updateTeamRoster = {
+    add: (playerId: string) => {
+      setSaveData((prevData) => {
+        // Enforce 7 player limit
+        if (prevData.teamRoster.length >= 7) {
+          return prevData
+        }
+        // Don't add if already on team
+        if (prevData.teamRoster.includes(playerId)) {
+          return prevData
+        }
+        return {
+          ...prevData,
+          teamRoster: [...prevData.teamRoster, playerId]
+        }
+      })
+    },
+    remove: (playerId: string) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        teamRoster: prevData.teamRoster.filter((id) => id !== playerId)
+      }))
+    },
+    set: (playerIds: string[]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        teamRoster: playerIds.slice(0, 7) // Enforce max 7
+      }))
+    },
+    clear: () => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        teamRoster: []
       }))
     }
   }
@@ -185,10 +224,12 @@ export const useSaveData = () => {
     manager: saveData.manager,
     school: saveData.school,
     players: saveData.players,
+    teamRoster: saveData.teamRoster,
     currentSaveId,
     updateManager,
     updateSchool,
     updatePlayers,
+    updateTeamRoster,
     exportToJson,
     loadSaveSlot,
     createNewSave,
