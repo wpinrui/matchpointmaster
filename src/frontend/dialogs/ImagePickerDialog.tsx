@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Modal } from 'react-bootstrap'
 import { imageGridStyle, imageStyle } from '../../styles/dialogs/ImagePickerDialogStyles'
+import { theme } from '../../theme/theme'
 
 type ImagePickerDialogProps = {
   path: string
@@ -39,15 +40,58 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
   }
 
   return (
-    <Modal show={isOpen} onHide={onClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>Select Image</Modal.Title>
+    <Modal
+      show={isOpen}
+      onHide={onClose}
+      style={{
+        zIndex: theme.zIndex.modal
+      }}
+    >
+      <Modal.Header
+        closeButton
+        style={{
+          background: theme.gradients.primary,
+          color: theme.colors.text.inverse,
+          borderBottom: 'none',
+          borderRadius: `${theme.borderRadius.xl} ${theme.borderRadius.xl} 0 0`
+        }}
+      >
+        <Modal.Title
+          style={{
+            fontFamily: theme.typography.fontFamily.heading,
+            fontWeight: theme.typography.fontWeight.bold,
+            fontSize: theme.typography.fontSize.xl
+          }}
+        >
+          Select Image
+        </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body
+        style={{
+          background: theme.colors.background.primary,
+          padding: theme.spacing.xl
+        }}
+      >
         {error ? (
-          <div className="text-danger">{error}</div>
+          <div
+            style={{
+              color: theme.colors.error.main,
+              textAlign: 'center',
+              padding: theme.spacing.lg
+            }}
+          >
+            {error}
+          </div>
         ) : imagePaths.length === 0 ? (
-          <div>No images found</div>
+          <div
+            style={{
+              color: theme.colors.text.secondary,
+              textAlign: 'center',
+              padding: theme.spacing.lg
+            }}
+          >
+            No images found
+          </div>
         ) : (
           <div style={imageGridStyle}>
             {imagePaths.map((imagePath) => (
@@ -55,9 +99,23 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
                 key={imagePath}
                 src={imagePath}
                 alt="Image"
-                style={imageStyle}
+                style={{
+                  ...imageStyle,
+                  border: `2px solid ${theme.colors.neutral.gray300}`,
+                  borderRadius: theme.borderRadius.md
+                }}
                 onClick={() => handleImageSelect(imagePath)}
                 onError={() => setError('Failed to load some images')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = theme.colors.primary.main
+                  e.currentTarget.style.transform = 'scale(1.1)'
+                  e.currentTarget.style.boxShadow = theme.shadows.lg
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = theme.colors.neutral.gray300
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
               />
             ))}
           </div>

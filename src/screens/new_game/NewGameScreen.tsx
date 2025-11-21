@@ -5,6 +5,7 @@ import { initialSaveData } from '../../services/savegame/initialSaveData'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { SaveData } from '../../services/savegame/types'
 import { CommonStyles } from '../../styles/common/CommonStyles'
+import { theme } from '../../theme/theme'
 import { validateManagerData, validateSchoolData } from '../../utils/validation'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
@@ -84,7 +85,22 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       />
       <div style={CommonStyles.blurStyle} className="position-absolute w-100 h-100" />
       <div style={CommonStyles.dialogStyle} className="rounded p-4 position-relative">
-        <h1 className="text-center">{`Create your ${step}`}</h1>
+        <h1
+          style={{
+            fontFamily: theme.typography.fontFamily.heading,
+            fontSize: theme.typography.fontSize['4xl'],
+            fontWeight: theme.typography.fontWeight.extrabold,
+            background: theme.gradients.primary,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textAlign: 'center',
+            marginBottom: theme.spacing.xl,
+            textShadow: 'none'
+          }}
+        >
+          {`Create your ${step}`}
+        </h1>
         {step === Step.Manager ? (
           <ManagerForm
             data={managerData}

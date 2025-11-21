@@ -1,12 +1,16 @@
+import { theme } from '../../theme/theme'
+
 const containerStyle: React.CSSProperties = {
   backgroundImage: `url('../assets/tabletennisphoto.jpg')`,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
-  height: '100vh',
+  backgroundAttachment: 'fixed',
+  minHeight: '100vh',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  position: 'relative'
+  position: 'relative',
+  padding: theme.spacing.md
 }
 
 const blurStyle: React.CSSProperties = {
@@ -15,18 +19,22 @@ const blurStyle: React.CSSProperties = {
   left: 0,
   right: 0,
   bottom: 0,
-  backdropFilter: 'blur(8px)',
-  zIndex: 1
+  background: theme.gradients.overlay,
+  backdropFilter: 'blur(12px)',
+  zIndex: theme.zIndex.base
 }
 
 const dialogStyle: React.CSSProperties = {
-  backgroundColor: 'rgba(255, 255, 255, 0.7)',
-  borderRadius: '8px',
-  padding: '20px',
-  zIndex: 2,
-  width: '90%', // Set to 100% to make it responsive
-  maxWidth: '700px', // Maximum width of 700px
-  boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px'
+  background: theme.gradients.card,
+  borderRadius: theme.borderRadius.xl,
+  padding: theme.spacing['2xl'],
+  zIndex: theme.zIndex.modal,
+  width: '90%',
+  maxWidth: '800px',
+  boxShadow: theme.shadows['2xl'],
+  backdropFilter: 'blur(20px)',
+  border: `1px solid rgba(255, 255, 255, 0.3)`,
+  animation: 'fadeIn 0.5s ease-out'
 }
 
 export const CommonStyles = {

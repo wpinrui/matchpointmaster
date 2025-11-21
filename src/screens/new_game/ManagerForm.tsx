@@ -1,11 +1,14 @@
 import React from 'react'
-import { Button, Form } from 'react-bootstrap'
+import { Form } from 'react-bootstrap'
 import { CONSTANTS } from '../../constants'
 import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
 import DropdownWithTooltip from '../../frontend/forms/DropdownWithTooltip'
 import { SaveData } from '../../services/savegame/types'
 import { useImagePicker } from '../../hooks/useImagePicker'
 import { GENDER_OPTIONS } from '../../utils/constants'
+import { theme } from '../../theme/theme'
+import GameInput from '../../components/forms/GameInput'
+import GameButton from '../../components/buttons/GameButton'
 import { newGameTextRecords } from './newGameTextRecords'
 
 const ManagerForm: React.FC<{
@@ -21,7 +24,7 @@ const ManagerForm: React.FC<{
   }
 
   return (
-    <div>
+    <div className="slide-in">
       {isDialogOpen && (
         <ImagePickerDialog
           isOpen={isDialogOpen}
@@ -30,31 +33,67 @@ const ManagerForm: React.FC<{
           onClose={closeDialog}
         />
       )}
-      <h4>Manager Information</h4>
+      <h4
+        style={{
+          fontFamily: theme.typography.fontFamily.heading,
+          fontSize: theme.typography.fontSize['2xl'],
+          fontWeight: theme.typography.fontWeight.bold,
+          color: theme.colors.text.primary,
+          marginBottom: theme.spacing.xl,
+          textAlign: 'center'
+        }}
+      >
+        Manager Information
+      </h4>
       <Form>
-        <Form.Group controlId="managerName">
-          <Form.Control
-            type="text"
-            placeholder="Manager Name"
-            value={data.fullName}
-            onChange={(e) => onChange('fullName', e.target.value)}
-            className="mb-2"
-          />
-        </Form.Group>
-        <Form.Group controlId="shortName">
-          <Form.Control
-            type="text"
-            placeholder="Short Name"
-            value={data.shortName}
-            onChange={(e) => onChange('shortName', e.target.value)}
-            className="mb-2"
-          />
-        </Form.Group>
-        <Form.Group controlId="genderSelect">
+        <GameInput
+          type="text"
+          placeholder="Manager Name"
+          value={data.fullName}
+          onChange={(e) => onChange('fullName', e.target.value)}
+          label="Full Name"
+        />
+        <GameInput
+          type="text"
+          placeholder="Short Name"
+          value={data.shortName}
+          onChange={(e) => onChange('shortName', e.target.value)}
+          label="Short Name"
+        />
+        <Form.Group style={{ marginBottom: theme.spacing.lg }}>
+          <Form.Label
+            style={{
+              display: 'block',
+              marginBottom: theme.spacing.sm,
+              fontWeight: theme.typography.fontWeight.medium,
+              color: theme.colors.text.primary,
+              fontSize: theme.typography.fontSize.sm
+            }}
+          >
+            Gender
+          </Form.Label>
           <Form.Select
             value={data.gender}
             onChange={(e) => onChange('gender', e.target.value)}
-            className="mb-2"
+            style={{
+              background: theme.colors.neutral.white,
+              border: `2px solid ${theme.colors.neutral.gray300}`,
+              borderRadius: theme.borderRadius.md,
+              padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+              fontSize: theme.typography.fontSize.base,
+              color: theme.colors.text.primary,
+              transition: `all ${theme.transitions.fast}`,
+              width: '100%',
+              boxShadow: theme.shadows.sm
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = theme.colors.primary.main
+              e.target.style.boxShadow = theme.shadows.md
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = theme.colors.neutral.gray300
+              e.target.style.boxShadow = theme.shadows.sm
+            }}
           >
             {GENDER_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -63,15 +102,35 @@ const ManagerForm: React.FC<{
             ))}
           </Form.Select>
         </Form.Group>
-        <Form.Group controlId="profileImage">
-          {data.imagePath && <img src={data.imagePath} alt="Profile" />}
-          <Button
+        <Form.Group style={{ marginBottom: theme.spacing.lg }}>
+          {data.imagePath && (
+            <div
+              style={{
+                marginBottom: theme.spacing.md,
+                textAlign: 'center'
+              }}
+            >
+              <img
+                src={data.imagePath}
+                alt="Profile"
+                style={{
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: theme.borderRadius.full,
+                  border: `3px solid ${theme.colors.primary.main}`,
+                  objectFit: 'cover',
+                  boxShadow: theme.shadows.lg
+                }}
+              />
+            </div>
+          )}
+          <GameButton
             variant="secondary"
             onClick={openDialog}
-            className="mb-2"
+            fullWidth
           >
-            Pick Profile Image
-          </Button>
+            {data.imagePath ? 'Change Profile Image' : 'Pick Profile Image'}
+          </GameButton>
         </Form.Group>
         <DropdownWithTooltip
           label="Handedness"
@@ -109,7 +168,11 @@ const ManagerForm: React.FC<{
           selectedValue={data.playStyle}
           onChange={(value) => onChange('playStyle', value)}
         />
-        <Button onClick={onNext}>Next</Button>
+        <div style={{ marginTop: theme.spacing.xl }}>
+          <GameButton variant="primary" onClick={onNext} size="lg" fullWidth glow>
+            Next
+          </GameButton>
+        </div>
       </Form>
     </div>
   )
