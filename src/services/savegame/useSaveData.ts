@@ -123,10 +123,6 @@ export const useSaveData = () => {
   const updateTeamRoster = {
     add: (playerId: string) => {
       setSaveData((prevData) => {
-        // Enforce 7 player limit
-        if (prevData.teamRoster.length >= 7) {
-          return prevData
-        }
         // Don't add if already on team
         if (prevData.teamRoster.includes(playerId)) {
           return prevData
@@ -146,7 +142,7 @@ export const useSaveData = () => {
     set: (playerIds: string[]) => {
       setSaveData((prevData) => ({
         ...prevData,
-        teamRoster: playerIds.slice(0, 7) // Enforce max 7
+        teamRoster: playerIds
       }))
     },
     clear: () => {

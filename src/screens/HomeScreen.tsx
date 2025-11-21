@@ -162,8 +162,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               marginBottom: theme.spacing.lg
             }}
           >
-            Select your team of 7 players for the upcoming season. Once you leave the
-            draft screen, you cannot add more players for the rest of the season.
+            Select your team for the upcoming season. Once you leave the draft screen, you
+            cannot add more players for the rest of the season.
           </p>
           <GameButton
             variant="primary"

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import GameButton from '../../components/buttons/GameButton'
 import GameCard from '../../components/cards/GameCard'
 import { PlayerCard } from '../../components/players/PlayerCard'
@@ -6,6 +6,7 @@ import { ScreenProps, Screens } from '../../screen_manager/screens'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { theme } from '../../theme/theme'
 import { generatePlayersByReputation } from '../../utils/playerGeneration'
+import { ConfirmDialog } from '../../components/dialogs/ConfirmDialog'
 
 const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const {
@@ -20,19 +21,25 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     updateSeason
   } = useSaveDataContext()
 
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+
   // Check if we should show confirmation when leaving
   const handleBackClick = () => {
     if (!draftCompleted && season.phase === 'draft') {
-      const confirmed = window.confirm(
-        'Are you sure you want to leave the draft? You will not be able to add more players for the rest of the season.'
-      )
-      if (confirmed) {
-        updateSeason.setDraftCompleted(true)
-        changeScreen(Screens.HOME)
-      }
+      setShowLeaveConfirm(true)
     } else {
       changeScreen(Screens.HOME)
     }
+  }
+
+  const handleConfirmLeave = () => {
+    updateSeason.setDraftCompleted(true)
+    setShowLeaveConfirm(false)
+    changeScreen(Screens.HOME)
+  }
+
+  const handleCancelLeave = () => {
+    setShowLeaveConfirm(false)
   }
 
   // Auto-generate 12 players when screen opens if there are no available players (only during draft phase)
@@ -63,17 +70,12 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }, [players, teamRoster])
 
   const handleDraftPlayer = (playerId: string) => {
-    if (teamRoster.length < 7) {
-      updateTeamRoster.add(playerId)
-    }
+    updateTeamRoster.add(playerId)
   }
 
   const handleRemoveFromTeam = (playerId: string) => {
     updateTeamRoster.remove(playerId)
   }
-
-  const canDraftMore = teamRoster.length < 7
-  const slotsRemaining = 7 - teamRoster.length
 
   return (
     <div
@@ -124,11 +126,7 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       <GameCard
         style={{
           padding: theme.spacing.lg,
-          marginBottom: theme.spacing.xl,
-          backgroundColor:
-            teamRoster.length === 7
-              ? theme.colors.success.light + '20'
-              : theme.colors.warning.light + '20'
+          marginBottom: theme.spacing.xl
         }}
       >
         <div
@@ -158,32 +156,9 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 margin: 0
               }}
             >
-              {teamRoster.length} / 7 players selected
+              {teamRoster.length} player{teamRoster.length !== 1 ? 's' : ''} selected
             </p>
           </div>
-          {canDraftMore ? (
-            <p
-              style={{
-                fontSize: theme.typography.fontSize.lg,
-                fontWeight: theme.typography.fontWeight.semibold,
-                color: theme.colors.warning.main,
-                margin: 0
-              }}
-            >
-              {slotsRemaining} slot{slotsRemaining !== 1 ? 's' : ''} remaining
-            </p>
-          ) : (
-            <p
-              style={{
-                fontSize: theme.typography.fontSize.lg,
-                fontWeight: theme.typography.fontWeight.semibold,
-                color: theme.colors.success.main,
-                margin: 0
-              }}
-            >
-              Team Complete!
-            </p>
-          )}
         </div>
       </GameCard>
 
@@ -273,7 +248,6 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                   size="sm"
                   onClick={() => handleDraftPlayer(player.id)}
                   type="button"
-                  disabled={!canDraftMore}
                   style={{
                     position: 'absolute',
                     top: theme.spacing.sm,
@@ -287,6 +261,17 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={showLeaveConfirm}
+        title="Leave Draft?"
+        message="Are you sure you want to leave the draft? You will not be able to add more players for the rest of the season."
+        confirmText="Leave Draft"
+        cancelText="Continue Drafting"
+        onConfirm={handleConfirmLeave}
+        onCancel={handleCancelLeave}
+        variant="primary"
+      />
     </div>
   )
 }

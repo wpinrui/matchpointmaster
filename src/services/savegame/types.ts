@@ -29,7 +29,7 @@ export type SaveData = {
     reputation: number // 0-100, school's reputation affects player intake quality
   }
   players: Player[] // All available players (draft pool + team)
-  teamRoster: string[] // Array of player IDs that are on the team (max 7)
+  teamRoster: string[] // Array of player IDs that are on the team
   season: {
     year: number
     month: number // 1-12

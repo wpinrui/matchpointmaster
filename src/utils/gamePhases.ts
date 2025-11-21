@@ -96,6 +96,7 @@ export function getNextPhase(
 /**
  * Initialize season data for a new game
  * Returns SeasonData with phase as string (to match SaveData type)
+ * New games always start in January (DRAFT phase)
  */
 export function initializeSeasonData(): {
   year: number
@@ -104,11 +105,11 @@ export function initializeSeasonData(): {
 } {
   const now = new Date()
   const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth() + 1 // JavaScript months are 0-indexed
+  // New games always start in January (month 1) in the DRAFT phase
   return {
     year: currentYear,
-    month: currentMonth,
-    phase: getPhaseForMonth(currentMonth) as string
+    month: 1,
+    phase: GamePhase.DRAFT as string
   }
 }
 
