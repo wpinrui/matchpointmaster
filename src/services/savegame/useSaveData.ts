@@ -19,6 +19,7 @@ import {
   exportSaveSlotToJson,
   getSaveSlot
 } from './saveManager'
+import { downloadJsonFile, sanitizeFilename } from '../../utils/fileDownload'
 
 export const useSaveData = () => {
   const [saveData, setSaveData] = useState<SaveData>(getCurrentSaveData())
@@ -168,15 +169,8 @@ export const useSaveData = () => {
         return
       }
       const json = exportSaveSlotToJson(slot)
-      const blob = new Blob([json], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `${slot.name.replace(/[^a-z0-9]/gi, '_')}_${slot.id.slice(0, 8)}.json`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
+      const filename = `${sanitizeFilename(slot.name)}_${slot.id.slice(0, 8)}.json`
+      downloadJsonFile(json, filename)
     } catch (error) {
       console.error('Error exporting save file:', error)
       alert('Failed to export save file. Please try again.')
@@ -230,34 +224,24 @@ export const useSaveData = () => {
     setCurrentSaveId(null)
   }
 
+  // Helper to update season properties
+  const updateSeasonProperty = <K extends keyof SaveData['season']>(
+    key: K,
+    value: SaveData['season'][K]
+  ) => {
+    setSaveData((prevData) => ({
+      ...prevData,
+      season: {
+        ...prevData.season,
+        [key]: value
+      }
+    }))
+  }
+
   const updateSeason = {
-    setPhase: (phase: string) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        season: {
-          ...prevData.season,
-          phase
-        }
-      }))
-    },
-    setMonth: (month: number) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        season: {
-          ...prevData.season,
-          month
-        }
-      }))
-    },
-    setYear: (year: number) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        season: {
-          ...prevData.season,
-          year
-        }
-      }))
-    },
+    setPhase: (phase: string) => updateSeasonProperty('phase', phase),
+    setMonth: (month: number) => updateSeasonProperty('month', month),
+    setYear: (year: number) => updateSeasonProperty('year', year),
     setDraftCompleted: (completed: boolean) => {
       setSaveData((prevData) => ({
         ...prevData,

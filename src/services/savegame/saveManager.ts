@@ -2,8 +2,8 @@
  * Save Manager - Handles multiple save slots in localStorage
  */
 
-import { initializeSeasonData } from '../../utils/gamePhases'
 import { initialSaveData } from './initialSaveData'
+import { migrateSaveData, needsMigration } from './migrations'
 import { SaveData } from './types'
 
 export type SaveSlot = {
@@ -138,7 +138,7 @@ export const clearCurrentSaveId = (): void => {
 
 /**
  * Get the current active save data
- * Ensures backward compatibility by adding missing stats if needed
+ * Ensures backward compatibility by migrating old save data if needed
  */
 export const getCurrentSaveData = (): SaveData => {
   const currentSaveId = getCurrentSaveId()
@@ -150,43 +150,15 @@ export const getCurrentSaveData = (): SaveData => {
     return initialSaveData
   }
 
-  // Ensure backward compatibility: add stats if missing
-  const data = { ...slot.data }
-  if (!data.manager.stats) {
-    data.manager.stats = {
-      reputation: 15,
-      coachingEffectiveness: 15
-    }
-  }
-  // Ensure backward compatibility: add teamRoster if missing
-  if (!data.teamRoster) {
-    data.teamRoster = []
-  }
-  // Ensure backward compatibility: add school reputation if missing
-  if (data.school.reputation === undefined) {
-    data.school.reputation = 15
-  }
-  // Ensure backward compatibility: add season data if missing
-  if (!data.season) {
-    data.season = initializeSeasonData()
-  }
-  // Ensure backward compatibility: add draftCompleted if missing
-  if (data.draftCompleted === undefined) {
-    data.draftCompleted = false
+  // Migrate data if needed
+  if (needsMigration(slot.data)) {
+    const migratedData = migrateSaveData(slot.data)
+    // Update the slot with migrated data
+    updateSaveSlot(currentSaveId, migratedData)
+    return migratedData
   }
 
-  // Update the slot with migrated data if needed
-  if (
-    !slot.data.manager.stats ||
-    !slot.data.teamRoster ||
-    slot.data.school.reputation === undefined ||
-    !slot.data.season ||
-    slot.data.draftCompleted === undefined
-  ) {
-    updateSaveSlot(currentSaveId, data)
-  }
-
-  return data
+  return slot.data
 }
 
 /**

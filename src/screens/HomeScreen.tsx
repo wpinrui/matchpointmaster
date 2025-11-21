@@ -2,31 +2,18 @@ import React, { useMemo } from 'react'
 import GameButton from '../components/buttons/GameButton'
 import GameCard from '../components/cards/GameCard'
 import { EmailCard } from '../components/emails/EmailCard'
+import { TimelineItem } from '../components/home/TimelineItem'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { Email } from '../services/savegame/types'
 import { theme } from '../theme/theme'
+import { MONTH_NAMES } from '../utils/constants'
 import { GamePhase, getPhaseDisplayName } from '../utils/gamePhases'
 
 const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const { season, draftCompleted, emails, markEmailAsRead } = useSaveDataContext()
 
   const phaseDisplayName = getPhaseDisplayName(season.phase as GamePhase, season.month)
-
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ]
 
   const isDraftPhase = season.phase === GamePhase.DRAFT && !draftCompleted
 
@@ -79,7 +66,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             margin: 0
           }}
         >
-          {monthNames[season.month - 1]} {season.year}
+          {MONTH_NAMES[season.month - 1]} {season.year}
         </p>
       </div>
 
@@ -436,93 +423,6 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           )}
         </div>
       </div>
-    </div>
-  )
-}
-
-interface TimelineItemProps {
-  month: number
-  label: string
-  currentMonth: number
-  completed?: boolean
-}
-
-const TimelineItem: React.FC<TimelineItemProps> = ({
-  month,
-  label,
-  currentMonth,
-  completed = false
-}) => {
-  const isCurrent = month === currentMonth
-  const isPast = month < currentMonth || completed
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: theme.spacing.md,
-        padding: theme.spacing.sm,
-        borderRadius: theme.borderRadius.md,
-        background: isCurrent
-          ? theme.colors.primary.light + '20'
-          : isPast
-            ? theme.colors.neutral.gray100
-            : 'transparent',
-        border: isCurrent ? `2px solid ${theme.colors.primary.main}` : 'none'
-      }}
-    >
-      <div
-        style={{
-          minWidth: '80px',
-          fontSize: theme.typography.fontSize.sm,
-          fontWeight: theme.typography.fontWeight.semibold,
-          color: isCurrent
-            ? theme.colors.primary.main
-            : isPast
-              ? theme.colors.text.secondary
-              : theme.colors.text.primary
-        }}
-      >
-        Month {month}
-      </div>
-      <div
-        style={{
-          flex: 1,
-          fontSize: theme.typography.fontSize.base,
-          color: isCurrent
-            ? theme.colors.text.primary
-            : isPast
-              ? theme.colors.text.secondary
-              : theme.colors.text.primary,
-          textDecoration: isPast && !isCurrent ? 'line-through' : 'none',
-          opacity: isPast && !isCurrent ? 0.6 : 1
-        }}
-      >
-        {label}
-      </div>
-      {isCurrent && (
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.sm,
-            color: theme.colors.primary.main,
-            fontWeight: theme.typography.fontWeight.bold
-          }}
-        >
-          Current
-        </span>
-      )}
-      {completed && month === currentMonth && (
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.sm,
-            color: theme.colors.success.main,
-            fontWeight: theme.typography.fontWeight.bold
-          }}
-        >
-          ✓ Completed
-        </span>
-      )}
     </div>
   )
 }

@@ -1,8 +1,9 @@
 import React from 'react'
-import { Email, EmailTag } from '../../services/savegame/types'
+import { Email } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import GameCard from '../cards/GameCard'
 import { formatEmailDateShort } from '../../utils/emailDateFormatter'
+import { emailTagColors } from './emailTagColors'
 
 interface EmailCardProps {
   email: Email
@@ -10,16 +11,6 @@ interface EmailCardProps {
   onClick: () => void
   currentSeasonYear?: number
   currentSeasonMonth?: number
-}
-
-const tagColors: Record<EmailTag, string> = {
-  [EmailTag.WELCOME]: theme.colors.primary.main,
-  [EmailTag.NEWS]: theme.colors.secondary.main,
-  [EmailTag.DRAFT]: theme.colors.warning.main,
-  [EmailTag.TOURNAMENT]: theme.colors.success.main,
-  [EmailTag.TRAINING]: theme.colors.secondary.main,
-  [EmailTag.ADMINISTRATIVE]: theme.colors.neutral.gray600,
-  [EmailTag.SOCIAL]: theme.colors.accent.main
 }
 
 export const EmailCard: React.FC<EmailCardProps> = ({
@@ -164,8 +155,8 @@ export const EmailCard: React.FC<EmailCardProps> = ({
                       fontSize: theme.typography.fontSize.xs,
                       padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
                       borderRadius: theme.borderRadius.sm,
-                      backgroundColor: tagColors[tag] + '20',
-                      color: tagColors[tag],
+                    backgroundColor: emailTagColors[tag] + '20',
+                    color: emailTagColors[tag],
                       fontWeight: theme.typography.fontWeight.medium
                     }}
                   >

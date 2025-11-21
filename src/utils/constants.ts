@@ -1,10 +1,18 @@
-import { Gender } from '../services/savegame/types'
-
 /**
- * Gender options for form dropdowns
+ * Shared constants used across the application
  */
-export const GENDER_OPTIONS = [
-  { value: '', label: 'Select Gender' },
-  { value: Gender.MALE, label: 'Male' },
-  { value: Gender.FEMALE, label: 'Female' }
+
+export const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
 ] as const
