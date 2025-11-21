@@ -105,11 +105,11 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       const saveName = schoolData.name || `${managerData.fullName || 'New Game'}'s Save`
 
       // Determine team type based on school ranking
-      // Use school name as seed for consistent randomization
+      // Don't use seed for new games - let it be truly random
       const teamType = determineSchoolTeamType(
         schoolData.reputation,
-        schoolData.funding,
-        schoolData.name || saveName
+        schoolData.funding
+        // No seed - use true randomization for new games
       )
 
       // Create save with combined data

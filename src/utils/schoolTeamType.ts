@@ -24,14 +24,18 @@ export function determineSchoolTeamType(
     // Use seed for consistency if provided
     let randomValue: number
     if (seed) {
-      // Simple hash of seed for pseudo-random but consistent result
+      // Better hash function for pseudo-random but consistent result
+      // This ensures better distribution between boys and girls
       let hash = 0
       for (let i = 0; i < seed.length; i++) {
         const char = seed.charCodeAt(i)
         hash = (hash << 5) - hash + char
-        hash = hash & hash // Convert to 32-bit integer
+        hash = hash | 0 // Convert to 32-bit integer
       }
-      randomValue = Math.abs(hash) % 2
+      // Use absolute value and modulo 2, but add some mixing
+      // Add reputation and funding to the hash for more variation
+      const combinedHash = Math.abs(hash) + reputation + funding
+      randomValue = combinedHash % 2
     } else {
       randomValue = Math.random() < 0.5 ? 0 : 1
     }
@@ -42,4 +46,3 @@ export function determineSchoolTeamType(
     return 'both'
   }
 }
-

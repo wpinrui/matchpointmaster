@@ -178,9 +178,10 @@ export function calculateIntakeQuality(
 
 export function generatePlayer(
   quality: IntakeQuality = IntakeQuality.AVERAGE,
-  year: number = 1
+  year: number = 1,
+  genderOverride?: Gender
 ): Player {
-  const gender = randomFromArray([Gender.MALE, Gender.FEMALE])
+  const gender = genderOverride || randomFromArray([Gender.MALE, Gender.FEMALE])
   const { firstName, lastName } = generateName(gender)
   const skills = generateSkills(quality, gender)
   const elo = calculateElo(skills)
@@ -294,8 +295,8 @@ export function generatePlayersByReputation(
 /**
  * Generate worst possible player (for when draft pool runs out)
  */
-export function generateWorstPlayer(year: number = 1): Player {
-  return generatePlayer(IntakeQuality.POOR, year)
+export function generateWorstPlayer(year: number = 1, genderOverride?: Gender): Player {
+  return generatePlayer(IntakeQuality.POOR, year, genderOverride)
 }
 
 /**

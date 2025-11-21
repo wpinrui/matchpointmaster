@@ -1,4 +1,5 @@
 import { Email, EmailTag, SaveData } from '../services/savegame/types'
+import { calculateMaxTeamSize } from './schoolReputation'
 import { getTeamCompositionRequirements } from './teamTypeDisplay'
 
 /**
@@ -33,6 +34,7 @@ export function generateInitialEmails(saveData: SaveData): Email[] {
   const year = season.year
   const schoolName = school.name || 'the school'
   const managerName = manager.fullName || 'Coach'
+  const maxTeamSize = calculateMaxTeamSize(school.funding)
 
   // Welcome email - sent 2 days before current date (January 1st)
   const welcomeEmail: Email = {
@@ -47,16 +49,21 @@ As you begin your journey with us, here are some important guidelines to keep in
 
 ## Team Type
 
-${school.teamType === 'boys'
-        ? 'This school fields a **Boys Only** team. You will be managing the boys\' table tennis program.'
-        : school.teamType === 'girls'
-          ? 'This school fields a **Girls Only** team. You will be managing the girls\' table tennis program.'
-          : 'This school fields **Both Boys and Girls** teams. You will be managing both programs.'
-      }
+${
+  school.teamType === 'boys'
+    ? "This school fields a **Boys Only** team. You will be managing the boys' table tennis program."
+    : school.teamType === 'girls'
+      ? "This school fields a **Girls Only** team. You will be managing the girls' table tennis program."
+      : 'This school fields **Both Boys and Girls** teams. You will be managing both programs.'
+}
 
 ## Team Composition Requirements
 
 ${getTeamCompositionRequirements(school.teamType || 'both')}
+
+## Team Size Limit
+
+Based on the school's current funding, you can have a maximum of **${maxTeamSize}** players on your team. This limit is determined by the school's financial resources and will change as funding improves or decreases based on performance.
 
 ## Draft Phase
 
@@ -74,7 +81,7 @@ Best of luck with the upcoming season!
 
 Sincerely,
 School Administration`,
-    timestamp: getInGameTimestamp(year, 1, 1, 9, 0), // January 1st, 9:00 AM
+    timestamp: getInGameTimestamp(year, 1, 1, 11, 0), // January 1st, 8:00 AM (earlier to show first)
     read: false,
     tags: [EmailTag.WELCOME, EmailTag.DRAFT]
   }
@@ -107,7 +114,7 @@ This is an exciting time for table tennis enthusiasts at ${schoolName}, and we l
 ---
 
 *Article forwarded by School Administration*`,
-    timestamp: getInGameTimestamp(year, 1, 1, 14, 30), // January 1st, 2:30 PM
+    timestamp: getInGameTimestamp(year, 1, 1, 10, 0), // January 1st, 10:00 AM (later than welcome)
     read: false,
     tags: [EmailTag.NEWS, EmailTag.SOCIAL]
   }

@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react'
+import GameButton from '../../components/buttons/GameButton'
+import GameCard from '../../components/cards/GameCard'
+import { PlayerCard } from '../../components/players/PlayerCard'
 import { ScreenProps } from '../../screen_manager/screens'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
-import { PlayerCard } from '../../components/players/PlayerCard'
-import GameButton from '../../components/buttons/GameButton'
 import { theme } from '../../theme/theme'
-import GameCard from '../../components/cards/GameCard'
+import { calculateMaxTeamSize } from '../../utils/schoolReputation'
 
 const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const { players, teamRoster, updateTeamRoster, school } = useSaveDataContext()
@@ -49,6 +50,11 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       upperSecondary
     }
   }, [teamPlayers])
+
+  // Calculate max team size based on funding
+  const maxTeamSize = useMemo(() => {
+    return calculateMaxTeamSize(school.funding)
+  }, [school.funding])
 
   const handleRemoveFromTeam = (playerId: string) => {
     updateTeamRoster.remove(playerId)
@@ -96,11 +102,11 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 fontStyle: 'italic'
               }}
             >
-              {school.teamType === 'boys' 
-                ? 'Boys Only Team' 
-                : school.teamType === 'girls' 
-                ? 'Girls Only Team' 
-                : 'Both Boys and Girls Teams'}
+              {school.teamType === 'boys'
+                ? 'Boys Only Team'
+                : school.teamType === 'girls'
+                  ? 'Girls Only Team'
+                  : 'Both Boys and Girls Teams'}
             </p>
           )}
         </div>
@@ -151,7 +157,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 margin: 0
               }}
             >
-              {teamStats.totalPlayers} / 7
+              {teamStats.totalPlayers} / {maxTeamSize}
             </p>
           </div>
           <div style={{ textAlign: 'center' }}>

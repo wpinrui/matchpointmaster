@@ -164,7 +164,12 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
                     marginBottom: theme.spacing.sm
                   }}
                 >
-                  Team Type: {school.teamType === 'boys' ? 'Boys Only' : school.teamType === 'girls' ? 'Girls Only' : 'Both Teams'}
+                  Team Type:{' '}
+                  {school.teamType === 'boys'
+                    ? 'Boys Only'
+                    : school.teamType === 'girls'
+                      ? 'Girls Only'
+                      : 'Both Teams'}
                 </p>
               )}
               {school.reputation !== undefined && (
@@ -189,7 +194,7 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
                   >
                     <div
                       style={{
-                        width: `${Math.min(100, (100 - school.reputation) * 100 / 100)}%`,
+                        width: `${Math.min(100, ((100 - school.reputation) * 100) / 100)}%`,
                         height: '100%',
                         background: theme.colors.secondary.main,
                         borderRadius: theme.borderRadius.sm,

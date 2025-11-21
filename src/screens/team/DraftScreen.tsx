@@ -5,14 +5,13 @@ import { ConfirmDialog } from '../../components/dialogs/ConfirmDialog'
 import { PlayerCard } from '../../components/players/PlayerCard'
 import { ScreenProps, Screens } from '../../screen_manager/screens'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
+import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
-import {
-  generatePlayer,
-  generateWorstPlayer,
-  IntakeQuality
-} from '../../utils/playerGeneration'
+import { generatePlayer, IntakeQuality } from '../../utils/playerGeneration'
 import {
   attractivenessToIntakeQuality,
+  calculateMaxTeamSize,
+  calculatePlayerPoolSize,
   calculateSchoolAttractiveness,
   calculateSchoolReputation
 } from '../../utils/schoolReputation'
@@ -31,7 +30,12 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   } = useSaveDataContext()
 
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
-  const lastGeneratedCountRef = useRef<number>(0)
+  const hasGeneratedInitialPoolRef = useRef<boolean>(false)
+
+  // Helper to pick a random element from an array
+  const randomFromArray = <T,>(array: T[]): T => {
+    return array[Math.floor(Math.random() * array.length)]
+  }
 
   // Check if we should show confirmation when leaving
   const handleBackClick = () => {
@@ -53,9 +57,19 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   // Get players not on the team (available for draft)
+  // Filter by school team type: boys-only shows only boys, girls-only shows only girls, both shows all
   const availablePlayers = useMemo(() => {
-    return players.filter((p) => !teamRoster.includes(p.id))
-  }, [players, teamRoster])
+    const allAvailable = players.filter((p) => !teamRoster.includes(p.id))
+
+    // Filter by team type
+    if (school.teamType === 'boys') {
+      return allAvailable.filter((p) => p.gender === Gender.MALE)
+    } else if (school.teamType === 'girls') {
+      return allAvailable.filter((p) => p.gender === Gender.FEMALE)
+    }
+    // 'both' shows all players
+    return allAvailable
+  }, [players, teamRoster, school.teamType])
 
   // Calculate school reputation from history
   const calculatedSchoolReputation = useMemo(() => {
@@ -72,86 +86,83 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     )
   }, [calculatedSchoolReputation, school.funding, manager.stats])
 
-  // Get intake quality and pool size based on attractiveness
+  // Get intake quality based on attractiveness
   const intakeInfo = useMemo(() => {
     return attractivenessToIntakeQuality(schoolAttractiveness)
   }, [schoolAttractiveness])
 
-  // Auto-generate players when screen opens if there are no available players (only during draft phase)
-  useEffect(() => {
-    if (season.phase === 'draft' && !draftCompleted) {
-      const availableCount = availablePlayers.length
-      if (availableCount === 0 && manager.stats) {
-        const poolSize = intakeInfo.poolSize
-        const intakeQualityMap: Record<string, IntakeQuality> = {
-          poor: IntakeQuality.POOR,
-          below_average: IntakeQuality.BELOW_AVERAGE,
-          average: IntakeQuality.AVERAGE,
-          above_average: IntakeQuality.ABOVE_AVERAGE,
-          excellent: IntakeQuality.EXCELLENT
-        }
-        const playerQuality =
-          intakeQualityMap[intakeInfo.quality] || IntakeQuality.AVERAGE
-
-        const newPlayers = Array.from({ length: poolSize }, () =>
-          generatePlayer(playerQuality, 1)
-        )
-        updatePlayers.set([...players, ...newPlayers])
-        lastGeneratedCountRef.current = poolSize
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Only run once on mount
-
   // Calculate max team size based on funding
-  // Minimum: 14 players (low rank schools can only afford either boys or girls)
-  // Better funding = more slots for development
   const maxTeamSize = useMemo(() => {
-    const baseSize = 14 // Minimum required (can only afford one gender)
-    const funding = school.funding || 50
-    // Lower funding rank = better funding = more slots
-    // Scale from 14 (worst funding) to 48 (best funding)
-    const additionalSlots = Math.round(((50 - funding) / 50) * 34) // Up to 34 extra slots
-    return baseSize + additionalSlots
+    return calculateMaxTeamSize(school.funding)
   }, [school.funding])
 
-  // Auto-generate one worst player when available players run out (only during draft phase)
+  // Generate initial player pool ONCE when draft screen first loads
+  // Only if there are no players yet and we haven't already generated
   useEffect(() => {
-    if (season.phase === 'draft' && !draftCompleted) {
-      const availableCount = availablePlayers.length
-      const currentTeamSize = teamRoster.length
-
-      // Only generate if:
-      // 1. We have 0 available players
-      // 2. We haven't just generated one
-      // 3. Team hasn't reached funding limit
-      if (
-        availableCount === 0 &&
-        lastGeneratedCountRef.current === 0 &&
-        currentTeamSize < maxTeamSize
-      ) {
-        // Generate worst possible player
-        const newPlayer = generateWorstPlayer(1)
-        updatePlayers.set([...players, newPlayer])
-        lastGeneratedCountRef.current = 1
-      } else if (availableCount > 0 && lastGeneratedCountRef.current === 1) {
-        // Reset the ref when we have players available again (after generating 1)
-        lastGeneratedCountRef.current = 0
-      }
+    // Only run during draft phase
+    if (season.phase !== 'draft' || draftCompleted) {
+      return
     }
+
+    // Only generate if we haven't already generated and there are no players
+    if (hasGeneratedInitialPoolRef.current || players.length > 0) {
+      return
+    }
+
+    // Only generate if we have manager stats
+    if (!manager.stats) {
+      return
+    }
+
+    // Calculate pool size (7-15) based on school attractiveness
+    const poolSize = calculatePlayerPoolSize(schoolAttractiveness)
+
+    // Get player quality based on attractiveness
+    const intakeQualityMap: Record<string, IntakeQuality> = {
+      poor: IntakeQuality.POOR,
+      below_average: IntakeQuality.BELOW_AVERAGE,
+      average: IntakeQuality.AVERAGE,
+      above_average: IntakeQuality.ABOVE_AVERAGE,
+      excellent: IntakeQuality.EXCELLENT
+    }
+    const playerQuality = intakeQualityMap[intakeInfo.quality] || IntakeQuality.AVERAGE
+
+    // Determine which gender(s) to generate based on team type
+    const gendersToGenerate: Gender[] =
+      school.teamType === 'boys'
+        ? [Gender.MALE]
+        : school.teamType === 'girls'
+          ? [Gender.FEMALE]
+          : [Gender.MALE, Gender.FEMALE]
+
+    // Generate all players at once
+    const newPlayers = Array.from({ length: poolSize }, () => {
+      const gender = randomFromArray(gendersToGenerate)
+      return generatePlayer(playerQuality, 1, gender)
+    })
+
+    // Mark as generated BEFORE updating to prevent double generation
+    hasGeneratedInitialPoolRef.current = true
+
+    // Update players - this is the ONLY time we generate players
+    updatePlayers.set([...players, ...newPlayers])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    availablePlayers.length,
-    season.phase,
-    draftCompleted,
-    teamRoster.length,
-    maxTeamSize
-  ])
+  }, []) // Only run once on mount - never again
 
   // Get players currently on the team
+  // Filter by school team type: boys-only shows only boys, girls-only shows only girls, both shows all
   const teamPlayers = useMemo(() => {
-    return players.filter((p) => teamRoster.includes(p.id))
-  }, [players, teamRoster])
+    const allTeamPlayers = players.filter((p) => teamRoster.includes(p.id))
+
+    // Filter by team type
+    if (school.teamType === 'boys') {
+      return allTeamPlayers.filter((p) => p.gender === Gender.MALE)
+    } else if (school.teamType === 'girls') {
+      return allTeamPlayers.filter((p) => p.gender === Gender.FEMALE)
+    }
+    // 'both' shows all players
+    return allTeamPlayers
+  }, [players, teamRoster, school.teamType])
 
   const handleDraftPlayer = (playerId: string) => {
     updateTeamRoster.add(playerId)
@@ -311,11 +322,7 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               color: theme.colors.text.secondary
             }}
           >
-            <p style={{ fontSize: theme.typography.fontSize.lg }}>
-              {season.phase === 'draft' && !draftCompleted
-                ? 'No available players. A new player will be generated automatically.'
-                : 'No available players.'}
-            </p>
+            <p style={{ fontSize: theme.typography.fontSize.lg }}>No more players.</p>
           </div>
         ) : (
           <div
