@@ -32,7 +32,11 @@ export const initialSaveData: SaveData = {
     primaryColor: '#FF6B35',
     secondaryColor: '#004E89',
     accentColor: '#FFD23F',
-    reputation: 15 // Starting school reputation (low, new school)
+    reputation: 100, // Starting reputation rank (100th place, trash school)
+    funding: 100, // Starting funding rank (100th place, trash school)
+    reputationHistory: [], // Will be populated as seasons progress
+    fundingHistory: [], // Will be populated as seasons progress
+    teamType: 'both' // Will be determined when game is created based on ranking
   },
   players: [], // All available players
   teamRoster: [], // Player IDs on the team

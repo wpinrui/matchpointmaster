@@ -1,21 +1,25 @@
 import React, { useState } from 'react'
 import BackgroundImage from '../../assets/tabletennisphoto.jpg'
+import GameButton from '../../components/buttons/GameButton'
 import { ScreenProps, Screens } from '../../screen_manager/screens'
 import { initialSaveData } from '../../services/savegame/initialSaveData'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import {
-  SaveData,
-  Gender,
-  Handedness,
-  RubberType,
-  GripStyle,
   FavourStyle,
-  PlayStyle
+  Gender,
+  GripStyle,
+  Handedness,
+  PlayStyle,
+  RubberType,
+  SaveData
 } from '../../services/savegame/types'
-import { generateInitialEmails } from '../../utils/emailGenerator'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import { theme } from '../../theme/theme'
+import { generateCrestSvg } from '../../utils/crestGenerator'
+import { generateInitialEmails } from '../../utils/emailGenerator'
+import { generateRandomFace } from '../../utils/faceGeneration'
 import { initializeSeasonData } from '../../utils/gamePhases'
+import { determineSchoolTeamType } from '../../utils/schoolTeamType'
 import {
   ManagerValidationErrors,
   SchoolValidationErrors,
@@ -24,9 +28,6 @@ import {
 } from '../../utils/validation'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
-import GameButton from '../../components/buttons/GameButton'
-import { generateRandomFace } from '../../utils/faceGeneration'
-import { generateCrestSvg } from '../../utils/crestGenerator'
 
 enum Step {
   Manager = 'Manager',
@@ -102,10 +103,22 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       saveSchoolStateToContext()
       // Create a new save slot with the school name or a default name
       const saveName = schoolData.name || `${managerData.fullName || 'New Game'}'s Save`
+
+      // Determine team type based on school ranking
+      // Use school name as seed for consistent randomization
+      const teamType = determineSchoolTeamType(
+        schoolData.reputation,
+        schoolData.funding,
+        schoolData.name || saveName
+      )
+
       // Create save with combined data
       const combinedData: SaveData = {
         manager: managerData,
-        school: schoolData,
+        school: {
+          ...schoolData,
+          teamType
+        },
         players: [], // Initialize with empty players array
         teamRoster: [], // Initialize with empty team roster
         season: initializeSeasonData(),
@@ -174,13 +187,26 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     setManagerData(debugManagerData)
 
     // Fill school with default debug values
+    // For debug, use trash school ranking to get single-gender team
+    const debugReputation = 100 // Trash school
+    const debugFunding = 100 // Trash school
+    const debugTeamType = determineSchoolTeamType(
+      debugReputation,
+      debugFunding,
+      'Test High School'
+    )
+
     const debugSchoolData: SaveData['school'] = {
       name: 'Test High School',
       crestPath: defaultSchoolCrest,
       primaryColor: '#FF6B35',
       secondaryColor: '#004E89',
       accentColor: '#FFD23F',
-      reputation: 15
+      reputation: debugReputation,
+      funding: debugFunding,
+      reputationHistory: [],
+      fundingHistory: [],
+      teamType: debugTeamType
     }
     setSchoolData(debugSchoolData)
 

@@ -292,6 +292,13 @@ export function generatePlayersByReputation(
 }
 
 /**
+ * Generate worst possible player (for when draft pool runs out)
+ */
+export function generateWorstPlayer(year: number = 1): Player {
+  return generatePlayer(IntakeQuality.POOR, year)
+}
+
+/**
  * Generate multiple players (legacy function for backward compatibility)
  */
 export function generatePlayers(

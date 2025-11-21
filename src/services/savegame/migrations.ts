@@ -28,7 +28,22 @@ export function migrateSaveData(data: SaveData): SaveData {
 
   // Ensure school reputation exists
   if (migrated.school.reputation === undefined) {
-    migrated.school.reputation = 15
+    migrated.school.reputation = 50 // Default starting reputation rank
+  }
+
+  // Ensure school funding exists
+  if (migrated.school.funding === undefined) {
+    migrated.school.funding = 50 // Default starting funding rank
+  }
+
+  // Ensure school reputation history exists
+  if (!migrated.school.reputationHistory) {
+    migrated.school.reputationHistory = []
+  }
+
+  // Ensure school funding history exists
+  if (!migrated.school.fundingHistory) {
+    migrated.school.fundingHistory = []
   }
 
   // Ensure season data exists
@@ -57,6 +72,10 @@ export function needsMigration(data: SaveData): boolean {
     !data.manager.stats ||
     !data.teamRoster ||
     data.school.reputation === undefined ||
+    data.school.funding === undefined ||
+    !data.school.reputationHistory ||
+    !data.school.fundingHistory ||
+    !data.school.teamType ||
     !data.season ||
     data.draftCompleted === undefined ||
     !data.emails

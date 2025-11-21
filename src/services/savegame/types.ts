@@ -26,7 +26,11 @@ export type SaveData = {
     primaryColor: string
     secondaryColor: string
     accentColor: string
-    reputation: number // 0-100, school's reputation affects player intake quality
+    reputation: number // Current reputation (lower is better, 1st is best)
+    funding: number // Current funding rank (lower is better, 1st is best)
+    reputationHistory: number[] // Past 10 years of reputation rankings
+    fundingHistory: number[] // Past 10 years of funding rankings
+    teamType: 'boys' | 'girls' | 'both' // Whether school has boys-only, girls-only, or both teams
   }
   players: Player[] // All available players (draft pool + team)
   teamRoster: string[] // Array of player IDs that are on the team

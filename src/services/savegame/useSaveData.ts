@@ -88,7 +88,9 @@ export const useSaveData = () => {
     secondaryColor: (color: string) => updateAttribute('school', 'secondaryColor', color),
     accentColor: (color: string) => updateAttribute('school', 'accentColor', color),
     reputation: (reputation: number) =>
-      updateAttribute('school', 'reputation', reputation)
+      updateAttribute('school', 'reputation', reputation),
+    teamType: (teamType: 'boys' | 'girls' | 'both') =>
+      updateAttribute('school', 'teamType', teamType)
   }
 
   const updatePlayers = {

@@ -1,4 +1,5 @@
 import { Email, EmailTag, SaveData } from '../services/savegame/types'
+import { getTeamCompositionRequirements } from './teamTypeDisplay'
 
 /**
  * Generate a timestamp based on in-game date
@@ -44,11 +45,18 @@ Welcome to your new position as the Table Tennis Team Manager at ${schoolName}! 
 
 As you begin your journey with us, here are some important guidelines to keep in mind:
 
+## Team Type
+
+${school.teamType === 'boys'
+        ? 'This school fields a **Boys Only** team. You will be managing the boys\' table tennis program.'
+        : school.teamType === 'girls'
+          ? 'This school fields a **Girls Only** team. You will be managing the girls\' table tennis program.'
+          : 'This school fields **Both Boys and Girls** teams. You will be managing both programs.'
+      }
+
 ## Team Composition Requirements
 
-- You must draft at least 7 Secondary 1 girls to field a team for the C Division Girls competition
-- You must draft at least 7 Secondary 1 boys to field a team for the C Division Boys competition
-- These are the minimum requirements to participate in the competitions
+${getTeamCompositionRequirements(school.teamType || 'both')}
 
 ## Draft Phase
 

@@ -7,7 +7,7 @@ import { theme } from '../../theme/theme'
 import GameCard from '../../components/cards/GameCard'
 
 const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
-  const { players, teamRoster, updateTeamRoster } = useSaveDataContext()
+  const { players, teamRoster, updateTeamRoster, school } = useSaveDataContext()
 
   // Get players currently on the team
   const teamPlayers = useMemo(() => {
@@ -71,20 +71,39 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           marginBottom: theme.spacing.xl
         }}
       >
-        <h1
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize['3xl'],
-            fontWeight: theme.typography.fontWeight.extrabold,
-            background: theme.gradients.primary,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            margin: 0
-          }}
-        >
-          Team Overview
-        </h1>
+        <div style={{ flex: 1 }}>
+          <h1
+            style={{
+              fontFamily: theme.typography.fontFamily.heading,
+              fontSize: theme.typography.fontSize['3xl'],
+              fontWeight: theme.typography.fontWeight.extrabold,
+              background: theme.gradients.primary,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: 0,
+              marginBottom: theme.spacing.xs
+            }}
+          >
+            Team Overview
+          </h1>
+          {school.teamType && (
+            <p
+              style={{
+                fontSize: theme.typography.fontSize.base,
+                color: theme.colors.text.secondary,
+                margin: 0,
+                fontStyle: 'italic'
+              }}
+            >
+              {school.teamType === 'boys' 
+                ? 'Boys Only Team' 
+                : school.teamType === 'girls' 
+                ? 'Girls Only Team' 
+                : 'Both Boys and Girls Teams'}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Team Statistics */}

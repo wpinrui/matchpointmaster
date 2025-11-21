@@ -154,6 +154,19 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
               >
                 {school.name}
               </h3>
+              {school.teamType && (
+                <p
+                  style={{
+                    fontSize: theme.typography.fontSize.base,
+                    color: theme.colors.text.primary,
+                    fontWeight: theme.typography.fontWeight.semibold,
+                    marginTop: theme.spacing.xs,
+                    marginBottom: theme.spacing.sm
+                  }}
+                >
+                  Team Type: {school.teamType === 'boys' ? 'Boys Only' : school.teamType === 'girls' ? 'Girls Only' : 'Both Teams'}
+                </p>
+              )}
               {school.reputation !== undefined && (
                 <div style={{ marginTop: theme.spacing.md }}>
                   <p
@@ -163,7 +176,7 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
                       marginBottom: theme.spacing.xs
                     }}
                   >
-                    School Reputation: {school.reputation}
+                    School Reputation Rank: {school.reputation}
                   </p>
                   <div
                     style={{
@@ -176,7 +189,7 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
                   >
                     <div
                       style={{
-                        width: `${school.reputation}%`,
+                        width: `${Math.min(100, (100 - school.reputation) * 100 / 100)}%`,
                         height: '100%',
                         background: theme.colors.secondary.main,
                         borderRadius: theme.borderRadius.sm,
@@ -184,6 +197,19 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
                       }}
                     />
                   </div>
+                </div>
+              )}
+              {school.funding !== undefined && (
+                <div style={{ marginTop: theme.spacing.sm }}>
+                  <p
+                    style={{
+                      fontSize: theme.typography.fontSize.sm,
+                      color: theme.colors.text.secondary,
+                      marginBottom: theme.spacing.xs
+                    }}
+                  >
+                    School Funding Rank: {school.funding}
+                  </p>
                 </div>
               )}
             </div>
