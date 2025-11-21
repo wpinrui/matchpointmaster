@@ -26,6 +26,10 @@ const loadFromLocalStorage = (): SaveData => {
       'manager' in parsed &&
       'school' in parsed
     ) {
+      // Ensure players array exists
+      if (!parsed.players || !Array.isArray(parsed.players)) {
+        parsed.players = []
+      }
       return parsed as SaveData
     }
     console.warn('Invalid save data structure, using initial data')
@@ -98,6 +102,35 @@ export const useSaveData = () => {
     accentColor: (color: string) => updateAttribute('school', 'accentColor', color)
   }
 
+  const updatePlayers = {
+    add: (player: SaveData['players'][0]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        players: [...prevData.players, player]
+      }))
+    },
+    remove: (playerId: string) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        players: prevData.players.filter((p) => p.id !== playerId)
+      }))
+    },
+    set: (players: SaveData['players']) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        players
+      }))
+    },
+    update: (playerId: string, updates: Partial<SaveData['players'][0]>) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        players: prevData.players.map((p) =>
+          p.id === playerId ? { ...p, ...updates } : p
+        )
+      }))
+    }
+  }
+
   const saveToFile = () => {
     try {
       const json = JSON.stringify(saveData, null, 2)
@@ -131,8 +164,10 @@ export const useSaveData = () => {
     saveData,
     manager: saveData.manager,
     school: saveData.school,
+    players: saveData.players,
     updateManager,
     updateSchool,
+    updatePlayers,
     saveToFile,
     loadFromLocalStorageData,
     resetSaveData

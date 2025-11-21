@@ -27,5 +27,6 @@ export const initialSaveData: SaveData = {
     primaryColor: '#FF6B35',
     secondaryColor: '#004E89',
     accentColor: '#FFD23F'
-  }
+  },
+  players: []
 }

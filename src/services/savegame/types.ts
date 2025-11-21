@@ -18,6 +18,7 @@ export type SaveData = {
     secondaryColor: string
     accentColor: string
   }
+  players: Player[]
 }
 
 export enum Gender {
@@ -66,4 +67,39 @@ export enum GripStyle {
 export enum Handedness {
   RIGHT = 'Right',
   LEFT = 'Left'
+}
+
+/**
+ * Player skills (0-100 scale)
+ */
+export type PlayerSkills = {
+  forehand: number // Forehand stroke quality
+  backhand: number // Backhand stroke quality
+  footwork: number // Movement and positioning
+  serve: number // Serve quality
+  receive: number // Return of serve
+  spin: number // Spin generation and reading
+  placement: number // Shot placement accuracy
+  consistency: number // Consistency and error rate
+}
+
+/**
+ * Player attributes and stats
+ */
+export type Player = {
+  id: string // Unique identifier
+  firstName: string
+  lastName: string
+  gender: Gender
+  age: number // Age in years
+  year: number // Year in school (1-4, max 4 years)
+  elo: number // ELO rating (typically 800-2000+)
+  skills: PlayerSkills
+  handedness: Handedness
+  gripStyle: GripStyle
+  forehandRubber: RubberType
+  backhandRubber: RubberType
+  forehandBackhandTendency: FavourStyle
+  playStyle: PlayStyle
+  imagePath: string // Avatar image path
 }

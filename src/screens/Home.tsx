@@ -1,9 +1,10 @@
 import React from 'react'
 import { useEffectOnce } from 'react-use'
-import { ScreenProps } from '../screen_manager/screens'
+import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { theme } from '../theme/theme'
 import GameCard from '../components/cards/GameCard'
+import GameButton from '../components/buttons/GameButton'
 import { CommonStyles } from '../styles/common/CommonStyles'
 import BackgroundImage from '../assets/tabletennisphoto.jpg'
 
@@ -111,15 +112,32 @@ const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
             )}
           </div>
         )}
-        <p
+        <div
           style={{
-            fontSize: theme.typography.fontSize.lg,
-            color: theme.colors.text.secondary,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: theme.spacing.md,
             marginTop: theme.spacing.xl
           }}
         >
-          Your game has been saved! More features coming soon...
-        </p>
+          <p
+            style={{
+              fontSize: theme.typography.fontSize.lg,
+              color: theme.colors.text.secondary
+            }}
+          >
+            Your game has been saved! More features coming soon...
+          </p>
+          <GameButton
+            variant="primary"
+            onClick={() => changeScreen(Screens.PLAYERS)}
+            size="lg"
+            glow
+            type="button"
+          >
+            View Players
+          </GameButton>
+        </div>
       </GameCard>
     </div>
   )
