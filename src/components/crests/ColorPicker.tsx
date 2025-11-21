@@ -9,11 +9,7 @@ interface ColorPickerProps {
   onChange: (color: string) => void
 }
 
-export const ColorPicker: React.FC<ColorPickerProps> = ({
-  label,
-  color,
-  onChange
-}) => {
+export const ColorPicker: React.FC<ColorPickerProps> = ({ label, color, onChange }) => {
   return (
     <Form.Group style={{ marginBottom: theme.spacing.lg }}>
       <Form.Label
@@ -75,4 +71,3 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
     </Form.Group>
   )
 }
-

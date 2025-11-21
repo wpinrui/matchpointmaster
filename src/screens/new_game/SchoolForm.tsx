@@ -25,11 +25,7 @@ const SchoolForm: React.FC<{
     closeDialog()
   }
 
-  const handleColorsChange = (
-    primary: string,
-    secondary: string,
-    accent: string
-  ) => {
+  const handleColorsChange = (primary: string, secondary: string, accent: string) => {
     onChange('primaryColor', primary)
     onChange('secondaryColor', secondary)
     onChange('accentColor', accent)

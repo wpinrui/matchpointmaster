@@ -32,9 +32,7 @@ export const CrestGrid: React.FC<CrestGridProps> = ({
               cursor: 'pointer',
               borderRadius: theme.borderRadius.md,
               border: `3px solid ${
-                isSelected
-                  ? theme.colors.primary.main
-                  : theme.colors.neutral.gray300
+                isSelected ? theme.colors.primary.main : theme.colors.neutral.gray300
               }`,
               padding: theme.spacing.sm,
               background: theme.colors.neutral.white,
@@ -80,4 +78,3 @@ export const CrestGrid: React.FC<CrestGridProps> = ({
     </div>
   )
 }
-

@@ -1,5 +1,4 @@
 import React from 'react'
-import { useEffectOnce } from 'react-use'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { theme } from '../theme/theme'
@@ -9,11 +8,21 @@ import { CommonStyles } from '../styles/common/CommonStyles'
 import BackgroundImage from '../assets/tabletennisphoto.jpg'
 
 const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
-  const { saveToFile, manager, school } = useSaveDataContext()
-  useEffectOnce(() => {
-    console.log('Home screen mounted')
-    saveToFile()
-  })
+  const { manager, school, exportToJson, clearCurrentSave } = useSaveDataContext()
+
+  const handleExport = () => {
+    exportToJson()
+  }
+
+  const handleClear = () => {
+    if (
+      window.confirm(
+        'Are you sure you want to clear all current save data? This will reset your game to the initial state. This action cannot be undone.'
+      )
+    ) {
+      clearCurrentSave()
+    }
+  }
 
   return (
     <div
@@ -112,22 +121,25 @@ const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
             )}
           </div>
         )}
-        <div
+        <p
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.md,
+            fontSize: theme.typography.fontSize.lg,
+            color: theme.colors.text.secondary,
             marginTop: theme.spacing.xl
           }}
         >
-          <p
-            style={{
-              fontSize: theme.typography.fontSize.lg,
-              color: theme.colors.text.secondary
-            }}
-          >
-            Your game has been saved! More features coming soon...
-          </p>
+          Your game is automatically saved! More features coming soon...
+        </p>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: theme.spacing.md,
+            marginTop: theme.spacing.xl,
+            justifyContent: 'center',
+            flexWrap: 'wrap'
+          }}
+        >
           <GameButton
             variant="primary"
             onClick={() => changeScreen(Screens.PLAYERS)}
@@ -136,6 +148,19 @@ const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
             type="button"
           >
             View Players
+          </GameButton>
+          <GameButton
+            variant="secondary"
+            onClick={() => changeScreen(Screens.SAVE_MANAGER)}
+            type="button"
+          >
+            Manage Saves
+          </GameButton>
+          <GameButton variant="secondary" onClick={handleExport} type="button">
+            Export Save
+          </GameButton>
+          <GameButton variant="secondary" onClick={handleClear} type="button">
+            Clear Data
           </GameButton>
         </div>
       </GameCard>

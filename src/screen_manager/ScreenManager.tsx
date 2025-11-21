@@ -3,6 +3,7 @@ import Home from '../screens/Home'
 import LoadScreen from '../screens/LoadScreen'
 import NewGameScreen from '../screens/new_game/NewGameScreen'
 import PlayersScreen from '../screens/PlayersScreen'
+import SaveManagerScreen from '../screens/SaveManagerScreen'
 import { Screens } from './screens'
 
 const ScreenManager: React.FC = () => {
@@ -18,7 +19,8 @@ const ScreenManager: React.FC = () => {
     [Screens.LOAD]: LoadScreen,
     [Screens.NEW_GAME]: NewGameScreen,
     [Screens.HOME]: Home,
-    [Screens.PLAYERS]: PlayersScreen
+    [Screens.PLAYERS]: PlayersScreen,
+    [Screens.SAVE_MANAGER]: SaveManagerScreen
   }
 
   const ScreenComponent = screenComponents[currentScreen]

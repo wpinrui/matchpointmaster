@@ -2,9 +2,26 @@
  * Constants for crest generation
  */
 
-export type OutsideShape = 'circle' | 'shield' | 'wreath' | 'square' | 'diamond' | 'hexagon' | 'oval' | 'star'
+export type OutsideShape =
+  | 'circle'
+  | 'shield'
+  | 'wreath'
+  | 'square'
+  | 'diamond'
+  | 'hexagon'
+  | 'oval'
+  | 'star'
 
-export type InsideShape = 'torch' | 'book' | 'star' | 'cross' | 'laurel' | 'crown' | 'scroll' | 'quill' | 'none'
+export type InsideShape =
+  | 'torch'
+  | 'book'
+  | 'star'
+  | 'cross'
+  | 'laurel'
+  | 'crown'
+  | 'scroll'
+  | 'quill'
+  | 'none'
 
 export const OUTSIDE_SHAPES: OutsideShape[] = [
   'circle',
@@ -28,4 +45,3 @@ export const INSIDE_SHAPES: InsideShape[] = [
   'quill',
   'none'
 ]
-

@@ -23,8 +23,7 @@ export const generateCrestSvg = (
 ): string => {
   // Get templates for outside and inside shapes
   const outsideTemplate =
-    OUTSIDE_SHAPE_TEMPLATES[outsideShape] ||
-    OUTSIDE_SHAPE_TEMPLATES.circle
+    OUTSIDE_SHAPE_TEMPLATES[outsideShape] || OUTSIDE_SHAPE_TEMPLATES.circle
   const insideTemplate =
     INSIDE_SHAPE_TEMPLATES[insideShape] || INSIDE_SHAPE_TEMPLATES.none
 
