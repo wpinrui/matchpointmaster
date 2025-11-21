@@ -6,7 +6,12 @@ import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { SaveData } from '../../services/savegame/types'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import { theme } from '../../theme/theme'
-import { validateManagerData, validateSchoolData } from '../../utils/validation'
+import {
+  validateManagerData,
+  validateSchoolData,
+  ManagerValidationErrors,
+  SchoolValidationErrors
+} from '../../utils/validation'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
 
@@ -23,6 +28,8 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [schoolData, setSchoolData] = useState<SaveData['school']>(
     initialSaveData.school
   )
+  const [managerErrors, setManagerErrors] = useState<ManagerValidationErrors>({})
+  const [schoolErrors, setSchoolErrors] = useState<SchoolValidationErrors>({})
   const { updateManager, updateSchool } = useSaveDataContext()
 
   const saveManagerStateToContext = () => {
@@ -49,27 +56,56 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     value: string | File | null
   ) => {
     setManagerData((prev) => ({ ...prev, [key]: value }))
+    // Clear error for this field when user starts typing
+    if (managerErrors[key as keyof ManagerValidationErrors]) {
+      setManagerErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[key as keyof ManagerValidationErrors]
+        return newErrors
+      })
+    }
   }
 
   const handleSchoolDataChange = (key: keyof SaveData['school'], value: string) => {
     setSchoolData((prev) => ({ ...prev, [key]: value }))
+    // Clear error for this field when user starts typing
+    if (schoolErrors[key as keyof SchoolValidationErrors]) {
+      setSchoolErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[key as keyof SchoolValidationErrors]
+        return newErrors
+      })
+    }
   }
 
   const handleStartGame = () => {
-    if (validateSchoolData(schoolData)) {
+    const validation = validateSchoolData(schoolData)
+    if (validation.isValid) {
       saveSchoolStateToContext()
       changeScreen(Screens.HOME)
     } else {
-      alert('Please fill in all fields.')
+      setSchoolErrors(validation.errors)
+      // Scroll to first error
+      setTimeout(() => {
+        const firstError = document.querySelector('.validation-error')
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 100)
     }
   }
 
   const handleNextStep = () => {
-    if (validateManagerData(managerData)) {
+    const validation = validateManagerData(managerData)
+    if (validation.isValid) {
       saveManagerStateToContext()
+      setManagerErrors({}) // Clear errors when moving to next step
       setStep(Step.School)
     } else {
-      alert('Please fill in all fields.')
+      setManagerErrors(validation.errors)
+      // Scroll to first error
+      setTimeout(() => {
+        const firstError = document.querySelector('.validation-error')
+        firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 100)
     }
   }
 
@@ -106,13 +142,18 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             data={managerData}
             onChange={handleManagerDataChange}
             onNext={handleNextStep}
+            errors={managerErrors}
           />
         ) : (
           <SchoolForm
             data={schoolData}
             onChange={handleSchoolDataChange}
             onStartGame={handleStartGame}
-            onBack={() => setStep(Step.Manager)}
+            onBack={() => {
+              setStep(Step.Manager)
+              setSchoolErrors({}) // Clear errors when going back
+            }}
+            errors={schoolErrors}
           />
         )}
       </div>

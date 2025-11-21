@@ -8,6 +8,9 @@ interface FaceCustomizerProps {
   initialSeed?: string
   onFaceChange: (faceUrl: string) => void
   gender?: Gender
+  currentSelectedFace?: string // The currently selected face URL (if reopening dialog)
+  storedFaceOptions?: string[] // Previously generated face options (to restore)
+  onFaceOptionsChange?: (faces: string[]) => void // Callback to store face options
 }
 
 // Available options from DiceBear avataaars
@@ -149,9 +152,13 @@ const generateRandomFace = (seed: string, gender?: Gender): string => {
 const FaceCustomizer: React.FC<FaceCustomizerProps> = ({
   initialSeed,
   onFaceChange,
-  gender
+  gender,
+  currentSelectedFace,
+  storedFaceOptions = [],
+  onFaceOptionsChange
 }) => {
-  const [faceOptions, setFaceOptions] = useState<string[]>([])
+  const [faceOptions, setFaceOptions] = useState<string[]>(storedFaceOptions)
+  const [selectedFaceUrl, setSelectedFaceUrl] = useState<string>('')
 
   // Generate 6 random faces
   const generateFaces = useCallback(() => {
@@ -164,31 +171,60 @@ const FaceCustomizer: React.FC<FaceCustomizerProps> = ({
       }
     }
     setFaceOptions(faces)
-    // Auto-select first face
+    // Store faces in parent component
+    onFaceOptionsChange?.(faces)
+    // Auto-select first face (or previously selected if it exists in new set)
     if (faces.length > 0) {
-      onFaceChange(faces[0])
+      const previousSelection = currentSelectedFace && faces.includes(currentSelectedFace)
+        ? currentSelectedFace
+        : faces[0]
+      setSelectedFaceUrl(previousSelection)
+      onFaceChange(previousSelection)
     }
-  }, [initialSeed, onFaceChange, gender])
+  }, [initialSeed, onFaceChange, gender, currentSelectedFace, onFaceOptionsChange])
 
-  // Generate initial faces on mount and when gender changes
+  // Initialize faces: use stored options if available, otherwise generate new ones
   React.useEffect(() => {
-    const faces: string[] = []
-    for (let i = 0; i < 6; i++) {
-      const seed = `${initialSeed || 'manager'}-${Date.now()}-${i}-${Math.random().toString(36).substring(7)}`
-      const faceUrl = generateRandomFace(seed, gender)
-      if (faceUrl) {
-        faces.push(faceUrl)
+    if (storedFaceOptions.length > 0) {
+      // Restore stored faces
+      setFaceOptions(storedFaceOptions)
+      // Select the previously selected face if it's in the stored options
+      if (currentSelectedFace && storedFaceOptions.includes(currentSelectedFace)) {
+        setSelectedFaceUrl(currentSelectedFace)
+        onFaceChange(currentSelectedFace)
+      } else if (storedFaceOptions.length > 0) {
+        // Otherwise select first face
+        setSelectedFaceUrl(storedFaceOptions[0])
+        onFaceChange(storedFaceOptions[0])
       }
-    }
-    setFaceOptions(faces)
-    // Auto-select first face
-    if (faces.length > 0) {
-      onFaceChange(faces[0])
+    } else {
+      // Generate new faces only if we don't have stored ones
+      const faces: string[] = []
+      for (let i = 0; i < 6; i++) {
+        const seed = `${initialSeed || 'manager'}-${Date.now()}-${i}-${Math.random().toString(36).substring(7)}`
+        const faceUrl = generateRandomFace(seed, gender)
+        if (faceUrl) {
+          faces.push(faceUrl)
+        }
+      }
+      setFaceOptions(faces)
+      onFaceOptionsChange?.(faces)
+      
+      // Select face: prefer currentSelectedFace if it exists in new set, otherwise first
+      if (faces.length > 0) {
+        let faceToSelect = faces[0]
+        if (currentSelectedFace && faces.includes(currentSelectedFace)) {
+          faceToSelect = currentSelectedFace
+        }
+        setSelectedFaceUrl(faceToSelect)
+        onFaceChange(faceToSelect)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gender]) // Regenerate when gender changes
 
   const handleFaceSelect = (faceUrl: string) => {
+    setSelectedFaceUrl(faceUrl)
     onFaceChange(faceUrl)
   }
 
@@ -240,44 +276,58 @@ const FaceCustomizer: React.FC<FaceCustomizerProps> = ({
           maxWidth: '600px'
         }}
       >
-        {faceOptions.map((faceUrl, index) => (
-          <div
-            key={index}
-            onClick={() => handleFaceSelect(faceUrl)}
-            style={{
-              cursor: 'pointer',
-              borderRadius: theme.borderRadius.md,
-              border: `3px solid ${theme.colors.neutral.gray300}`,
-              padding: theme.spacing.sm,
-              background: theme.colors.neutral.white,
-              transition: `all ${theme.transitions.normal}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = theme.colors.primary.main
-              e.currentTarget.style.transform = 'scale(1.05)'
-              e.currentTarget.style.boxShadow = theme.shadows.lg
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = theme.colors.neutral.gray300
-              e.currentTarget.style.transform = 'scale(1)'
-              e.currentTarget.style.boxShadow = 'none'
-            }}
-          >
-            <img
-              src={faceUrl}
-              alt={`Face option ${index + 1}`}
+        {faceOptions.map((faceUrl, index) => {
+          const isSelected = faceUrl === selectedFaceUrl
+          return (
+            <div
+              key={index}
+              onClick={() => handleFaceSelect(faceUrl)}
               style={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: theme.borderRadius.sm,
-                display: 'block'
+                cursor: 'pointer',
+                borderRadius: theme.borderRadius.md,
+                border: `3px solid ${isSelected ? theme.colors.primary.main : theme.colors.neutral.gray300}`,
+                padding: theme.spacing.sm,
+                background: theme.colors.neutral.white,
+                transition: `all ${theme.transitions.normal}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: isSelected ? theme.shadows.lg : 'none',
+                transform: isSelected ? 'scale(1.02)' : 'scale(1)'
               }}
-            />
-          </div>
-        ))}
+              onMouseEnter={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.borderColor = theme.colors.primary.light
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                  e.currentTarget.style.boxShadow = theme.shadows.md
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.borderColor = theme.colors.neutral.gray300
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.boxShadow = 'none'
+                } else {
+                  // Keep selected styling on mouse leave
+                  e.currentTarget.style.borderColor = theme.colors.primary.main
+                  e.currentTarget.style.transform = 'scale(1.02)'
+                  e.currentTarget.style.boxShadow = theme.shadows.lg
+                }
+              }}
+            >
+              <img
+                src={faceUrl}
+                alt={`Face option ${index + 1}`}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: theme.borderRadius.sm,
+                  display: 'block'
+                }}
+              />
+            </div>
+          )
+        })}
       </div>
     </div>
   )

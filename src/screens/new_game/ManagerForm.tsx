@@ -10,13 +10,16 @@ import { theme } from '../../theme/theme'
 import GameInput from '../../components/forms/GameInput'
 import GameButton from '../../components/buttons/GameButton'
 import { newGameTextRecords } from './newGameTextRecords'
+import { ManagerValidationErrors } from '../../utils/validation'
 
 const ManagerForm: React.FC<{
   data: SaveData['manager']
   onChange: (key: keyof SaveData['manager'], value: string | File | null) => void
   onNext: () => void
-}> = ({ data, onChange, onNext }) => {
+  errors: ManagerValidationErrors
+}> = ({ data, onChange, onNext, errors }) => {
   const { isDialogOpen, openDialog, closeDialog } = useImagePicker()
+  const [storedFaceOptions, setStoredFaceOptions] = React.useState<string[]>([])
 
   const handleImageSelect = (imagePath: string) => {
     onChange('imagePath', imagePath)
@@ -32,6 +35,9 @@ const ManagerForm: React.FC<{
           onSelectImage={handleImageSelect}
           onClose={closeDialog}
           gender={data.gender}
+          currentImagePath={data.imagePath}
+          storedFaceOptions={storedFaceOptions}
+          onFaceOptionsChange={setStoredFaceOptions}
         />
       )}
       <h4
@@ -46,23 +52,34 @@ const ManagerForm: React.FC<{
       >
         Manager Information
       </h4>
-      <Form>
-        <GameInput
-          type="text"
-          placeholder="e.g., John Smith"
-          value={data.fullName}
-          onChange={(e) => onChange('fullName', e.target.value)}
-          label="Full Name"
-          helperText="Your complete name (e.g., John Smith, Maria Garcia)"
-        />
-        <GameInput
-          type="text"
-          placeholder="e.g., John"
-          value={data.shortName}
-          onChange={(e) => onChange('shortName', e.target.value)}
-          label="Short Name"
-          helperText="A shorter version of your name used in game (e.g., John, Maria, Coach J)"
-        />
+      <Form
+        onSubmit={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+        }}
+      >
+        <div className={errors.fullName ? 'validation-error' : ''}>
+          <GameInput
+            type="text"
+            placeholder="e.g., John Smith"
+            value={data.fullName}
+            onChange={(e) => onChange('fullName', e.target.value)}
+            label="Full Name"
+            helperText="Your complete name (e.g., John Smith, Maria Garcia)"
+            error={errors.fullName}
+          />
+        </div>
+        <div className={errors.shortName ? 'validation-error' : ''}>
+          <GameInput
+            type="text"
+            placeholder="e.g., John"
+            value={data.shortName}
+            onChange={(e) => onChange('shortName', e.target.value)}
+            label="Short Name"
+            helperText="A shorter version of your name used in game (e.g., John, Maria, Coach J)"
+            error={errors.shortName}
+          />
+        </div>
         <Form.Group style={{ marginBottom: theme.spacing.lg }}>
           <Form.Label
             style={{
@@ -105,41 +122,63 @@ const ManagerForm: React.FC<{
             ))}
           </Form.Select>
         </Form.Group>
-        <Form.Group style={{ marginBottom: theme.spacing.lg }}>
-          {data.imagePath && (
-            <div
-              style={{
-                marginBottom: theme.spacing.md,
-                textAlign: 'center'
-              }}
-            >
-              <img
-                src={data.imagePath}
-                alt="Profile"
+        <div className={errors.imagePath ? 'validation-error' : ''}>
+          <Form.Group style={{ marginBottom: theme.spacing.lg }}>
+            {data.imagePath && (
+              <div
                 style={{
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: theme.borderRadius.full,
-                  border: `3px solid ${theme.colors.primary.main}`,
-                  objectFit: 'cover',
-                  boxShadow: theme.shadows.lg
+                  marginBottom: theme.spacing.md,
+                  textAlign: 'center'
                 }}
-              />
-            </div>
-          )}
-          <GameButton
-            variant="secondary"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              openDialog()
-            }}
-            fullWidth
-            type="button"
-          >
-            {data.imagePath ? 'Change Profile Image' : 'Pick Profile Image'}
-          </GameButton>
-        </Form.Group>
+              >
+                <img
+                  src={data.imagePath}
+                  alt="Profile"
+                  style={{
+                    width: '120px',
+                    height: '120px',
+                    borderRadius: theme.borderRadius.full,
+                    border: `3px solid ${theme.colors.primary.main}`,
+                    objectFit: 'cover',
+                    boxShadow: theme.shadows.lg
+                  }}
+                />
+              </div>
+            )}
+            <GameButton
+              variant="secondary"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                openDialog()
+              }}
+              fullWidth
+              type="button"
+              style={
+                errors.imagePath
+                  ? {
+                      border: `2px solid ${theme.colors.error.main}`,
+                      boxShadow: `0 0 0 0.2rem ${theme.colors.error.light}40`
+                    }
+                  : {}
+              }
+            >
+              {data.imagePath ? 'Change Profile Image' : 'Pick Profile Image'}
+            </GameButton>
+            {errors.imagePath && (
+              <Form.Text
+                style={{
+                  color: theme.colors.error.main,
+                  fontSize: theme.typography.fontSize.sm,
+                  marginTop: theme.spacing.xs,
+                  display: 'block'
+                }}
+              >
+                {errors.imagePath}
+              </Form.Text>
+            )}
+          </Form.Group>
+        </div>
         <GameDropdown
           label="Handedness"
           options={newGameTextRecords.handednessDescriptions}
@@ -183,7 +222,18 @@ const ManagerForm: React.FC<{
           description="Your overall approach to the game"
         />
         <div style={{ marginTop: theme.spacing.xl }}>
-          <GameButton variant="primary" onClick={onNext} size="lg" fullWidth glow>
+          <GameButton
+            variant="primary"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onNext()
+            }}
+            size="lg"
+            fullWidth
+            glow
+            type="button"
+          >
             Next
           </GameButton>
         </div>

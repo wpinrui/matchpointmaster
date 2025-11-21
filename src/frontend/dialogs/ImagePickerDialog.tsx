@@ -10,6 +10,9 @@ type ImagePickerDialogProps = {
   isOpen: boolean
   onClose: () => void
   gender?: Gender
+  currentImagePath?: string // Currently selected image path (for restoring state)
+  storedFaceOptions?: string[] // Previously generated face options (to restore)
+  onFaceOptionsChange?: (faces: string[]) => void // Callback to store face options
 }
 
 export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
@@ -17,7 +20,10 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
   onSelectImage,
   isOpen,
   onClose,
-  gender
+  gender,
+  currentImagePath,
+  storedFaceOptions = [],
+  onFaceOptionsChange
 }) => {
   const [imagePaths, setImagePaths] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -141,6 +147,9 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
             initialSeed={`manager-${Date.now()}`}
             onFaceChange={handleFaceChange}
             gender={gender}
+            currentSelectedFace={currentImagePath}
+            storedFaceOptions={storedFaceOptions}
+            onFaceOptionsChange={onFaceOptionsChange}
           />
         ) : error ? (
           <div

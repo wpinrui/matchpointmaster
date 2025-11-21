@@ -7,13 +7,15 @@ import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
 import { useImagePicker } from '../../hooks/useImagePicker'
 import { SaveData } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
+import { SchoolValidationErrors } from '../../utils/validation'
 
 const SchoolForm: React.FC<{
   data: SaveData['school']
   onChange: (key: keyof SaveData['school'], value: string) => void
   onStartGame: () => void
   onBack: () => void
-}> = ({ data, onChange, onStartGame, onBack }) => {
+  errors: SchoolValidationErrors
+}> = ({ data, onChange, onStartGame, onBack, errors }) => {
   const { isDialogOpen, openDialog, closeDialog } = useImagePicker()
 
   const handleImageSelect = (imagePath: string) => {
@@ -43,59 +45,92 @@ const SchoolForm: React.FC<{
       >
         School Information
       </h4>
-      <Form>
-        <GameInput
-          type="text"
-          placeholder="School Name"
-          value={data.name}
-          onChange={(e) => onChange('name', e.target.value)}
-          label="School Name"
-        />
-        <Form.Group style={{ marginBottom: theme.spacing.lg }}>
-          {data.crestPath && (
-            <div
-              style={{
-                marginBottom: theme.spacing.md,
-                textAlign: 'center'
-              }}
-            >
-              <img
-                src={data.crestPath}
-                alt="School Crest"
+      <Form
+        onSubmit={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+        }}
+      >
+        <div className={errors.name ? 'validation-error' : ''}>
+          <GameInput
+            type="text"
+            placeholder="School Name"
+            value={data.name}
+            onChange={(e) => onChange('name', e.target.value)}
+            label="School Name"
+            error={errors.name}
+          />
+        </div>
+        <div className={errors.crestPath ? 'validation-error' : ''}>
+          <Form.Group style={{ marginBottom: theme.spacing.lg }}>
+            {data.crestPath && (
+              <div
                 style={{
-                  width: '150px',
-                  height: '150px',
-                  borderRadius: theme.borderRadius.lg,
-                  border: `3px solid ${theme.colors.secondary.main}`,
-                  objectFit: 'contain',
-                  background: theme.colors.neutral.white,
-                  padding: theme.spacing.sm,
-                  boxShadow: theme.shadows.lg
+                  marginBottom: theme.spacing.md,
+                  textAlign: 'center'
                 }}
-              />
-            </div>
-          )}
-          <GameButton
-            variant="secondary"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              openDialog()
-            }}
-            fullWidth
-            type="button"
-          >
-            {data.crestPath ? 'Change School Crest' : 'Pick School Crest'}
-          </GameButton>
-        </Form.Group>
-        <GameInput
-          type="text"
-          placeholder="School Color (e.g., #FF6B35 or Blue)"
-          value={data.color}
-          onChange={(e) => onChange('color', e.target.value)}
-          label="School Color"
-          helperText="Enter a color name or hex code"
-        />
+              >
+                <img
+                  src={data.crestPath}
+                  alt="School Crest"
+                  style={{
+                    width: '150px',
+                    height: '150px',
+                    borderRadius: theme.borderRadius.lg,
+                    border: `3px solid ${theme.colors.secondary.main}`,
+                    objectFit: 'contain',
+                    background: theme.colors.neutral.white,
+                    padding: theme.spacing.sm,
+                    boxShadow: theme.shadows.lg
+                  }}
+                />
+              </div>
+            )}
+            <GameButton
+              variant="secondary"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                openDialog()
+              }}
+              fullWidth
+              type="button"
+              style={
+                errors.crestPath
+                  ? {
+                      border: `2px solid ${theme.colors.error.main}`,
+                      boxShadow: `0 0 0 0.2rem ${theme.colors.error.light}40`
+                    }
+                  : {}
+              }
+            >
+              {data.crestPath ? 'Change School Crest' : 'Pick School Crest'}
+            </GameButton>
+            {errors.crestPath && (
+              <Form.Text
+                style={{
+                  color: theme.colors.error.main,
+                  fontSize: theme.typography.fontSize.sm,
+                  marginTop: theme.spacing.xs,
+                  display: 'block'
+                }}
+              >
+                {errors.crestPath}
+              </Form.Text>
+            )}
+          </Form.Group>
+        </div>
+        <div className={errors.color ? 'validation-error' : ''}>
+          <GameInput
+            type="text"
+            placeholder="School Color (e.g., #FF6B35 or Blue)"
+            value={data.color}
+            onChange={(e) => onChange('color', e.target.value)}
+            label="School Color"
+            helperText="Enter a color name or hex code"
+            error={errors.color}
+          />
+        </div>
         <div
           style={{
             display: 'flex',
@@ -103,10 +138,30 @@ const SchoolForm: React.FC<{
             marginTop: theme.spacing.xl
           }}
         >
-          <GameButton variant="secondary" onClick={onBack} fullWidth>
+          <GameButton
+            variant="secondary"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onBack()
+            }}
+            fullWidth
+            type="button"
+          >
             Back
           </GameButton>
-          <GameButton variant="primary" onClick={onStartGame} fullWidth size="lg" glow>
+          <GameButton
+            variant="primary"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onStartGame()
+            }}
+            fullWidth
+            size="lg"
+            glow
+            type="button"
+          >
             Start Game
           </GameButton>
         </div>
