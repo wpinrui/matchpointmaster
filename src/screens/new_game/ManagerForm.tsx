@@ -31,6 +31,7 @@ const ManagerForm: React.FC<{
           path={CONSTANTS.managerFacesPath}
           onSelectImage={handleImageSelect}
           onClose={closeDialog}
+          gender={data.gender}
         />
       )}
       <h4

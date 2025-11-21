@@ -2,9 +2,10 @@ import React from 'react'
 
 export const imageGridStyle: React.CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
-  gap: '10px',
-  marginTop: '20px'
+  gridTemplateColumns: 'repeat(4, 1fr)',
+  gap: '12px',
+  marginTop: '20px',
+  width: '100%'
 }
 
 export const imageStyle: React.CSSProperties = {
