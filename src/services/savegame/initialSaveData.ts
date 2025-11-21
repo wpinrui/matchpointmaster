@@ -19,7 +19,11 @@ export const initialSaveData: SaveData = {
     backhandRubber: RubberType.SPIN_RUBBER,
     gripStyle: GripStyle.SHAKE_HAND,
     forehandBackhandTendency: FavourStyle.BALANCED,
-    playStyle: PlayStyle.ALL_ROUNDER
+    playStyle: PlayStyle.ALL_ROUNDER,
+    stats: {
+      reputation: 15, // Starting reputation (low, new manager)
+      coachingEffectiveness: 15 // Starting coaching effectiveness (low, new manager)
+    }
   },
   school: {
     name: '',

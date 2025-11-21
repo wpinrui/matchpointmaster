@@ -1,3 +1,11 @@
+/**
+ * Manager stats that affect gameplay
+ */
+export type ManagerStats = {
+  reputation: number // 0-100, affects player intake quality
+  coachingEffectiveness: number // 0-100, affects player development
+}
+
 export type SaveData = {
   manager: {
     fullName: string
@@ -10,6 +18,7 @@ export type SaveData = {
     gripStyle: GripStyle
     forehandBackhandTendency: FavourStyle
     playStyle: PlayStyle
+    stats: ManagerStats
   }
   school: {
     name: string

@@ -7,10 +7,10 @@ import { SaveData } from '../../services/savegame/types'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import { theme } from '../../theme/theme'
 import {
-  validateManagerData,
-  validateSchoolData,
   ManagerValidationErrors,
-  SchoolValidationErrors
+  SchoolValidationErrors,
+  validateManagerData,
+  validateSchoolData
 } from '../../utils/validation'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
@@ -41,6 +41,10 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     updateManager.gripStyle(managerData.gripStyle)
     updateManager.forehandBackhandTendency(managerData.forehandBackhandTendency)
     updateManager.playStyle(managerData.playStyle)
+    // Stats are initialized from initialSaveData, ensure they're saved
+    if (managerData.stats) {
+      updateManager.stats(managerData.stats)
+    }
   }
 
   const saveSchoolStateToContext = () => {
@@ -88,7 +92,8 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       // Create save with combined data
       const combinedData: SaveData = {
         manager: managerData,
-        school: schoolData
+        school: schoolData,
+        players: [] // Initialize with empty players array
       }
       createNewSave(saveName, combinedData)
       changeScreen(Screens.HOME)

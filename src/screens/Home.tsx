@@ -4,6 +4,7 @@ import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { theme } from '../theme/theme'
 import GameCard from '../components/cards/GameCard'
 import GameButton from '../components/buttons/GameButton'
+import { ManagerStatsDisplay } from '../components/manager/ManagerStatsDisplay'
 import { CommonStyles } from '../styles/common/CommonStyles'
 import BackgroundImage from '../assets/tabletennisphoto.jpg'
 
@@ -121,6 +122,12 @@ const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
             )}
           </div>
         )}
+
+        {/* Manager Stats Display */}
+        {manager.fullName && manager.stats && (
+          <ManagerStatsDisplay stats={manager.stats} />
+        )}
+
         <p
           style={{
             fontSize: theme.typography.fontSize.lg,

@@ -137,6 +137,7 @@ export const clearCurrentSaveId = (): void => {
 
 /**
  * Get the current active save data
+ * Ensures backward compatibility by adding missing stats if needed
  */
 export const getCurrentSaveData = (): SaveData => {
   const currentSaveId = getCurrentSaveId()
@@ -144,7 +145,22 @@ export const getCurrentSaveData = (): SaveData => {
     return initialSaveData
   }
   const slot = getSaveSlot(currentSaveId)
-  return slot?.data || initialSaveData
+  if (!slot) {
+    return initialSaveData
+  }
+
+  // Ensure backward compatibility: add stats if missing
+  const data = { ...slot.data }
+  if (!data.manager.stats) {
+    data.manager.stats = {
+      reputation: 15,
+      coachingEffectiveness: 15
+    }
+    // Update the slot with the migrated data
+    updateSaveSlot(currentSaveId, data)
+  }
+
+  return data
 }
 
 /**

@@ -48,10 +48,7 @@ function randomFromArray<T>(array: T[]): T {
 /**
  * Generate random player skills based on intake quality and gender
  */
-function generateSkills(
-  quality: IntakeQuality,
-  gender: Gender
-): PlayerSkills {
+function generateSkills(quality: IntakeQuality, gender: Gender): PlayerSkills {
   // Base skill ranges by quality
   const qualityRanges: Record<IntakeQuality, { min: number; max: number }> = {
     [IntakeQuality.POOR]: { min: 20, max: 50 },
@@ -69,7 +66,8 @@ function generateSkills(
   const baseFootwork = randomFloat(range.min, range.max)
 
   // Gender adjustments: males have higher median footwork
-  const footworkAdjustment = gender === Gender.MALE ? randomFloat(0, 10) : randomFloat(-5, 5)
+  const footworkAdjustment =
+    gender === Gender.MALE ? randomFloat(0, 10) : randomFloat(-5, 5)
   const footwork = Math.min(100, Math.max(0, baseFootwork + footworkAdjustment))
 
   // Some skills correlate with others (e.g., good forehand players might have better spin)
@@ -185,10 +183,7 @@ export function generatePlayer(
   const elo = calculateElo(skills)
 
   // Generate avatar
-  const imagePath = generateRandomFace(
-    `${firstName}-${lastName}-${Date.now()}`,
-    gender
-  )
+  const imagePath = generateRandomFace(`${firstName}-${lastName}-${Date.now()}`, gender)
 
   // Determine play style based on skills
   const playStyle = determinePlayStyle(skills)
@@ -261,9 +256,7 @@ function determinePlayStyle(skills: PlayerSkills): PlayStyle {
 /**
  * Determine forehand/backhand tendency based on skills
  */
-function determineForehandBackhandTendency(
-  skills: PlayerSkills
-): FavourStyle {
+function determineForehandBackhandTendency(skills: PlayerSkills): FavourStyle {
   const diff = skills.forehand - skills.backhand
 
   if (diff > 25) {
@@ -292,4 +285,3 @@ export function generatePlayers(
 ): Player[] {
   return Array.from({ length: count }, () => generatePlayer(quality, year))
 }
-

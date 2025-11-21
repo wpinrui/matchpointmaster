@@ -200,4 +200,3 @@ const SkillBar: React.FC<SkillBarProps> = ({ label, value }) => {
     </div>
   )
 }
-

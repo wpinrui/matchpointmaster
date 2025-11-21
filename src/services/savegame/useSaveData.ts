@@ -64,7 +64,9 @@ export const useSaveData = () => {
     forehandBackhandTendency: (newTendency: FavourStyle) =>
       updateAttribute('manager', 'forehandBackhandTendency', newTendency),
     playStyle: (newPlayStyle: PlayStyle) =>
-      updateAttribute('manager', 'playStyle', newPlayStyle)
+      updateAttribute('manager', 'playStyle', newPlayStyle),
+    stats: (newStats: SaveData['manager']['stats']) =>
+      updateAttribute('manager', 'stats', newStats)
   }
 
   const updateSchool = {

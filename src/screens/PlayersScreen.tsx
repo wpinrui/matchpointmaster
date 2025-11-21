@@ -97,19 +97,11 @@ const PlayersScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             <option value={IntakeQuality.ABOVE_AVERAGE}>Above Average</option>
             <option value={IntakeQuality.EXCELLENT}>Excellent</option>
           </select>
-          <GameButton
-            variant="primary"
-            onClick={handleGeneratePlayers}
-            type="button"
-          >
+          <GameButton variant="primary" onClick={handleGeneratePlayers} type="button">
             Generate 5 Players
           </GameButton>
           {players.length > 0 && (
-            <GameButton
-              variant="secondary"
-              onClick={handleClearPlayers}
-              type="button"
-            >
+            <GameButton variant="secondary" onClick={handleClearPlayers} type="button">
               Clear All
             </GameButton>
           )}
@@ -145,4 +137,3 @@ const PlayersScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 }
 
 export default PlayersScreen
-
