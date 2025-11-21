@@ -3,7 +3,15 @@ import BackgroundImage from '../../assets/tabletennisphoto.jpg'
 import { ScreenProps, Screens } from '../../screen_manager/screens'
 import { initialSaveData } from '../../services/savegame/initialSaveData'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
-import { SaveData } from '../../services/savegame/types'
+import {
+  SaveData,
+  Gender,
+  Handedness,
+  RubberType,
+  GripStyle,
+  FavourStyle,
+  PlayStyle
+} from '../../services/savegame/types'
 import { generateInitialEmails } from '../../utils/emailGenerator'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import { theme } from '../../theme/theme'
@@ -16,6 +24,9 @@ import {
 } from '../../utils/validation'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
+import GameButton from '../../components/buttons/GameButton'
+import { generateRandomFace } from '../../utils/faceGeneration'
+import { generateCrestSvg } from '../../utils/crestGenerator'
 
 enum Step {
   Manager = 'Manager',
@@ -132,6 +143,89 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     }
   }
 
+  const handleDebugFill = () => {
+    // Generate default images
+    const defaultManagerImage = generateRandomFace('debug-manager-default', Gender.MALE)
+    const defaultSchoolCrest = generateCrestSvg(
+      '#FF6B35', // primaryColor
+      '#004E89', // secondaryColor
+      '#FFD23F', // accentColor
+      'shield', // outsideShape
+      'star' // insideShape
+    )
+
+    // Fill manager with default debug values
+    const debugManagerData: SaveData['manager'] = {
+      fullName: 'John Smith',
+      shortName: 'John',
+      gender: Gender.MALE,
+      imagePath: defaultManagerImage,
+      handedness: Handedness.RIGHT,
+      forehandRubber: RubberType.SPIN_RUBBER,
+      backhandRubber: RubberType.SPIN_RUBBER,
+      gripStyle: GripStyle.SHAKE_HAND,
+      forehandBackhandTendency: FavourStyle.BALANCED,
+      playStyle: PlayStyle.ALL_ROUNDER,
+      stats: {
+        reputation: 15,
+        coachingEffectiveness: 15
+      }
+    }
+    setManagerData(debugManagerData)
+
+    // Fill school with default debug values
+    const debugSchoolData: SaveData['school'] = {
+      name: 'Test High School',
+      crestPath: defaultSchoolCrest,
+      primaryColor: '#FF6B35',
+      secondaryColor: '#004E89',
+      accentColor: '#FFD23F',
+      reputation: 15
+    }
+    setSchoolData(debugSchoolData)
+
+    // Clear any errors
+    setManagerErrors({})
+    setSchoolErrors({})
+
+    // Save manager data to context
+    updateManager.fullName(debugManagerData.fullName)
+    updateManager.shortName(debugManagerData.shortName)
+    updateManager.gender(debugManagerData.gender)
+    updateManager.imagePath(debugManagerData.imagePath)
+    updateManager.handedness(debugManagerData.handedness)
+    updateManager.forehandRubber(debugManagerData.forehandRubber)
+    updateManager.backhandRubber(debugManagerData.backhandRubber)
+    updateManager.gripStyle(debugManagerData.gripStyle)
+    updateManager.forehandBackhandTendency(debugManagerData.forehandBackhandTendency)
+    updateManager.playStyle(debugManagerData.playStyle)
+    updateManager.stats(debugManagerData.stats)
+
+    // Save school data to context
+    updateSchool.name(debugSchoolData.name)
+    updateSchool.crestPath(debugSchoolData.crestPath)
+    updateSchool.primaryColor(debugSchoolData.primaryColor)
+    updateSchool.secondaryColor(debugSchoolData.secondaryColor)
+    updateSchool.accentColor(debugSchoolData.accentColor)
+
+    // Automatically start the game with the filled data
+    const saveName = debugSchoolData.name || `${debugManagerData.fullName}'s Save`
+    const combinedData: SaveData = {
+      manager: debugManagerData,
+      school: debugSchoolData,
+      players: [],
+      teamRoster: [],
+      season: initializeSeasonData(),
+      draftCompleted: false,
+      emails: []
+    }
+
+    // Generate initial emails with actual names and in-game dates
+    combinedData.emails = generateInitialEmails(combinedData)
+    createNewSave(saveName, combinedData)
+    changeScreen(Screens.HOME)
+  }
+
   return (
     <div
       style={CommonStyles.containerStyle}
@@ -144,22 +238,45 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       />
       <div style={CommonStyles.blurStyle} className="position-absolute w-100 h-100" />
       <div style={CommonStyles.dialogStyle} className="rounded p-4 position-relative">
-        <h1
+        <div
           style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize['4xl'],
-            fontWeight: theme.typography.fontWeight.extrabold,
-            background: theme.gradients.primary,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            textAlign: 'center',
-            marginBottom: theme.spacing.xl,
-            textShadow: 'none'
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: theme.spacing.xl
           }}
         >
-          {`Create your ${step}`}
-        </h1>
+          <h1
+            style={{
+              fontFamily: theme.typography.fontFamily.heading,
+              fontSize: theme.typography.fontSize['4xl'],
+              fontWeight: theme.typography.fontWeight.extrabold,
+              background: theme.gradients.primary,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              textAlign: 'center',
+              margin: 0,
+              flex: 1,
+              textShadow: 'none'
+            }}
+          >
+            {`Create your ${step}`}
+          </h1>
+          <GameButton
+            variant="secondary"
+            size="sm"
+            onClick={handleDebugFill}
+            type="button"
+            style={{
+              marginLeft: theme.spacing.md,
+              fontSize: theme.typography.fontSize.sm,
+              padding: `${theme.spacing.xs} ${theme.spacing.sm}`
+            }}
+          >
+            🐛 Debug Fill
+          </GameButton>
+        </div>
         {step === Step.Manager ? (
           <ManagerForm
             data={managerData}
