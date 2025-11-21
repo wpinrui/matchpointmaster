@@ -1,0 +1,158 @@
+import React from 'react'
+import { Form } from 'react-bootstrap'
+import { CONSTANTS } from '../../constants'
+import { ImagePickerDialog } from '../../components/dialogs/ImagePickerDialog'
+import GameDropdown from '../../components/forms/GameDropdown'
+import { SaveData } from '../../services/savegame/types'
+import { useImagePicker } from '../../hooks/useImagePicker'
+import { theme } from '../../theme/theme'
+import GameInput from '../../components/forms/GameInput'
+import GameButton from '../../components/buttons/GameButton'
+import { newGameTextRecords } from './newGameTextRecords'
+import { ManagerValidationErrors } from '../../utils/validation'
+import { ProfileImagePicker } from '../../components/forms/ProfileImagePicker'
+import { GenderSelect } from '../../components/forms/GenderSelect'
+
+const ManagerForm: React.FC<{
+  data: SaveData['manager']
+  onChange: (key: keyof SaveData['manager'], value: string | File | null) => void
+  onNext: () => void
+  errors: ManagerValidationErrors
+}> = ({ data, onChange, onNext, errors }) => {
+  const { isDialogOpen, openDialog, closeDialog } = useImagePicker()
+  const [storedFaceOptions, setStoredFaceOptions] = React.useState<string[]>([])
+
+  const handleImageSelect = (imagePath: string) => {
+    onChange('imagePath', imagePath)
+    closeDialog()
+  }
+
+  return (
+    <div className="slide-in">
+      {isDialogOpen && (
+        <ImagePickerDialog
+          isOpen={isDialogOpen}
+          path={CONSTANTS.managerFacesPath}
+          onSelectImage={handleImageSelect}
+          onClose={closeDialog}
+          gender={data.gender}
+          currentImagePath={data.imagePath}
+          storedFaceOptions={storedFaceOptions}
+          onFaceOptionsChange={setStoredFaceOptions}
+        />
+      )}
+      <h4
+        style={{
+          fontFamily: theme.typography.fontFamily.heading,
+          fontSize: theme.typography.fontSize['2xl'],
+          fontWeight: theme.typography.fontWeight.bold,
+          color: theme.colors.text.primary,
+          marginBottom: theme.spacing.xl,
+          textAlign: 'center'
+        }}
+      >
+        Manager Information
+      </h4>
+      <Form
+        onSubmit={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+        }}
+      >
+        <div className={errors.fullName ? 'validation-error' : ''}>
+          <GameInput
+            type="text"
+            placeholder="e.g., John Smith"
+            value={data.fullName}
+            onChange={(e) => onChange('fullName', e.target.value)}
+            label="Full Name"
+            helperText="Your complete name (e.g., John Smith, Maria Garcia)"
+            error={errors.fullName}
+          />
+        </div>
+        <div className={errors.shortName ? 'validation-error' : ''}>
+          <GameInput
+            type="text"
+            placeholder="e.g., John"
+            value={data.shortName}
+            onChange={(e) => onChange('shortName', e.target.value)}
+            label="Short Name"
+            helperText="A shorter version of your name used in game (e.g., John, Maria, Coach J)"
+            error={errors.shortName}
+          />
+        </div>
+        <GenderSelect
+          value={data.gender}
+          onChange={(value) => onChange('gender', value)}
+        />
+        <div className={errors.imagePath ? 'validation-error' : ''}>
+          <ProfileImagePicker
+            imagePath={data.imagePath}
+            onPickImage={openDialog}
+            error={errors.imagePath}
+          />
+        </div>
+        <GameDropdown
+          label="Handedness"
+          options={newGameTextRecords.handednessDescriptions}
+          selectedValue={data.handedness}
+          onChange={(value) => onChange('handedness', value)}
+          description="Your dominant hand affects coaching effectiveness"
+        />
+        <GameDropdown
+          label="Forehand Rubber"
+          options={newGameTextRecords.rubberDescriptions}
+          selectedValue={data.forehandRubber}
+          onChange={(value) => onChange('forehandRubber', value)}
+          description="The rubber type used on your forehand side"
+        />
+        <GameDropdown
+          label="Backhand Rubber"
+          options={newGameTextRecords.rubberDescriptions}
+          selectedValue={data.backhandRubber}
+          onChange={(value) => onChange('backhandRubber', value)}
+          description="The rubber type used on your backhand side"
+        />
+        <GameDropdown
+          label="Grip Style"
+          options={newGameTextRecords.gripDescriptions}
+          selectedValue={data.gripStyle}
+          onChange={(value) => onChange('gripStyle', value)}
+          description="How you hold the paddle affects your playing style"
+        />
+        <GameDropdown
+          label="Favors"
+          options={newGameTextRecords.favoursDescriptions}
+          selectedValue={data.forehandBackhandTendency}
+          onChange={(value) => onChange('forehandBackhandTendency', value)}
+          description="Your preference between forehand and backhand shots"
+        />
+        <GameDropdown
+          label="Playing Style"
+          options={newGameTextRecords.playStyleDescriptions}
+          selectedValue={data.playStyle}
+          onChange={(value) => onChange('playStyle', value)}
+          description="Your overall approach to the game"
+        />
+        <div style={{ marginTop: theme.spacing.xl }}>
+          <GameButton
+            variant="primary"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onNext()
+            }}
+            size="lg"
+            fullWidth
+            glow
+            type="button"
+          >
+            Next
+          </GameButton>
+        </div>
+      </Form>
+    </div>
+  )
+}
+
+export default ManagerForm

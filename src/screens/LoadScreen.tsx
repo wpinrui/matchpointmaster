@@ -1,16 +1,18 @@
 import SaveIcon from '@mui/icons-material/Save'
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports'
 import React, { useRef } from 'react'
-import { Button } from 'react-bootstrap'
 import BackgroundImage from '../assets/tabletennisphoto.jpg'
-import { ScreenProps } from '../screen_manager/screens'
-import { LoadScreenStyles } from '../styles/screens/LoadScreenStyles'
+import { ScreenProps, Screens } from '../screen_manager/screens'
+import { CommonStyles } from '../styles/common/CommonStyles'
+import { theme } from '../theme/theme'
+import GameButton from '../components/buttons/GameButton'
+import GameCard from '../components/cards/GameCard'
 
 const LoadScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleNewGame = () => {
-    // changeScreen(Screens.NEW_GAME);
+    changeScreen(Screens.NEW_GAME)
   }
 
   const handleLoadFile = () => {
@@ -19,43 +21,94 @@ const LoadScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   return (
     <div
-      style={LoadScreenStyles.containerStyle}
-      className="d-flex justify-content-center align-items-center"
+      style={CommonStyles.containerStyle}
+      className="d-flex justify-content-center align-items-center fade-in"
     >
       <img
         src={BackgroundImage}
         alt="Background image"
-        className="position-absolute w-100 h-100"
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0
+        }}
       />
-      <div style={LoadScreenStyles.blurStyle} className="position-absolute w-100 h-100" />
-      <div style={LoadScreenStyles.dialogStyle} className="rounded p-4 position-relative">
-        <h1>🏓Matchpoint Master: The Game</h1>
-        <p className="text-muted">
-          Lead your school squad to national glory as you train talented players, outsmart
-          rival teams, and strategize your way to the top of the national championships.
-        </p>
-        <Button
-          className="btn btn-primary d-flex align-items-center"
-          onClick={handleLoadFile}
+      <div style={CommonStyles.blurStyle} />
+      <GameCard
+        style={{
+          ...CommonStyles.dialogStyle,
+          textAlign: 'center',
+          maxWidth: '600px'
+        }}
+        glow
+      >
+        <div style={{ marginBottom: theme.spacing.xl }}>
+          <h1
+            style={{
+              fontFamily: theme.typography.fontFamily.heading,
+              fontSize: theme.typography.fontSize['5xl'],
+              fontWeight: theme.typography.fontWeight.extrabold,
+              background: theme.gradients.primary,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              marginBottom: theme.spacing.md,
+              textShadow: 'none'
+            }}
+          >
+            🏓 Matchpoint Master
+          </h1>
+          <p
+            style={{
+              fontSize: theme.typography.fontSize.lg,
+              color: theme.colors.text.secondary,
+              lineHeight: theme.typography.lineHeight.relaxed,
+              marginBottom: theme.spacing['2xl']
+            }}
+          >
+            Lead your school squad to national glory as you train talented players,
+            outsmart rival teams, and strategize your way to the top of the national
+            championships.
+          </p>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: theme.spacing.lg,
+            width: '100%'
+          }}
         >
-          <SaveIcon />
-          &nbsp; Load Save File
+          <GameButton
+            variant="secondary"
+            size="lg"
+            onClick={handleLoadFile}
+            icon={<SaveIcon />}
+            fullWidth
+            glow
+          >
+            Load Save File
+          </GameButton>
           <input
             type="file"
             accept=".json"
             style={{ display: 'none' }}
             ref={fileInputRef}
           />
-        </Button>
-        <Button
-          variant="success"
-          onClick={handleNewGame}
-          className="mt-2 d-flex align-items-center"
-        >
-          <SportsEsportsIcon />
-          &nbsp; Start New Game
-        </Button>
-      </div>
+          <GameButton
+            variant="primary"
+            size="lg"
+            onClick={handleNewGame}
+            icon={<SportsEsportsIcon />}
+            fullWidth
+            glow
+          >
+            Start New Game
+          </GameButton>
+        </div>
+      </GameCard>
     </div>
   )
 }

@@ -69,12 +69,12 @@ The MVP aims to establish the core mechanics of *Matchpoint Master* by allowing 
 
 ## Foundation
 - [ ] Implement Firebase Authentication (Google sign-in).
-- [ ] Create User Profiles (store basic user data such as manager name, school name, and initial stats).
-- [ ] Setup Local Storage Sync (store user and game data locally with online sync).
-- [ ] School Bootstrapping Features:
-  - [ ] School Name Selection
-  - [ ] School Crest Design
-  - [ ] Team Colors Selection
+- [x] Create User Profiles (store basic user data such as manager name, school name, and initial stats).
+- [x] Setup Local Storage Sync (store user and game data locally with online sync).
+- [x] School Bootstrapping Features:
+  - [x] School Name Selection
+  - [x] School Crest Design (SVG-based crest maker with color pickers and shape selection)
+  - [x] Team Colors Selection (Primary, Secondary, Accent colors)
 
 ## Core Gameplay Mechanics
 - [ ] Random Player Generation (create random player attributes like ELO, skill set, gender, etc.).
@@ -104,3 +104,45 @@ The MVP aims to establish the core mechanics of *Matchpoint Master* by allowing 
 
 # Play the Game
 The game will be live [here](https://matchpointmaster.com)!
+
+---
+
+# Dev Log
+
+### 27 October 2024
+Implemented school form and JSON saving. Next task: Handle form saving to localstorage and start game.
+
+### 1 November 2024
+Implemented savegame using context. Next task: Instead of loading a JSON file, load from localstorage to go to the home page with data already loaded. Then, create the player draft.
+
+### 21 November 2025
+**New Game Setup Flow Implementation**
+- ✅ Implemented comprehensive new game setup flow with manager and school customization
+- ✅ **Manager Profile Creation**:
+  - Face customization using DiceBear API with gender-based randomization
+  - 6 random face options per generation with persistent selection
+  - Form fields: full name, short name, gender, profile image
+  - Inline validation with auto-scroll to errors
+- ✅ **School Customization**:
+  - School crest maker with SVG-based templates
+  - Color pickers for primary, secondary, and accent colors (using react-colorful)
+  - Outside shape selection: circle, shield, wreath, square, diamond, hexagon, oval, star
+  - Inside shape selection: torch, book, star, cross, laurel, crown, scroll, quill, none
+  - Live preview with real-time updates
+  - High-quality heraldic SVG designs
+- ✅ **UI/UX Improvements**:
+  - Modular theme system (centralized colors, typography, spacing, shadows, gradients)
+  - Reusable components: GameButton, GameInput, GameDropdown, GameCard
+  - Improved dialogs with consistent styling
+  - Better tooltips and form UX with helper text
+- ✅ **Save Game System**:
+  - Context API for global state management
+  - Local storage persistence with error handling
+  - Comprehensive TypeScript types
+- ✅ **Code Quality**:
+  - Extracted components, hooks, and utilities into logical modules
+  - Custom hooks: useImagePicker, useImageLoader, useSaveData
+  - Centralized validation utilities
+  - Improved folder structure and organization
+
+**Next Steps**: Implement player draft system and begin core gameplay mechanics.
