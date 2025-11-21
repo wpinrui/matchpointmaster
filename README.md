@@ -77,8 +77,8 @@ The MVP aims to establish the core mechanics of *Matchpoint Master* by allowing 
   - [x] Team Colors Selection (Primary, Secondary, Accent colors)
 
 ## Core Gameplay Mechanics
-- [ ] Random Player Generation (create random player attributes like ELO, skill set, gender, etc.).
-- [ ] Player Card Component (display player stats and attributes).
+- [x] Random Player Generation (create random player attributes like ELO, skill set, gender, etc.).
+- [x] Player Card Component (display player stats and attributes).
 - [ ] Manager Stat System (initialize manager’s reputation and coaching effectiveness).
 - [ ] Implement Training System (set weekly training plans for players).
 - [ ] Individual Coaching System (assign individual coaching to players based on their needs).
@@ -178,3 +178,29 @@ Implemented savegame using context. Next task: Instead of loading a JSON file, l
   - Improved cursor feedback
 
 **Next Steps**: Continue with player generation and core gameplay features.
+
+### 21 November 2025 (Late Evening)
+**Player Generation System Implementation**
+- ✅ **Random Player Generation**:
+  - Implemented comprehensive player generation utility with intake quality system
+  - Generates players with random attributes: ELO, skills, gender, age, equipment, play style
+  - Supports different intake qualities: Poor, Below Average, Average, Above Average, Excellent
+  - Skill distribution based on quality and gender
+  - Automatic ELO calculation based on skill levels
+- ✅ **Player Card Component**:
+  - Visual display of player information (name, gender, year, age, ELO)
+  - Skill bars for 8 attributes: forehand, backhand, serve, receive, footwork, stamina, mentality, potential
+  - Color-coded skill bars (green for high, yellow for medium, red for low)
+  - Equipment and play style display
+- ✅ **Players Screen**:
+  - Screen to generate and view players
+  - Quality selector for intake quality
+  - Generate 5 players button
+  - Clear all players button
+  - Scrollable grid display of player cards
+- ✅ **Save Data Integration**:
+  - Added players array to SaveData type
+  - Player management methods (add, remove, set, update) in useSaveData
+  - Players persist across sessions
+
+**Next Steps**: Implement Manager Stat System (reputation and coaching effectiveness).
