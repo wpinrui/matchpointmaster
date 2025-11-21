@@ -266,6 +266,22 @@ export const useSaveData = () => {
     }
   }
 
+  const markEmailAsRead = (emailId: string) => {
+    setSaveData((prevData) => ({
+      ...prevData,
+      emails: prevData.emails.map((email) =>
+        email.id === emailId ? { ...email, read: true } : email
+      )
+    }))
+  }
+
+  const addEmail = (email: SaveData['emails'][0]) => {
+    setSaveData((prevData) => ({
+      ...prevData,
+      emails: [...prevData.emails, email]
+    }))
+  }
+
   return {
     saveData,
     manager: saveData.manager,
@@ -274,12 +290,15 @@ export const useSaveData = () => {
     teamRoster: saveData.teamRoster,
     season: saveData.season,
     draftCompleted: saveData.draftCompleted,
+    emails: saveData.emails,
     currentSaveId,
     updateManager,
     updateSchool,
     updatePlayers,
     updateTeamRoster,
     updateSeason,
+    markEmailAsRead,
+    addEmail,
     exportToJson,
     loadSaveSlot,
     createNewSave,

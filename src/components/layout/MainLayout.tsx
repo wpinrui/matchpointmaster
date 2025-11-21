@@ -18,6 +18,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const sidebarItems = [
     { screen: Screens.HOME, label: 'Home', icon: '🏠' },
+    { screen: Screens.EMAIL, label: 'Email', icon: '📧' },
     { screen: Screens.TEAM_OVERVIEW, label: 'Team Overview', icon: '👥' },
     { screen: Screens.PROFILE, label: 'Profile', icon: '👤' },
     { screen: Screens.SETTINGS, label: 'Settings', icon: '⚙️' }

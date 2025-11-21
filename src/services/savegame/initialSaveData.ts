@@ -37,5 +37,6 @@ export const initialSaveData: SaveData = {
   players: [], // All available players
   teamRoster: [], // Player IDs on the team
   season: initializeSeasonData(),
-  draftCompleted: false
+  draftCompleted: false,
+  emails: [] // Emails will be generated when game is created with actual names
 }

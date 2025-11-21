@@ -7,7 +7,8 @@ export enum Screens {
   DRAFT = 'DRAFT',
   TEAM_OVERVIEW = 'TEAM_OVERVIEW',
   PROFILE = 'PROFILE',
-  SETTINGS = 'SETTINGS'
+  SETTINGS = 'SETTINGS',
+  EMAIL = 'EMAIL'
 }
 
 export type ScreenProps = {

@@ -36,6 +36,33 @@ export type SaveData = {
     phase: string // GamePhase enum value (stored as string for flexibility)
   } // Current season data
   draftCompleted: boolean // Whether draft phase has been completed for this season
+  emails: Email[] // In-game emails
+}
+
+/**
+ * Email tags for categorization
+ */
+export enum EmailTag {
+  WELCOME = 'welcome',
+  NEWS = 'news',
+  DRAFT = 'draft',
+  TOURNAMENT = 'tournament',
+  TRAINING = 'training',
+  ADMINISTRATIVE = 'administrative',
+  SOCIAL = 'social'
+}
+
+/**
+ * In-game email structure
+ */
+export type Email = {
+  id: string // Unique identifier
+  from: string // Sender name
+  subject: string
+  body: string // Email content (can be HTML or plain text)
+  timestamp: number // Unix timestamp
+  read: boolean // Whether email has been read
+  tags: EmailTag[] // Tags for categorization
 }
 
 export enum Gender {

@@ -9,6 +9,7 @@ import DraftScreen from '../screens/team/DraftScreen'
 import TeamOverviewScreen from '../screens/team/TeamOverviewScreen'
 import ProfileScreen from '../screens/ProfileScreen'
 import SettingsScreen from '../screens/SettingsScreen'
+import EmailScreen from '../screens/EmailScreen'
 import MainLayout from '../components/layout/MainLayout'
 import { Screens } from './screens'
 
@@ -30,7 +31,8 @@ const ScreenManager: React.FC = () => {
     [Screens.DRAFT]: DraftScreen,
     [Screens.TEAM_OVERVIEW]: TeamOverviewScreen,
     [Screens.PROFILE]: ProfileScreen,
-    [Screens.SETTINGS]: SettingsScreen
+    [Screens.SETTINGS]: SettingsScreen,
+    [Screens.EMAIL]: EmailScreen
   }
 
   const ScreenComponent = screenComponents[currentScreen]
@@ -41,7 +43,8 @@ const ScreenManager: React.FC = () => {
     Screens.TEAM_OVERVIEW,
     Screens.PROFILE,
     Screens.SETTINGS,
-    Screens.DRAFT
+    Screens.DRAFT,
+    Screens.EMAIL
   ]
 
   if (layoutScreens.includes(currentScreen)) {

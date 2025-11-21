@@ -4,6 +4,7 @@ import { ScreenProps, Screens } from '../../screen_manager/screens'
 import { initialSaveData } from '../../services/savegame/initialSaveData'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { SaveData } from '../../services/savegame/types'
+import { generateInitialEmails } from '../../utils/emailGenerator'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import { theme } from '../../theme/theme'
 import { initializeSeasonData } from '../../utils/gamePhases'
@@ -97,8 +98,12 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         players: [], // Initialize with empty players array
         teamRoster: [], // Initialize with empty team roster
         season: initializeSeasonData(),
-        draftCompleted: false
+        draftCompleted: false,
+        emails: [] // Will be populated below
       }
+
+      // Generate initial emails with actual names and in-game dates
+      combinedData.emails = generateInitialEmails(combinedData)
       createNewSave(saveName, combinedData)
       changeScreen(Screens.HOME)
     } else {
