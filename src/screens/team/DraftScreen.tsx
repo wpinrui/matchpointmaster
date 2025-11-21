@@ -241,22 +241,23 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             }}
           >
             {availablePlayers.map((player) => (
-              <div key={player.id} style={{ position: 'relative' }}>
-                <PlayerCard player={player} />
-                <GameButton
-                  variant="primary"
-                  size="sm"
-                  onClick={() => handleDraftPlayer(player.id)}
-                  type="button"
-                  style={{
-                    position: 'absolute',
-                    top: theme.spacing.sm,
-                    right: theme.spacing.sm
-                  }}
-                >
-                  Draft
-                </GameButton>
-              </div>
+              <PlayerCard
+                key={player.id}
+                player={player}
+                actionButton={
+                  <GameButton
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleDraftPlayer(player.id)}
+                    type="button"
+                    style={{
+                      width: '100%'
+                    }}
+                  >
+                    Draft
+                  </GameButton>
+                }
+              />
             ))}
           </div>
         )}

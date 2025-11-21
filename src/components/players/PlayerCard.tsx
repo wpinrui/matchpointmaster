@@ -1,13 +1,14 @@
 import React from 'react'
-import { Player } from '../../services/savegame/types'
+import { Player, Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import GameCard from '../cards/GameCard'
 
 interface PlayerCardProps {
   player: Player
+  actionButton?: React.ReactNode
 }
 
-export const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
+export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) => {
   const fullName = `${player.firstName} ${player.lastName}`
 
   return (
@@ -57,19 +58,31 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
             <div
               style={{
                 display: 'flex',
-                gap: theme.spacing.sm,
-                flexWrap: 'wrap',
+                flexDirection: 'column',
                 fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary
+                color: theme.colors.text.secondary,
+                lineHeight: 1.1
               }}
             >
-              <span>{player.gender}</span>
-              <span>•</span>
+              <span
+                style={{
+                  color:
+                    player.gender === Gender.FEMALE
+                      ? '#DC2626' // Red for female
+                      : '#1E3A8A', // Navy for male
+                  fontWeight: theme.typography.fontWeight.semibold
+                }}
+              >
+                {player.gender}
+              </span>
               <span>Secondary {player.year}</span>
-              <span>•</span>
-              <span>Age {player.age}</span>
-              <span>•</span>
-              <span>ELO {player.elo}</span>
+              <span
+                style={{
+                  fontWeight: theme.typography.fontWeight.bold
+                }}
+              >
+                ELO {player.elo}
+              </span>
             </div>
           </div>
         </div>
@@ -132,6 +145,19 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
             {player.forehandBackhandTendency} • {player.handedness} handed
           </div>
         </div>
+
+        {/* Action Button */}
+        {actionButton && (
+          <div
+            style={{
+              marginTop: theme.spacing.md,
+              paddingTop: theme.spacing.md,
+              borderTop: `1px solid ${theme.colors.neutral.gray300}`
+            }}
+          >
+            {actionButton}
+          </div>
+        )}
       </div>
     </GameCard>
   )
