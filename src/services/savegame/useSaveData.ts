@@ -13,6 +13,7 @@ import {
   getCurrentSaveData,
   getCurrentSaveId,
   setCurrentSaveId,
+  clearCurrentSaveId,
   updateSaveSlot,
   createSaveSlot,
   exportSaveSlotToJson,
@@ -208,6 +209,9 @@ export const useSaveData = () => {
     if (currentSaveId) {
       updateSaveSlot(currentSaveId, initialSaveData)
     }
+    // Clear the current save ID so the app knows there's no active save
+    clearCurrentSaveId()
+    setCurrentSaveIdState(null)
   }
 
   /**

@@ -19,6 +19,8 @@ const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       )
     ) {
       clearCurrentSave()
+      // Navigate to LOAD screen to show the cleared state
+      changeScreen(Screens.LOAD)
     }
   }
 
