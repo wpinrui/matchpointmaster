@@ -1,17 +1,11 @@
 import React, { useState } from 'react'
 import BackgroundImage from '../../assets/tabletennisphoto.jpg'
 import { ScreenProps, Screens } from '../../screen_manager/screens'
+import { initialSaveData } from '../../services/savegame/initialSaveData'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
-import {
-  FavourStyle,
-  Gender,
-  GripStyle,
-  Handedness,
-  PlayStyle,
-  RubberType,
-  SaveData
-} from '../../services/savegame/types'
+import { SaveData } from '../../services/savegame/types'
 import { CommonStyles } from '../../styles/common/CommonStyles'
+import { validateManagerData, validateSchoolData } from '../../utils/validation'
 import ManagerForm from './ManagerForm'
 import SchoolForm from './SchoolForm'
 
@@ -22,26 +16,15 @@ enum Step {
 
 const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [step, setStep] = useState<Step>(Step.Manager)
-  const [managerData, setManagerData] = useState<SaveData['manager']>({
-    fullName: '',
-    shortName: '',
-    gender: Gender.MALE,
-    imagePath: '',
-    handedness: Handedness.RIGHT,
-    forehandRubber: RubberType.SPIN_RUBBER,
-    backhandRubber: RubberType.SPIN_RUBBER,
-    gripStyle: GripStyle.SHAKE_HAND,
-    forehandBackhandTendency: FavourStyle.BALANCED,
-    playStyle: PlayStyle.ALL_ROUNDER
-  })
-  const [schoolData, setSchoolData] = useState<SaveData['school']>({
-    name: '',
-    crestPath: '',
-    color: ''
-  })
+  const [managerData, setManagerData] = useState<SaveData['manager']>(
+    initialSaveData.manager
+  )
+  const [schoolData, setSchoolData] = useState<SaveData['school']>(
+    initialSaveData.school
+  )
   const { updateManager, updateSchool } = useSaveDataContext()
 
-  const saveManagerStateToLocalStorage = () => {
+  const saveManagerStateToContext = () => {
     updateManager.fullName(managerData.fullName)
     updateManager.shortName(managerData.shortName)
     updateManager.gender(managerData.gender)
@@ -54,48 +37,35 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     updateManager.playStyle(managerData.playStyle)
   }
 
-  const saveSchoolStateToLocalStorage = () => {
+  const saveSchoolStateToContext = () => {
     updateSchool.name(schoolData.name)
     updateSchool.crestPath(schoolData.crestPath)
     updateSchool.schoolColor(schoolData.color)
   }
 
-  const handleManagerDataChange = (key: string, value: string | File | null) => {
+  const handleManagerDataChange = (
+    key: keyof SaveData['manager'],
+    value: string | File | null
+  ) => {
     setManagerData((prev) => ({ ...prev, [key]: value }))
   }
 
-  const handleSchoolDataChange = (key: string, value: string) => {
+  const handleSchoolDataChange = (key: keyof SaveData['school'], value: string) => {
     setSchoolData((prev) => ({ ...prev, [key]: value }))
   }
 
-  const isSchoolDataValid = (): boolean => {
-    return (
-      schoolData.name.trim() !== '' &&
-      schoolData.crestPath !== '' &&
-      schoolData.color.trim() !== ''
-    )
-  }
-
   const handleStartGame = () => {
-    if (isSchoolDataValid()) {
-      saveSchoolStateToLocalStorage()
+    if (validateSchoolData(schoolData)) {
+      saveSchoolStateToContext()
       changeScreen(Screens.HOME)
     } else {
       alert('Please fill in all fields.')
     }
   }
 
-  const isManagerDataValid = (): boolean => {
-    return (
-      managerData.fullName.trim() !== '' &&
-      managerData.shortName.trim() !== '' &&
-      managerData.imagePath !== ''
-    )
-  }
-
   const handleNextStep = () => {
-    if (isManagerDataValid()) {
-      saveManagerStateToLocalStorage()
+    if (validateManagerData(managerData)) {
+      saveManagerStateToContext()
       setStep(Step.School)
     } else {
       alert('Please fill in all fields.')

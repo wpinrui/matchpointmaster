@@ -10,14 +10,41 @@ import {
   SaveData
 } from './types'
 
+const STORAGE_KEY = 'saveData'
+
+const loadFromLocalStorage = (): SaveData => {
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY)
+    if (!savedData) {
+      return initialSaveData
+    }
+    const parsed = JSON.parse(savedData)
+    // Basic validation - ensure parsed data has expected structure
+    if (parsed && typeof parsed === 'object' && 'manager' in parsed && 'school' in parsed) {
+      return parsed as SaveData
+    }
+    console.warn('Invalid save data structure, using initial data')
+    return initialSaveData
+  } catch (error) {
+    console.error('Error loading save data from localStorage:', error)
+    return initialSaveData
+  }
+}
+
+const saveToLocalStorage = (data: SaveData): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } catch (error) {
+    console.error('Error saving data to localStorage:', error)
+    // Could show user notification here in the future
+  }
+}
+
 export const useSaveData = () => {
-  const [saveData, setSaveData] = useState<SaveData>(() => {
-    const savedData = localStorage.getItem('saveData')
-    return savedData ? JSON.parse(savedData) : initialSaveData
-  })
+  const [saveData, setSaveData] = useState<SaveData>(loadFromLocalStorage)
 
   useEffect(() => {
-    localStorage.setItem('saveData', JSON.stringify(saveData))
+    saveToLocalStorage(saveData)
   }, [saveData])
 
   const updateAttribute = <T extends keyof SaveData, K extends keyof SaveData[T]>(
@@ -62,21 +89,28 @@ export const useSaveData = () => {
   }
 
   const saveToFile = () => {
-    const json = JSON.stringify(saveData)
-    localStorage.setItem('saveData', json)
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'saveData.json'
-    link.click()
+    try {
+      const json = JSON.stringify(saveData, null, 2)
+      saveToLocalStorage(saveData)
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'saveData.json'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      // Clean up the object URL to prevent memory leaks
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error saving file:', error)
+      alert('Failed to save file. Please try again.')
+    }
   }
 
-  const loadFromFile = () => {
-    const savedData = localStorage.getItem('saveData')
-    if (savedData) {
-      setSaveData(JSON.parse(savedData))
-    }
+  const loadFromLocalStorageData = () => {
+    const loadedData = loadFromLocalStorage()
+    setSaveData(loadedData)
   }
 
   const resetSaveData = () => {
@@ -90,7 +124,7 @@ export const useSaveData = () => {
     updateManager,
     updateSchool,
     saveToFile,
-    loadFromFile,
+    loadFromLocalStorageData,
     resetSaveData
   }
 }

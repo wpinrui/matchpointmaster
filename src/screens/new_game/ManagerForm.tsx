@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { CONSTANTS } from '../../constants'
 import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
 import DropdownWithTooltip from '../../frontend/forms/DropdownWithTooltip'
 import { SaveData } from '../../services/savegame/types'
+import { useImagePicker } from '../../hooks/useImagePicker'
+import { GENDER_OPTIONS } from '../../utils/constants'
 import { newGameTextRecords } from './newGameTextRecords'
 
 const ManagerForm: React.FC<{
@@ -11,18 +13,21 @@ const ManagerForm: React.FC<{
   onChange: (key: keyof SaveData['manager'], value: string | File | null) => void
   onNext: () => void
 }> = ({ data, onChange, onNext }) => {
-  const [isDialogPickerOpen, setIsDialogPickerOpen] = useState(false)
+  const { isDialogOpen, openDialog, closeDialog } = useImagePicker()
+
+  const handleImageSelect = (imagePath: string) => {
+    onChange('imagePath', imagePath)
+    closeDialog()
+  }
+
   return (
     <div>
-      {isDialogPickerOpen && (
+      {isDialogOpen && (
         <ImagePickerDialog
-          isOpen={isDialogPickerOpen}
+          isOpen={isDialogOpen}
           path={CONSTANTS.managerFacesPath}
-          onSelectImage={(imagePath) => {
-            onChange('imagePath', imagePath)
-            setIsDialogPickerOpen(false)
-          }}
-          onClose={() => setIsDialogPickerOpen(false)}
+          onSelectImage={handleImageSelect}
+          onClose={closeDialog}
         />
       )}
       <h4>Manager Information</h4>
@@ -51,16 +56,18 @@ const ManagerForm: React.FC<{
             onChange={(e) => onChange('gender', e.target.value)}
             className="mb-2"
           >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
+            {GENDER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </Form.Select>
         </Form.Group>
         <Form.Group controlId="profileImage">
           {data.imagePath && <img src={data.imagePath} alt="Profile" />}
           <Button
             variant="secondary"
-            onClick={() => setIsDialogPickerOpen(true)}
+            onClick={openDialog}
             className="mb-2"
           >
             Pick Profile Image

@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Button, Form } from 'react-bootstrap'
 import { CONSTANTS } from '../../constants'
 import { ImagePickerDialog } from '../../frontend/dialogs/ImagePickerDialog'
+import { useImagePicker } from '../../hooks/useImagePicker'
 import { SaveData } from '../../services/savegame/types'
 
 const SchoolForm: React.FC<{
@@ -10,19 +11,21 @@ const SchoolForm: React.FC<{
   onStartGame: () => void
   onBack: () => void
 }> = ({ data, onChange, onStartGame, onBack }) => {
-  const [isDialogPickerOpen, setIsDialogPickerOpen] = useState(false)
+  const { isDialogOpen, openDialog, closeDialog } = useImagePicker()
+
+  const handleImageSelect = (imagePath: string) => {
+    onChange('crestPath', imagePath)
+    closeDialog()
+  }
 
   return (
     <div>
-      {isDialogPickerOpen && (
+      {isDialogOpen && (
         <ImagePickerDialog
-          isOpen={isDialogPickerOpen}
+          isOpen={isDialogOpen}
           path={CONSTANTS.schoolCrestsPath}
-          onSelectImage={(imagePath) => {
-            onChange('crestPath', imagePath)
-            setIsDialogPickerOpen(false)
-          }}
-          onClose={() => setIsDialogPickerOpen(false)}
+          onSelectImage={handleImageSelect}
+          onClose={closeDialog}
         />
       )}
       <h4>School Information</h4>
@@ -40,7 +43,7 @@ const SchoolForm: React.FC<{
           {data.crestPath && <img src={data.crestPath} alt="schoolCrest" />}
           <Button
             variant="secondary"
-            onClick={() => setIsDialogPickerOpen(true)}
+            onClick={openDialog}
             className="mb-2"
           >
             Pick School Crest
