@@ -46,7 +46,9 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const saveSchoolStateToContext = () => {
     updateSchool.name(schoolData.name)
     updateSchool.crestPath(schoolData.crestPath)
-    updateSchool.schoolColor(schoolData.color)
+    updateSchool.primaryColor(schoolData.primaryColor)
+    updateSchool.secondaryColor(schoolData.secondaryColor)
+    updateSchool.accentColor(schoolData.accentColor)
   }
 
   const handleManagerDataChange = (
@@ -64,7 +66,10 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     }
   }
 
-  const handleSchoolDataChange = (key: keyof SaveData['school'], value: string) => {
+  const handleSchoolDataChange = (
+    key: keyof SaveData['school'],
+    value: string
+  ) => {
     setSchoolData((prev) => ({ ...prev, [key]: value }))
     // Clear error for this field when user starts typing
     if (schoolErrors[key as keyof SchoolValidationErrors]) {

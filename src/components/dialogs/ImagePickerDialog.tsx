@@ -4,6 +4,7 @@ import { useImageLoader } from '../../hooks/useImageLoader'
 import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import FaceCustomizer from '../forms/FaceCustomizer'
+import { CrestCustomizer } from '../crests/CrestCustomizer'
 import { ImagePickerDialogFooter } from './ImagePickerDialogFooter'
 
 type ImagePickerDialogProps = {
@@ -15,6 +16,13 @@ type ImagePickerDialogProps = {
   currentImagePath?: string // Currently selected image path (for restoring state)
   storedFaceOptions?: string[] // Previously generated face options (to restore)
   onFaceOptionsChange?: (faces: string[]) => void // Callback to store face options
+  // Crest customizer props
+  initialPrimaryColor?: string
+  initialSecondaryColor?: string
+  initialAccentColor?: string
+  storedCrestOptions?: string[]
+  onCrestOptionsChange?: (crests: string[]) => void
+  onColorsChange?: (primary: string, secondary: string, accent: string) => void
 }
 
 export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
@@ -25,18 +33,29 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
   gender,
   currentImagePath,
   storedFaceOptions = [],
-  onFaceOptionsChange
+  onFaceOptionsChange,
+  initialPrimaryColor,
+  initialSecondaryColor,
+  initialAccentColor,
+  storedCrestOptions = [],
+  onCrestOptionsChange,
+  onColorsChange
 }) => {
   const [selectedFaceUrl, setSelectedFaceUrl] = useState<string>('')
+  const [selectedCrestUrl, setSelectedCrestUrl] = useState<string>('')
   const { imagePaths, error, setError } = useImageLoader(path, isOpen)
 
   const handleFaceChange = (faceUrl: string) => {
     setSelectedFaceUrl(faceUrl)
   }
 
+  const handleCrestChange = (crestUrl: string) => {
+    setSelectedCrestUrl(crestUrl)
+  }
+
   const handleConfirm = () => {
-    if (selectedFaceUrl) {
-      onSelectImage(selectedFaceUrl)
+    if (selectedFaceUrl || selectedCrestUrl) {
+      onSelectImage(selectedFaceUrl || selectedCrestUrl)
     }
   }
 
@@ -52,6 +71,7 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
   }
 
   const isManagerFaces = path.includes('manager_faces')
+  const isSchoolCrests = path.includes('school_crests')
 
   return (
     <Modal
@@ -99,6 +119,17 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
             currentSelectedFace={currentImagePath}
             storedFaceOptions={storedFaceOptions}
             onFaceOptionsChange={onFaceOptionsChange}
+          />
+        ) : isSchoolCrests ? (
+          <CrestCustomizer
+            initialPrimaryColor={initialPrimaryColor}
+            initialSecondaryColor={initialSecondaryColor}
+            initialAccentColor={initialAccentColor}
+            onCrestChange={handleCrestChange}
+            onColorsChange={onColorsChange}
+            storedCrestOptions={storedCrestOptions}
+            onCrestOptionsChange={onCrestOptionsChange}
+            currentSelectedCrest={currentImagePath}
           />
         ) : error ? (
           <div
@@ -158,9 +189,9 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
           </div>
         )}
       </Modal.Body>
-      {isManagerFaces && (
+      {(isManagerFaces || isSchoolCrests) && (
         <ImagePickerDialogFooter
-          selectedFaceUrl={selectedFaceUrl}
+          selectedFaceUrl={selectedFaceUrl || selectedCrestUrl}
           onConfirm={handleConfirm}
           onCancel={handleClose}
         />

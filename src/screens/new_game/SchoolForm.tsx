@@ -18,10 +18,21 @@ const SchoolForm: React.FC<{
   errors: SchoolValidationErrors
 }> = ({ data, onChange, onStartGame, onBack, errors }) => {
   const { isDialogOpen, openDialog, closeDialog } = useImagePicker()
+  const [storedCrestOptions, setStoredCrestOptions] = React.useState<string[]>([])
 
   const handleImageSelect = (imagePath: string) => {
     onChange('crestPath', imagePath)
     closeDialog()
+  }
+
+  const handleColorsChange = (
+    primary: string,
+    secondary: string,
+    accent: string
+  ) => {
+    onChange('primaryColor', primary)
+    onChange('secondaryColor', secondary)
+    onChange('accentColor', accent)
   }
 
   return (
@@ -32,6 +43,13 @@ const SchoolForm: React.FC<{
           path={CONSTANTS.schoolCrestsPath}
           onSelectImage={handleImageSelect}
           onClose={closeDialog}
+          initialPrimaryColor={data.primaryColor}
+          initialSecondaryColor={data.secondaryColor}
+          initialAccentColor={data.accentColor}
+          storedCrestOptions={storedCrestOptions}
+          onCrestOptionsChange={setStoredCrestOptions}
+          onColorsChange={handleColorsChange}
+          currentImagePath={data.crestPath}
         />
       )}
       <h4
@@ -67,17 +85,6 @@ const SchoolForm: React.FC<{
             crestPath={data.crestPath}
             onPickCrest={openDialog}
             error={errors.crestPath}
-          />
-        </div>
-        <div className={errors.color ? 'validation-error' : ''}>
-          <GameInput
-            type="text"
-            placeholder="School Color (e.g., #FF6B35 or Blue)"
-            value={data.color}
-            onChange={(e) => onChange('color', e.target.value)}
-            label="School Color"
-            helperText="Enter a color name or hex code"
-            error={errors.color}
           />
         </div>
         <div

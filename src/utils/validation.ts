@@ -9,7 +9,9 @@ export type ManagerValidationErrors = {
 export type SchoolValidationErrors = {
   name?: string
   crestPath?: string
-  color?: string
+  primaryColor?: string
+  secondaryColor?: string
+  accentColor?: string
 }
 
 /**
@@ -50,8 +52,14 @@ export const validateSchoolData = (
   if (!schoolData.crestPath) {
     errors.crestPath = 'School crest is required'
   }
-  if (!schoolData.color.trim()) {
-    errors.color = 'School color is required'
+  if (!schoolData.primaryColor.trim()) {
+    errors.primaryColor = 'Primary color is required'
+  }
+  if (!schoolData.secondaryColor.trim()) {
+    errors.secondaryColor = 'Secondary color is required'
+  }
+  if (!schoolData.accentColor.trim()) {
+    errors.accentColor = 'Accent color is required'
   }
 
   return {

@@ -24,6 +24,8 @@ export const initialSaveData: SaveData = {
   school: {
     name: '',
     crestPath: '',
-    color: ''
+    primaryColor: '#FF6B35',
+    secondaryColor: '#004E89',
+    accentColor: '#FFD23F'
   }
 }
