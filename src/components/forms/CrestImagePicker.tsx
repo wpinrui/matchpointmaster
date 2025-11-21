@@ -74,4 +74,3 @@ export const CrestImagePicker: React.FC<CrestImagePickerProps> = ({
     </Form.Group>
   )
 }
-

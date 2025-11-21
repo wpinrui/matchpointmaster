@@ -61,4 +61,3 @@ export const ImagePickerDialogFooter: React.FC<ImagePickerDialogFooterProps> = (
     </Modal.Footer>
   )
 }
-

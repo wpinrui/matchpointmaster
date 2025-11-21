@@ -5,9 +5,7 @@ interface RandomizeButtonProps {
   onClick: () => void
 }
 
-export const RandomizeButton: React.FC<RandomizeButtonProps> = ({
-  onClick
-}) => {
+export const RandomizeButton: React.FC<RandomizeButtonProps> = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
@@ -38,4 +36,3 @@ export const RandomizeButton: React.FC<RandomizeButtonProps> = ({
     </button>
   )
 }
-

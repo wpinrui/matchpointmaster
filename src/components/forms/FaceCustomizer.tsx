@@ -40,13 +40,7 @@ const FaceCustomizer: React.FC<FaceCustomizerProps> = ({
       setSelectedFaceUrl(previousSelection)
       onFaceChange(previousSelection)
     }
-  }, [
-    initialSeed,
-    onFaceChange,
-    gender,
-    currentSelectedFace,
-    onFaceOptionsChange
-  ])
+  }, [initialSeed, onFaceChange, gender, currentSelectedFace, onFaceOptionsChange])
 
   // Initialize faces: use stored options if available, otherwise generate new ones
   React.useEffect(() => {
@@ -54,10 +48,7 @@ const FaceCustomizer: React.FC<FaceCustomizerProps> = ({
       // Restore stored faces
       setFaceOptions(storedFaceOptions)
       // Select the previously selected face if it's in the stored options
-      if (
-        currentSelectedFace &&
-        storedFaceOptions.includes(currentSelectedFace)
-      ) {
+      if (currentSelectedFace && storedFaceOptions.includes(currentSelectedFace)) {
         setSelectedFaceUrl(currentSelectedFace)
         onFaceChange(currentSelectedFace)
       } else if (storedFaceOptions.length > 0) {

@@ -49,4 +49,3 @@ const GameCard: React.FC<GameCardProps> = ({
 }
 
 export default GameCard
-

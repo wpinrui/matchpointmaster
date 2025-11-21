@@ -8,4 +8,3 @@ export const GENDER_OPTIONS = [
   { value: Gender.MALE, label: 'Male' },
   { value: Gender.FEMALE, label: 'Female' }
 ] as const
-

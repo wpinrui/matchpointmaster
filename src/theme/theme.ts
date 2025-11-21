@@ -75,7 +75,8 @@ export const theme = {
   },
   typography: {
     fontFamily: {
-      primary: "'Inter', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif",
+      primary:
+        "'Inter', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif",
       heading: "'Poppins', 'Inter', sans-serif",
       mono: "'Fira Code', 'Courier New', monospace"
     },
@@ -157,9 +158,9 @@ export const theme = {
     accent: 'linear-gradient(135deg, #FFD23F 0%, #FFC107 100%)',
     overlay: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.7) 100%)',
     card: 'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
-    glass: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
+    glass:
+      'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
   }
 } as const
 
 export type Theme = typeof theme
-

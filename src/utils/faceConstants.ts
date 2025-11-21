@@ -8,7 +8,7 @@ export const SKIN_TONES = [
   'D08B5B', // Medium
   '8D5524', // Dark
   'C68642', // Tan
-  'A0522D'  // Brown
+  'A0522D' // Brown
 ] as const
 
 // Hair styles categorized by gender appropriateness
@@ -67,7 +67,7 @@ export const HAIR_COLORS = [
   'D6B370', // Light Blonde
   '724133', // Dark Brown
   'C93305', // Red
-  'E8E1E1'  // Gray
+  'E8E1E1' // Gray
 ] as const
 
 export const ACCESSORIES = [
@@ -96,4 +96,3 @@ export const CLOTHING = [
   'shirtVNeck',
   'shirtScoopNeck'
 ] as const
-

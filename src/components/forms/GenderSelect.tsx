@@ -9,10 +9,7 @@ interface GenderSelectProps {
   onChange: (value: Gender) => void
 }
 
-export const GenderSelect: React.FC<GenderSelectProps> = ({
-  value,
-  onChange
-}) => {
+export const GenderSelect: React.FC<GenderSelectProps> = ({ value, onChange }) => {
   return (
     <Form.Group style={{ marginBottom: theme.spacing.lg }}>
       <Form.Label
@@ -58,4 +55,3 @@ export const GenderSelect: React.FC<GenderSelectProps> = ({
     </Form.Group>
   )
 }
-

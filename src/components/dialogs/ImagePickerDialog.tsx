@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { Modal } from 'react-bootstrap'
+import { useImageLoader } from '../../hooks/useImageLoader'
+import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import FaceCustomizer from '../forms/FaceCustomizer'
-import { Gender } from '../../services/savegame/types'
-import { useImageLoader } from '../../hooks/useImageLoader'
 import { ImagePickerDialogFooter } from './ImagePickerDialogFooter'
 
 type ImagePickerDialogProps = {
@@ -57,8 +57,8 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
     <Modal
       show={isOpen}
       onHide={handleClose}
-      backdrop={true}
-      keyboard={true}
+      backdrop
+      keyboard
       style={{
         zIndex: theme.zIndex.modal
       }}
@@ -168,4 +168,3 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
     </Modal>
   )
 }
-

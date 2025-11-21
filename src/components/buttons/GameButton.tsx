@@ -25,7 +25,10 @@ const GameButton: React.FC<GameButtonProps> = ({
   ...props
 }) => {
   const getVariantStyles = (): CSSProperties => {
-    const colorMap: Record<GameButtonVariant, { main: string; light: string; dark: string }> = {
+    const colorMap: Record<
+      GameButtonVariant,
+      { main: string; light: string; dark: string }
+    > = {
       primary: theme.colors.primary,
       secondary: theme.colors.secondary,
       accent: theme.colors.accent,
@@ -47,8 +50,18 @@ const GameButton: React.FC<GameButtonProps> = ({
       color: variant === 'accent' ? theme.colors.text.primary : theme.colors.text.inverse,
       border: 'none',
       borderRadius: theme.borderRadius.lg,
-      padding: size === 'sm' ? `${theme.spacing.sm} ${theme.spacing.md}` : size === 'lg' ? `${theme.spacing.lg} ${theme.spacing['2xl']}` : `${theme.spacing.md} ${theme.spacing.xl}`,
-      fontSize: size === 'sm' ? theme.typography.fontSize.sm : size === 'lg' ? theme.typography.fontSize.lg : theme.typography.fontSize.base,
+      padding:
+        size === 'sm'
+          ? `${theme.spacing.sm} ${theme.spacing.md}`
+          : size === 'lg'
+            ? `${theme.spacing.lg} ${theme.spacing['2xl']}`
+            : `${theme.spacing.md} ${theme.spacing.xl}`,
+      fontSize:
+        size === 'sm'
+          ? theme.typography.fontSize.sm
+          : size === 'lg'
+            ? theme.typography.fontSize.lg
+            : theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.semibold,
       cursor: props.disabled ? 'not-allowed' : 'pointer',
       boxShadow: glow ? theme.shadows.glow : theme.shadows.md,
@@ -78,7 +91,9 @@ const GameButton: React.FC<GameButtonProps> = ({
       onMouseEnter={(e) => {
         if (!props.disabled) {
           e.currentTarget.style.transform = 'translateY(-2px)'
-          e.currentTarget.style.boxShadow = glow ? theme.shadows.glowStrong : theme.shadows.lg
+          e.currentTarget.style.boxShadow = glow
+            ? theme.shadows.glowStrong
+            : theme.shadows.lg
         }
       }}
       onMouseLeave={(e) => {
@@ -99,4 +114,3 @@ const GameButton: React.FC<GameButtonProps> = ({
 }
 
 export default GameButton
-

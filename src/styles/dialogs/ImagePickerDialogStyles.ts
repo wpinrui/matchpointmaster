@@ -14,4 +14,3 @@ export const imageStyle: React.CSSProperties = {
   borderRadius: '8px',
   transition: 'transform 0.2s'
 }
-

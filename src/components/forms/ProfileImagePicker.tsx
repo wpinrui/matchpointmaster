@@ -78,4 +78,3 @@ export const ProfileImagePicker: React.FC<ProfileImagePickerProps> = ({
     </Form.Group>
   )
 }
-

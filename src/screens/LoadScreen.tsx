@@ -68,8 +68,9 @@ const LoadScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               marginBottom: theme.spacing['2xl']
             }}
           >
-            Lead your school squad to national glory as you train talented players, outsmart
-            rival teams, and strategize your way to the top of the national championships.
+            Lead your school squad to national glory as you train talented players,
+            outsmart rival teams, and strategize your way to the top of the national
+            championships.
           </p>
         </div>
         <div

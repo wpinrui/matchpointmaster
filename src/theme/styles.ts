@@ -77,7 +77,9 @@ export const createOverlayStyle = (): React.CSSProperties => ({
   zIndex: theme.zIndex.base
 })
 
-export const createHeadingStyle = (size: 'h1' | 'h2' | 'h3' | 'h4' = 'h1'): React.CSSProperties => {
+export const createHeadingStyle = (
+  size: 'h1' | 'h2' | 'h3' | 'h4' = 'h1'
+): React.CSSProperties => {
   const sizeMap = {
     h1: theme.typography.fontSize['5xl'],
     h2: theme.typography.fontSize['4xl'],
@@ -95,4 +97,3 @@ export const createHeadingStyle = (size: 'h1' | 'h2' | 'h3' | 'h4' = 'h1'): Reac
     textShadow: `2px 2px 4px rgba(0, 0, 0, 0.1)`
   }
 }
-

@@ -25,9 +25,7 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [managerData, setManagerData] = useState<SaveData['manager']>(
     initialSaveData.manager
   )
-  const [schoolData, setSchoolData] = useState<SaveData['school']>(
-    initialSaveData.school
-  )
+  const [schoolData, setSchoolData] = useState<SaveData['school']>(initialSaveData.school)
   const [managerErrors, setManagerErrors] = useState<ManagerValidationErrors>({})
   const [schoolErrors, setSchoolErrors] = useState<SchoolValidationErrors>({})
   const { updateManager, updateSchool } = useSaveDataContext()

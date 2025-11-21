@@ -20,7 +20,12 @@ const loadFromLocalStorage = (): SaveData => {
     }
     const parsed = JSON.parse(savedData)
     // Basic validation - ensure parsed data has expected structure
-    if (parsed && typeof parsed === 'object' && 'manager' in parsed && 'school' in parsed) {
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      'manager' in parsed &&
+      'school' in parsed
+    ) {
       return parsed as SaveData
     }
     console.warn('Invalid save data structure, using initial data')

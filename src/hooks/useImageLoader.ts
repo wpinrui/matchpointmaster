@@ -62,4 +62,3 @@ export const useImageLoader = (path: string, isOpen: boolean) => {
 
   return { imagePaths, error, setError }
 }
-

@@ -65,10 +65,9 @@ const hairStyleMap: Record<HairStyle, string[]> = {
 export const generateFaceUrl = (config: FaceConfig): string => {
   // Get a random hair style from the category
   const availableHairStyles = hairStyleMap[config.hairStyle]
-  const randomHairStyle =
-    availableHairStyles[
-      Math.floor(Math.random() * availableHairStyles.length)
-    ] as any // Type assertion needed due to DiceBear's strict typing
+  const randomHairStyle = availableHairStyles[
+    Math.floor(Math.random() * availableHairStyles.length)
+  ] as any // Type assertion needed due to DiceBear's strict typing
 
   // Generate face WITHOUT clothing - clothing will be added later with school colors
   const options: any = {
@@ -78,7 +77,15 @@ export const generateFaceUrl = (config: FaceConfig): string => {
   }
 
   // Randomize hair color for variety (colors without # prefix)
-  const hairColors = ['A55728', '2C1B18', 'B58143', 'D6B370', '724133', 'C93305', 'E8E1E1']
+  const hairColors = [
+    'A55728',
+    '2C1B18',
+    'B58143',
+    'D6B370',
+    '724133',
+    'C93305',
+    'E8E1E1'
+  ]
   const randomHairColor = hairColors[Math.floor(Math.random() * hairColors.length)]
   options.hairColor = [randomHairColor]
 
@@ -153,4 +160,3 @@ export const generateVariedFaces = (): Array<{ url: string; config: FaceConfig }
 
   return faces
 }
-
