@@ -1,6 +1,6 @@
 import SaveIcon from '@mui/icons-material/Save'
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports'
-import React, { useRef } from 'react'
+import React from 'react'
 import BackgroundImage from '../assets/tabletennisphoto.jpg'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { CommonStyles } from '../styles/common/CommonStyles'
@@ -9,14 +9,12 @@ import GameButton from '../components/buttons/GameButton'
 import GameCard from '../components/cards/GameCard'
 
 const LoadScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
   const handleNewGame = () => {
     changeScreen(Screens.NEW_GAME)
   }
 
-  const handleLoadFile = () => {
-    fileInputRef.current?.click()
+  const handleLoadGame = () => {
+    changeScreen(Screens.SAVE_MANAGER)
   }
 
   return (
@@ -84,19 +82,13 @@ const LoadScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           <GameButton
             variant="secondary"
             size="lg"
-            onClick={handleLoadFile}
+            onClick={handleLoadGame}
             icon={<SaveIcon />}
             fullWidth
             glow
           >
-            Load Save File
+            Load Game
           </GameButton>
-          <input
-            type="file"
-            accept=".json"
-            style={{ display: 'none' }}
-            ref={fileInputRef}
-          />
           <GameButton
             variant="primary"
             size="lg"

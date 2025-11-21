@@ -9,48 +9,28 @@ import {
   RubberType,
   SaveData
 } from './types'
-
-const STORAGE_KEY = 'saveData'
-
-const loadFromLocalStorage = (): SaveData => {
-  try {
-    const savedData = localStorage.getItem(STORAGE_KEY)
-    if (!savedData) {
-      return initialSaveData
-    }
-    const parsed = JSON.parse(savedData)
-    // Basic validation - ensure parsed data has expected structure
-    if (
-      parsed &&
-      typeof parsed === 'object' &&
-      'manager' in parsed &&
-      'school' in parsed
-    ) {
-      return parsed as SaveData
-    }
-    console.warn('Invalid save data structure, using initial data')
-    return initialSaveData
-  } catch (error) {
-    console.error('Error loading save data from localStorage:', error)
-    return initialSaveData
-  }
-}
-
-const saveToLocalStorage = (data: SaveData): void => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  } catch (error) {
-    console.error('Error saving data to localStorage:', error)
-    // Could show user notification here in the future
-  }
-}
+import {
+  getCurrentSaveData,
+  getCurrentSaveId,
+  setCurrentSaveId,
+  updateSaveSlot,
+  createSaveSlot,
+  exportSaveSlotToJson,
+  getSaveSlot
+} from './saveManager'
 
 export const useSaveData = () => {
-  const [saveData, setSaveData] = useState<SaveData>(loadFromLocalStorage)
+  const [saveData, setSaveData] = useState<SaveData>(getCurrentSaveData())
+  const [currentSaveId, setCurrentSaveIdState] = useState<string | null>(
+    getCurrentSaveId()
+  )
 
+  // Auto-save to current save slot whenever saveData changes
   useEffect(() => {
-    saveToLocalStorage(saveData)
-  }, [saveData])
+    if (currentSaveId) {
+      updateSaveSlot(currentSaveId, saveData)
+    }
+  }, [saveData, currentSaveId])
 
   const updateAttribute = <T extends keyof SaveData, K extends keyof SaveData[T]>(
     category: T,
@@ -98,43 +78,91 @@ export const useSaveData = () => {
     accentColor: (color: string) => updateAttribute('school', 'accentColor', color)
   }
 
-  const saveToFile = () => {
+  /**
+   * Export current save to JSON file (manual download)
+   */
+  const exportToJson = () => {
     try {
-      const json = JSON.stringify(saveData, null, 2)
-      saveToLocalStorage(saveData)
+      if (!currentSaveId) {
+        alert('No active save to export. Please create or load a save first.')
+        return
+      }
+      const slot = getSaveSlot(currentSaveId)
+      if (!slot) {
+        alert('Save slot not found. Please try again.')
+        return
+      }
+      const json = exportSaveSlotToJson(slot)
       const blob = new Blob([json], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = 'saveData.json'
+      link.download = `${slot.name.replace(/[^a-z0-9]/gi, '_')}_${slot.id.slice(0, 8)}.json`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      // Clean up the object URL to prevent memory leaks
       URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Error saving file:', error)
-      alert('Failed to save file. Please try again.')
+      console.error('Error exporting save file:', error)
+      alert('Failed to export save file. Please try again.')
     }
   }
 
-  const loadFromLocalStorageData = () => {
-    const loadedData = loadFromLocalStorage()
-    setSaveData(loadedData)
+  /**
+   * Load a specific save slot
+   */
+  const loadSaveSlot = (saveId: string) => {
+    const slot = getSaveSlot(saveId)
+    if (slot) {
+      setSaveData(slot.data)
+      setCurrentSaveIdState(saveId)
+      setCurrentSaveId(saveId)
+    }
   }
 
+  /**
+   * Create a new save slot and set it as current
+   * Optionally accepts save data, otherwise uses current saveData
+   */
+  const createNewSave = (name: string, data?: SaveData) => {
+    const dataToSave = data || saveData
+    const newSlot = createSaveSlot(name, dataToSave)
+    setSaveData(dataToSave)
+    setCurrentSaveIdState(newSlot.id)
+    setCurrentSaveId(newSlot.id)
+    return newSlot
+  }
+
+  /**
+   * Clear current save data (reset to initial state)
+   */
+  const clearCurrentSave = () => {
+    setSaveData(initialSaveData)
+    if (currentSaveId) {
+      updateSaveSlot(currentSaveId, initialSaveData)
+    }
+  }
+
+  /**
+   * Reset to initial save data and clear current save ID
+   */
   const resetSaveData = () => {
     setSaveData(initialSaveData)
+    setCurrentSaveIdState(null)
+    setCurrentSaveId(null)
   }
 
   return {
     saveData,
     manager: saveData.manager,
     school: saveData.school,
+    currentSaveId,
     updateManager,
     updateSchool,
-    saveToFile,
-    loadFromLocalStorageData,
+    exportToJson,
+    loadSaveSlot,
+    createNewSave,
+    clearCurrentSave,
     resetSaveData
   }
 }

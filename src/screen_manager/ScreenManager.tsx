@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Home from '../screens/Home'
 import LoadScreen from '../screens/LoadScreen'
 import NewGameScreen from '../screens/new_game/NewGameScreen'
+import SaveManagerScreen from '../screens/SaveManagerScreen'
 import { Screens } from './screens'
 
 const ScreenManager: React.FC = () => {
@@ -16,7 +17,8 @@ const ScreenManager: React.FC = () => {
   } = {
     [Screens.LOAD]: LoadScreen,
     [Screens.NEW_GAME]: NewGameScreen,
-    [Screens.HOME]: Home
+    [Screens.HOME]: Home,
+    [Screens.SAVE_MANAGER]: SaveManagerScreen
   }
 
   const ScreenComponent = screenComponents[currentScreen]

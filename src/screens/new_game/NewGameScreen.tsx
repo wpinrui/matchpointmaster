@@ -28,7 +28,7 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [schoolData, setSchoolData] = useState<SaveData['school']>(initialSaveData.school)
   const [managerErrors, setManagerErrors] = useState<ManagerValidationErrors>({})
   const [schoolErrors, setSchoolErrors] = useState<SchoolValidationErrors>({})
-  const { updateManager, updateSchool } = useSaveDataContext()
+  const { updateManager, updateSchool, createNewSave } = useSaveDataContext()
 
   const saveManagerStateToContext = () => {
     updateManager.fullName(managerData.fullName)
@@ -84,7 +84,16 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const handleStartGame = () => {
     const validation = validateSchoolData(schoolData)
     if (validation.isValid) {
+      saveManagerStateToContext()
       saveSchoolStateToContext()
+      // Create a new save slot with the school name or a default name
+      const saveName = schoolData.name || `${managerData.fullName || 'New Game'}'s Save`
+      // Create save with combined data
+      const combinedData: SaveData = {
+        manager: managerData,
+        school: schoolData
+      }
+      createNewSave(saveName, combinedData)
       changeScreen(Screens.HOME)
     } else {
       setSchoolErrors(validation.errors)
@@ -145,6 +154,7 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             data={managerData}
             onChange={handleManagerDataChange}
             onNext={handleNextStep}
+            onCancel={() => changeScreen(Screens.SAVE_MANAGER)}
             errors={managerErrors}
           />
         ) : (

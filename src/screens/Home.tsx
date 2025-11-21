@@ -1,18 +1,28 @@
 import React from 'react'
-import { useEffectOnce } from 'react-use'
-import { ScreenProps } from '../screen_manager/screens'
+import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { theme } from '../theme/theme'
 import GameCard from '../components/cards/GameCard'
+import GameButton from '../components/buttons/GameButton'
 import { CommonStyles } from '../styles/common/CommonStyles'
 import BackgroundImage from '../assets/tabletennisphoto.jpg'
 
 const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
-  const { saveToFile, manager, school } = useSaveDataContext()
-  useEffectOnce(() => {
-    console.log('Home screen mounted')
-    saveToFile()
-  })
+  const { manager, school, exportToJson, clearCurrentSave } = useSaveDataContext()
+
+  const handleExport = () => {
+    exportToJson()
+  }
+
+  const handleClear = () => {
+    if (
+      window.confirm(
+        'Are you sure you want to clear all current save data? This will reset your game to the initial state. This action cannot be undone.'
+      )
+    ) {
+      clearCurrentSave()
+    }
+  }
 
   return (
     <div
@@ -118,8 +128,40 @@ const Home: React.FC<ScreenProps> = ({ changeScreen }) => {
             marginTop: theme.spacing.xl
           }}
         >
-          Your game has been saved! More features coming soon...
+          Your game is automatically saved! More features coming soon...
         </p>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: theme.spacing.md,
+            marginTop: theme.spacing.xl,
+            justifyContent: 'center',
+            flexWrap: 'wrap'
+          }}
+        >
+          <GameButton
+            variant="secondary"
+            onClick={() => changeScreen(Screens.SAVE_MANAGER)}
+            type="button"
+          >
+            Manage Saves
+          </GameButton>
+          <GameButton
+            variant="secondary"
+            onClick={handleExport}
+            type="button"
+          >
+            Export Save
+          </GameButton>
+          <GameButton
+            variant="secondary"
+            onClick={handleClear}
+            type="button"
+          >
+            Clear Data
+          </GameButton>
+        </div>
       </GameCard>
     </div>
   )
