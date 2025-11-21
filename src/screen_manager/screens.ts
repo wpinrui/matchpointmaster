@@ -1,7 +1,8 @@
 export enum Screens {
   LOAD = 'LOAD',
   NEW_GAME = 'NEW_GAME',
-  HOME = 'HOME'
+  HOME = 'HOME',
+  SAVE_MANAGER = 'SAVE_MANAGER'
 }
 
 export type ScreenProps = {

@@ -47,11 +47,6 @@ html {
   position: relative;
 }
 
-.game-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
-}
-
 /* Input focus animations */
 .game-input input:focus {
   transform: scale(1.02);

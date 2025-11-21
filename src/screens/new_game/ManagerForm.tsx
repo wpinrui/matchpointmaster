@@ -17,8 +17,9 @@ const ManagerForm: React.FC<{
   data: SaveData['manager']
   onChange: (key: keyof SaveData['manager'], value: string | File | null) => void
   onNext: () => void
+  onCancel?: () => void
   errors: ManagerValidationErrors
-}> = ({ data, onChange, onNext, errors }) => {
+}> = ({ data, onChange, onNext, onCancel, errors }) => {
   const { isDialogOpen, openDialog, closeDialog } = useImagePicker()
   const [storedFaceOptions, setStoredFaceOptions] = React.useState<string[]>([])
 
@@ -134,7 +135,28 @@ const ManagerForm: React.FC<{
           onChange={(value) => onChange('playStyle', value)}
           description="Your overall approach to the game"
         />
-        <div style={{ marginTop: theme.spacing.xl }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: theme.spacing.md,
+            marginTop: theme.spacing.xl
+          }}
+        >
+          {onCancel && (
+            <GameButton
+              variant="secondary"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onCancel()
+              }}
+              size="lg"
+              fullWidth
+              type="button"
+            >
+              Cancel
+            </GameButton>
+          )}
           <GameButton
             variant="primary"
             onClick={(e) => {

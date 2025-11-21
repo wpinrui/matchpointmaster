@@ -7,6 +7,7 @@ interface GameCardProps {
   glow?: boolean
   className?: string
   style?: CSSProperties
+  onClick?: (e?: React.MouseEvent<HTMLDivElement>) => void
 }
 
 const GameCard: React.FC<GameCardProps> = ({
@@ -14,7 +15,8 @@ const GameCard: React.FC<GameCardProps> = ({
   title,
   glow = false,
   className = '',
-  style
+  style,
+  onClick
 }) => {
   const cardStyle: CSSProperties = {
     background: theme.gradients.card,
@@ -28,7 +30,23 @@ const GameCard: React.FC<GameCardProps> = ({
   }
 
   return (
-    <div className={`game-card ${className}`} style={cardStyle}>
+    <div
+      className={`game-card ${className}`}
+      style={cardStyle}
+      onClick={(e) => {
+        if (onClick) {
+          onClick(e)
+        }
+      }}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          onClick()
+        }
+      }}
+    >
       {title && (
         <h3
           style={{
