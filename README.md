@@ -146,3 +146,35 @@ Implemented savegame using context. Next task: Instead of loading a JSON file, l
   - Improved folder structure and organization
 
 **Next Steps**: Implement player draft system and begin core gameplay mechanics.
+
+### 21 November 2025 (Evening)
+**Save Handling System Implementation**
+- ✅ **Multiple Save Slots System**:
+  - Refactored save system to support multiple save games in localStorage
+  - Each save slot has unique ID, name, creation date, and last played timestamp
+  - Automatic persistence to localStorage on data changes
+- ✅ **Save Manager Screen**:
+  - New screen to view and manage all save games
+  - Displays save metadata (name, dates, manager, school)
+  - Visual indicator for currently active save
+  - Clickable save cards for easy loading
+  - Load and Delete buttons with confirmation dialogs
+- ✅ **Export/Import Functionality**:
+  - Removed automatic JSON download (was annoying UX)
+  - Manual "Export Save" button for backup/transfer purposes
+  - Import saves from JSON files in Save Manager
+  - Full save slot metadata included in exports
+- ✅ **Clear Data Option**:
+  - Added "Clear Data" button on Home screen
+  - Resets current save to initial state with confirmation
+- ✅ **Navigation Improvements**:
+  - Updated Load Screen to navigate to Save Manager
+  - Added Cancel button to Manager Form to exit new game creation
+  - Better flow: Load → Save Manager → Select/Create → Home
+- ✅ **UI/UX Polish**:
+  - Removed annoying upward hover animation on cards
+  - Made save cards fully clickable
+  - Changed Delete button to red (danger variant)
+  - Improved cursor feedback
+
+**Next Steps**: Continue with player generation and core gameplay features.
