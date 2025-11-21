@@ -14,4 +14,3 @@ export const emailTagColors: Record<EmailTag, string> = {
   [EmailTag.ADMINISTRATIVE]: theme.colors.neutral.gray600,
   [EmailTag.SOCIAL]: theme.colors.accent.main
 }
-

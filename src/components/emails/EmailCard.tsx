@@ -155,8 +155,8 @@ export const EmailCard: React.FC<EmailCardProps> = ({
                       fontSize: theme.typography.fontSize.xs,
                       padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
                       borderRadius: theme.borderRadius.sm,
-                    backgroundColor: emailTagColors[tag] + '20',
-                    color: emailTagColors[tag],
+                      backgroundColor: emailTagColors[tag] + '20',
+                      color: emailTagColors[tag],
                       fontWeight: theme.typography.fontWeight.medium
                     }}
                   >

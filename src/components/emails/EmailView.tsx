@@ -127,9 +127,7 @@ export const EmailView: React.FC<EmailViewProps> = ({ email }) => {
           color: theme.colors.text.primary
         }}
       >
-        <ReactMarkdown components={emailMarkdownComponents}>
-          {email.body}
-        </ReactMarkdown>
+        <ReactMarkdown components={emailMarkdownComponents}>{email.body}</ReactMarkdown>
       </div>
     </GameCard>
   )

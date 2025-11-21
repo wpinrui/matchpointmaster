@@ -155,4 +155,3 @@ export const SaveSlotCard: React.FC<SaveSlotCardProps> = ({
     </div>
   )
 }
-

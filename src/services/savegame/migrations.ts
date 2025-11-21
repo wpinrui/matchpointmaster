@@ -62,4 +62,3 @@ export function needsMigration(data: SaveData): boolean {
     !data.emails
   )
 }
-

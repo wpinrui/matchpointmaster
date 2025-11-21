@@ -87,4 +87,3 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
     </div>
   )
 }
-
