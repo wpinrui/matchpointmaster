@@ -51,7 +51,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     isTrainingPhase && (season.month === 2 || season.month === 8)
 
   // Get previous month's snapshots for progress comparison
-  // Only compare within the same training phase (Feb-May or Aug-Oct)
+  // Only compare within the same training phase (Feb-Apr or Aug-Oct)
   const previousMonthSnapshots = useMemo(() => {
     if (!isTrainingPhase) return []
 
@@ -461,7 +461,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             {/* Training Insights Card - February (first training month) */}
             {isFirstTrainingMonth && <TrainingInsightsCard changeScreen={changeScreen} />}
 
-            {/* Training Progress Card - Training months after first month (Mar-May, Sep-Oct) */}
+            {/* Training Progress Card - Training months after first month (Mar-Apr, Sep-Oct) */}
             {isTrainingPhase && !isFirstTrainingMonth && (
               <>
                 <TrainingProgressCard

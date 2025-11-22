@@ -219,14 +219,26 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             {isTournamentPrep && ' • Tournament Preparation'}
           </p>
         </div>
-        <GameButton
-          variant="success"
-          onClick={() => {
-            const currentPhase = season.phase as GamePhase
-            const currentMonth = season.month
-            const currentYear = season.year
-            const nextPhase = getNextPhase(currentPhase, currentMonth)
-            const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
+        {/* Show "Continue to Next Month" button if currently in training phase */}
+        {(() => {
+          const currentPhase = season.phase as GamePhase
+          const isCurrentlyInTrainingPhase =
+            currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2
+
+          // Only show button if we're currently in a training phase
+          if (!isCurrentlyInTrainingPhase) {
+            return null
+          }
+
+          return (
+            <GameButton
+              variant="success"
+              onClick={() => {
+                const currentPhase = season.phase as GamePhase
+                const currentMonth = season.month
+                const currentYear = season.year
+                const nextPhase = getNextPhase(currentPhase, currentMonth)
+                const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
 
             // Process player progression before advancing phase
             // Always process progression during training phase, regardless of completed flag
@@ -311,16 +323,18 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             )
             addEmail(phaseProgressionEmail)
 
-            // Navigate back to home screen
-            changeScreen(Screens.HOME)
-          }}
-          type="button"
-          size="lg"
-          glow
-          style={{ flexShrink: 0 }}
-        >
-          Continue to Next Month
-        </GameButton>
+                // Navigate back to home screen
+                changeScreen(Screens.HOME)
+              }}
+              type="button"
+              size="lg"
+              glow
+              style={{ flexShrink: 0 }}
+            >
+              Continue to Next Month
+            </GameButton>
+          )
+        })()}
       </div>
 
       {/* Training Plan Overview */}

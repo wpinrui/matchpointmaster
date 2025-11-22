@@ -56,8 +56,8 @@ export function getAllTrainingFocuses(): TrainingFocus[] {
  * Check if a training focus is appropriate for tournament prep
  */
 export function isTournamentPrepPhase(phase: string, month: number): boolean {
-  // May (before intra-club) and October (before singles) are tournament prep phases
-  if (phase === GamePhase.TRAINING && month === 5) return true
+  // April (before intra-club) and October (before singles) are tournament prep phases
+  if (phase === GamePhase.TRAINING && month === 4) return true
   if (phase === GamePhase.TRAINING_2 && month === 10) return true
   return false
 }

@@ -341,13 +341,11 @@ function getPhaseDescription(phase: GamePhase, month: number): string {
     case GamePhase.TRAINING:
       if (month === 2) {
         return `This is the beginning of the **Training Phase**. Focus on developing your players' skills and preparing them for upcoming competitions. Set up your training plan to maximize player development.`
-      } else if (month === 5) {
-        return `We're in the **Pre-Intra-Club** phase. This is your final month of training before the intra-club round-robin tournament. Make sure your players are ready to compete!`
       }
       return `The **Training Phase** continues. Focus on developing your players' skills through your training plan.`
 
     case GamePhase.INTRA_CLUB:
-      return `This is the **Intra-Club Round-Robin** phase. Your players will compete to determine their rankings within the squad. This will help you identify your strongest players for upcoming tournaments.`
+      return `This is the **Intra-Club Round-Robin** phase. Your players will compete against each other to determine their rankings within the squad. This tournament will help you identify your strongest players and prepare for upcoming competitions.`
 
     case GamePhase.ZONAL:
       return `Welcome to the **Zonal School Tournament** phase! Your team will compete against other schools in your zone. The top 4 teams will advance to the national tournament. Good luck!`
