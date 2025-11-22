@@ -99,6 +99,14 @@ const LoadScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           >
             Start New Game
           </GameButton>
+          <GameButton
+            variant="accent"
+            size="lg"
+            onClick={() => changeScreen(Screens.MATCH)}
+            fullWidth
+          >
+            🏓 Match Engine (Debug)
+          </GameButton>
         </div>
       </GameCard>
     </div>

@@ -296,34 +296,18 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             {MONTH_NAMES[season.month - 1]} {season.year}
           </p>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            gap: theme.spacing.md,
-            alignItems: 'center',
-            flexShrink: 0
-          }}
+        <GameButton
+          variant="success"
+          onClick={actionButton.action}
+          type="button"
+          size="lg"
+          glow
+          disabled={actionButton.disabled}
+          style={{ flexShrink: 0 }}
         >
-          <GameButton
-            variant="accent"
-            onClick={() => changeScreen(Screens.MATCH)}
-            type="button"
-            size="lg"
-          >
-            🏓 Start Match
-          </GameButton>
-          <GameButton
-            variant="success"
-            onClick={actionButton.action}
-            type="button"
-            size="lg"
-            glow
-            disabled={actionButton.disabled}
-          >
-            {actionButton.text}
-            {actionButton.disabled && ' (Not Yet Implemented)'}
-          </GameButton>
-        </div>
+          {actionButton.text}
+          {actionButton.disabled && ' (Not Yet Implemented)'}
+        </GameButton>
       </div>
 
       {/* Content - Two Column Layout */}
