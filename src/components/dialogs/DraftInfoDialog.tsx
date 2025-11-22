@@ -100,8 +100,8 @@ export const DraftInfoDialog: React.FC<DraftInfoDialogProps> = ({ isOpen, onClos
                 of the season.
               </li>
               <li>
-                Choose wisely - your selections will determine your team&apos;s performance
-                throughout the season!
+                Choose wisely - your selections will determine your team&apos;s
+                performance throughout the season!
               </li>
             </ul>
           </div>

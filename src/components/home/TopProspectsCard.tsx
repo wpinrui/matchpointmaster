@@ -28,7 +28,6 @@ export const TopProspectsCard: React.FC = () => {
     <GameCard
       style={{
         padding: theme.spacing.lg,
-        height: '100%',
         display: 'flex',
         flexDirection: 'column'
       }}
@@ -51,13 +50,11 @@ export const TopProspectsCard: React.FC = () => {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: theme.spacing.md,
-            flex: 1,
-            overflow: 'auto'
+            gap: theme.spacing.md
           }}
         >
           {topProspects.map((player) => (
-            <div key={player.id} style={{ minHeight: 0 }}>
+            <div key={player.id}>
               <PlayerCard player={player} />
             </div>
           ))}
@@ -65,7 +62,6 @@ export const TopProspectsCard: React.FC = () => {
       ) : (
         <div
           style={{
-            flex: 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

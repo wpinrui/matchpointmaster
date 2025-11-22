@@ -154,8 +154,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 style={{
                   padding: theme.spacing.lg,
                   display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%'
+                  flexDirection: 'column'
                 }}
               >
                 <h2
@@ -174,8 +173,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                   style={{
                     fontSize: theme.typography.fontSize.base,
                     color: theme.colors.text.secondary,
-                    marginBottom: theme.spacing.md,
-                    flex: 1
+                    marginBottom: theme.spacing.md
                   }}
                 >
                   Select your team for the upcoming season. Once you leave the draft
@@ -201,7 +199,6 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 padding: theme.spacing.lg,
                 display: 'flex',
                 flexDirection: 'column',
-                height: '100%',
                 maxWidth: isDraftPhase ? 'none' : '400px'
               }}
             >
@@ -221,9 +218,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: theme.spacing.sm,
-                  overflow: 'auto',
-                  flex: 1
+                  gap: theme.spacing.sm
                 }}
               >
                 <TimelineItem
