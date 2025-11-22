@@ -11,6 +11,7 @@ import {
   PlayStyle,
   ManagerStats
 } from '../services/savegame/types'
+import { getPlayerFullName } from './playerGeneration'
 
 /**
  * Style synergy groups - similar play styles
@@ -339,7 +340,7 @@ export function calculatePlayerProgression(
   const randomVariance = 0.9 + Math.random() * 0.2 // 0.9 to 1.1
 
   // Debug logging
-  console.log(`[Progression] ${player.firstName} ${player.lastName}:`, {
+  console.log(`[Progression] ${getPlayerFullName(player)}:`, {
     focus,
     isIndividualCoaching,
     multipliers: {

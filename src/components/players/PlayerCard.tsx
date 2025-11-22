@@ -2,6 +2,7 @@ import React from 'react'
 import { Player, Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import GameCard from '../cards/GameCard'
+import { getPlayerFullName } from '../../utils/playerGeneration'
 
 interface PlayerCardProps {
   player: Player
@@ -9,7 +10,7 @@ interface PlayerCardProps {
 }
 
 export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) => {
-  const fullName = `${player.firstName} ${player.lastName}`
+  const fullName = getPlayerFullName(player)
 
   return (
     <GameCard

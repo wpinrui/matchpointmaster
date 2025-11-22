@@ -14,6 +14,7 @@ import {
 } from '../../utils/trainingInsights'
 import { getTrainingFocusDisplayName } from '../../utils/trainingPlans'
 import { TrainingFocus, Player, SkillSnapshot } from '../../services/savegame/types'
+import { getPlayerFullName } from '../../utils/playerGeneration'
 import {
   getImprovementChartData,
   getYearToDateSnapshots
@@ -380,7 +381,7 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
                       fontSize: theme.typography.fontSize.sm
                     }}
                   >
-                    {player.firstName} {player.lastName}
+                    {getPlayerFullName(player)}
                   </strong>
                   <span
                     style={{

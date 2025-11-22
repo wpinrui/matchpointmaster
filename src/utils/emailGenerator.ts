@@ -16,6 +16,7 @@ import {
 } from './trainingInsights'
 import { getImprovementChartData, getYearToDateSnapshots } from './trainingAnalytics'
 import { getTrainingFocusDisplayName } from './trainingPlans'
+import { getPlayerFullName } from './playerGeneration'
 
 /**
  * Generate a timestamp based on in-game date
@@ -221,7 +222,7 @@ ${
 ${topImprovers
   .map(
     (improver, index) =>
-      `${index + 1}. **${improver.player.firstName} ${improver.player.lastName}** - +${Math.round(
+      `${index + 1}. **${getPlayerFullName(improver.player)}** - +${Math.round(
         improver.totalImprovement
       )} total skill points`
   )
@@ -484,7 +485,7 @@ The team has made solid progress this month. All players have been working hard,
 ${topImprovers
   .map(
     (improver: any, index: number) =>
-      `${index + 1}. **${improver.player.firstName} ${improver.player.lastName}** - Made significant improvements across all skills, showing excellent dedication to training.`
+      `${index + 1}. **${getPlayerFullName(improver.player)}** - Made significant improvements across all skills, showing excellent dedication to training.`
   )
   .join('\n')}
 

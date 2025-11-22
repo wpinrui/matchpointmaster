@@ -16,6 +16,7 @@ import {
 import { theme } from '../theme/theme'
 import { MONTH_NAMES } from '../utils/constants'
 import { GamePhase } from '../utils/gamePhases'
+import { getPlayerFullName } from '../utils/playerGeneration'
 import {
   getAllTrainingFocuses,
   getTrainingFocusDisplayName,
@@ -552,7 +553,7 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                       }}
                     >
                       <span style={{ color: theme.colors.text.primary }}>
-                        {player.firstName} {player.lastName}
+                        {getPlayerFullName(player)}
                       </span>
                       <span
                         style={{
@@ -872,7 +873,7 @@ const PlayerTrainingDialog: React.FC<PlayerTrainingDialogProps> = ({
           marginBottom: theme.spacing.sm
         }}
       >
-        Set Training for {player.firstName} {player.lastName}
+        Set Training for {getPlayerFullName(player)}
       </h3>
 
       <div

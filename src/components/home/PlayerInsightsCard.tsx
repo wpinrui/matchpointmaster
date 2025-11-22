@@ -12,6 +12,7 @@ import {
   getYearToDateSnapshots
 } from '../../utils/trainingAnalytics'
 import { SkillSnapshot } from '../../services/savegame/types'
+import { getPlayerFullName } from '../../utils/playerGeneration'
 
 interface PlayerInsightsCardProps {
   oldSnapshots: SkillSnapshot[] // Previous month's snapshots (for "Past Month" view)
@@ -292,7 +293,7 @@ export const PlayerInsightsCard: React.FC<PlayerInsightsCardProps> = ({
                         fontSize: theme.typography.fontSize.sm
                       }}
                     >
-                      {insight.player.firstName} {insight.player.lastName}
+                      {getPlayerFullName(insight.player)}
                     </strong>
                     <span
                       style={{

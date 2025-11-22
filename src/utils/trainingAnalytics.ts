@@ -16,6 +16,7 @@ import {
   calculatePeerInfluence,
   calculateDiminishingReturns
 } from './playerProgression'
+import { getPlayerFullName } from './playerGeneration'
 
 /**
  * Convert funding rank to facilities multiplier
@@ -468,7 +469,7 @@ export function getImprovementChartData(
       )
 
       return {
-        playerName: `${player.firstName} ${player.lastName}`,
+        playerName: getPlayerFullName(player),
         playerId: player.id,
         totalImprovement,
         improvements: improvementList

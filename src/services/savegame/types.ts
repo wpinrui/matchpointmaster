@@ -167,6 +167,8 @@ export type Player = {
   id: string // Unique identifier
   firstName: string
   lastName: string
+  shortName: string // Short name (typically first name)
+  isChinese: boolean // Whether player has Chinese name (affects display order)
   gender: Gender
   age: number // Age in years
   year: number // Year in school (1-4, max 4 years)
