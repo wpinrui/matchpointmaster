@@ -13,20 +13,20 @@ import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { Email } from '../services/savegame/types'
 import { theme } from '../theme/theme'
+import {
+  isTrainingPhase as checkIsTrainingPhase,
+  getDraftActionButton,
+  getTrainingActionButton
+} from '../utils/actionButtonHelpers'
 import { MONTH_NAMES } from '../utils/constants'
 import { GamePhase, getNextPhase, getPhaseDisplayName } from '../utils/gamePhases'
 import {
   advanceToNextPhase,
-  isPhaseImplemented,
   isFirstTrainingMonth,
-  type PhaseProgressionParams,
-  type PhaseProgressionCallbacks
+  isPhaseImplemented,
+  type PhaseProgressionCallbacks,
+  type PhaseProgressionParams
 } from '../utils/phaseProgression'
-import {
-  getDraftActionButton,
-  getTrainingActionButton,
-  isTrainingPhase as checkIsTrainingPhase
-} from '../utils/actionButtonHelpers'
 
 const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const {
@@ -80,6 +80,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }, [emails])
 
   const handleEmailClick = (email: Email) => {
+    // Store the email ID in sessionStorage so EmailScreen can open it directly
+    sessionStorage.setItem('selectedEmailId', email.id)
     if (!email.read) {
       markEmailAsRead(email.id)
     }
@@ -90,6 +92,14 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const getActionButton = () => {
     const currentPhase = season.phase as GamePhase
     const currentPhaseString = season.phase
+
+    // If there are unread emails, show "Unread messages" button that goes to email screen
+    if (unreadEmails.length > 0) {
+      return {
+        text: 'Unread messages',
+        action: () => changeScreen(Screens.EMAIL)
+      }
+    }
 
     // Draft phase button
     const draftButton = getDraftActionButton(draftCompleted, changeScreen)
@@ -301,7 +311,6 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               style={{
                 padding: theme.spacing.xl,
                 textAlign: 'center',
-                flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
