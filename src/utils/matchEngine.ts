@@ -908,7 +908,27 @@ function calculateCombinedLossProbability(combined: number): number {
  */
 function checkPointLoss(
   r1: number,
-  r2: number
+  r2: number,
+  r1Breakdown?: {
+    playerBFootwork?: number
+    playerAPlacement?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  r2Breakdown?: {
+    playerBStroke?: number
+    playerBSpin?: number
+    playerAStroke?: number
+    playerASpin?: number
+    playerBReceive?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  isServe: boolean = false
 ): { lost: boolean; reason: string | null } {
   // Calculate individual probabilities
   const r1LossProb = calculateR1LossProbability(r1)
@@ -922,26 +942,137 @@ function checkPointLoss(
 
   // Roll for loss
   if (Math.random() < maxLossProb) {
-    // Determine which deficit caused the loss (most severe)
+    // Generate specific commentary based on which deficit caused the loss
+    let reason: string
+
     if (combinedLossProb >= r1LossProb && combinedLossProb >= r2LossProb) {
-      return {
-        lost: true,
-        reason: `R1 + R2 = ${Math.round(r1 + r2)} (combined deficit too large, ${Math.round(combinedLossProb * 100)}% loss chance)`
-      }
+      // Combined deficit - analyze both
+      const r1Cause = analyzeR1LossCause(r1, r1Breakdown, isServe)
+      const r2Cause = analyzeR2LossCause(r2, r2Breakdown, isServe)
+      reason = `overwhelmingly outclassed (${r1Cause} and ${r2Cause}, ${Math.round(combinedLossProb * 100)}% loss chance)`
     } else if (r1LossProb >= r2LossProb) {
-      return {
-        lost: true,
-        reason: `R1 = ${Math.round(r1)} (footwork/placement deficit, ${Math.round(r1LossProb * 100)}% loss chance)`
-      }
+      // R1 deficit
+      const cause = analyzeR1LossCause(r1, r1Breakdown, isServe)
+      reason = `unable to handle ${cause} (${Math.round(r1LossProb * 100)}% loss chance)`
     } else {
-      return {
-        lost: true,
-        reason: `R2 = ${Math.round(r2)} (stroke/spin deficit, ${Math.round(r2LossProb * 100)}% loss chance)`
-      }
+      // R2 deficit
+      const cause = analyzeR2LossCause(r2, r2Breakdown, isServe)
+      reason = `unable to counter ${cause} (${Math.round(r2LossProb * 100)}% loss chance)`
     }
+
+    return { lost: true, reason }
   }
 
   return { lost: false, reason: null }
+}
+
+/**
+ * Analyze what caused R1 loss - determine which stat was dominant
+ */
+function analyzeR1LossCause(
+  r1: number,
+  breakdown?: {
+    playerBFootwork?: number
+    playerAPlacement?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  isServe: boolean = false
+): string {
+  if (!breakdown) {
+    return isServe ? "opponent's serve" : "opponent's placement"
+  }
+
+  if (isServe && breakdown.playerAServe) {
+    // For serve: opponent's serve vs my footwork
+    const serveAdvantage = breakdown.playerAServe - (breakdown.playerBFootwork || 0)
+    if (serveAdvantage > 10) {
+      return "opponent's powerful serve"
+    } else if (serveAdvantage > 5) {
+      return "opponent's strong serve"
+    } else {
+      return "opponent's serve (my poor footwork)"
+    }
+  } else if (breakdown.playerAPlacement) {
+    // For rally: opponent's placement vs my footwork
+    const placementAdvantage =
+      breakdown.playerAPlacement - (breakdown.playerBFootwork || 0)
+    if (placementAdvantage > 10) {
+      return "opponent's excellent placement"
+    } else if (placementAdvantage > 5) {
+      return "opponent's good placement"
+    } else {
+      return "opponent's placement (my poor footwork)"
+    }
+  }
+
+  return isServe ? "opponent's serve" : "opponent's placement"
+}
+
+/**
+ * Analyze what caused R2 loss - determine which stat was dominant
+ */
+function analyzeR2LossCause(
+  r2: number,
+  breakdown?: {
+    playerBStroke?: number
+    playerBSpin?: number
+    playerAStroke?: number
+    playerASpin?: number
+    playerBReceive?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  isServe: boolean = false
+): string {
+  if (!breakdown) {
+    return isServe ? "opponent's serve" : "opponent's stroke/spin"
+  }
+
+  if (isServe && breakdown.playerAServe && breakdown.playerBReceive) {
+    // For serve: opponent's serve vs my receive
+    const serveAdvantage = breakdown.playerAServe - breakdown.playerBReceive
+    if (serveAdvantage > 10) {
+      return "opponent's powerful serve"
+    } else if (serveAdvantage > 5) {
+      return "opponent's strong serve"
+    } else {
+      return "opponent's serve (my poor receive)"
+    }
+  } else if (breakdown.playerAStroke && breakdown.playerASpin) {
+    // For rally: opponent's stroke/spin vs mine
+    const opponentWeighted = breakdown.playerAStroke * 0.6 + breakdown.playerASpin * 0.4
+    const myWeighted =
+      (breakdown.playerBStroke || 0) * 0.6 + (breakdown.playerBSpin || 0) * 0.4
+    const advantage = opponentWeighted - myWeighted
+
+    // Determine which aspect was stronger
+    const strokeAdvantage =
+      (breakdown.playerAStroke || 0) - (breakdown.playerBStroke || 0)
+    const spinAdvantage = (breakdown.playerASpin || 0) - (breakdown.playerBSpin || 0)
+
+    if (advantage > 10) {
+      if (Math.abs(strokeAdvantage) > Math.abs(spinAdvantage)) {
+        return `opponent's powerful ${breakdown.playerAStroke > 50 ? 'forehand' : 'backhand'}`
+      } else {
+        return "opponent's heavy spin"
+      }
+    } else if (advantage > 5) {
+      if (Math.abs(strokeAdvantage) > Math.abs(spinAdvantage)) {
+        return `opponent's strong ${breakdown.playerAStroke > 50 ? 'forehand' : 'backhand'}`
+      } else {
+        return "opponent's strong spin"
+      }
+    } else {
+      return "opponent's stroke/spin (my weakness)"
+    }
+  }
+
+  return isServe ? "opponent's serve" : "opponent's stroke/spin"
 }
 
 /**
@@ -952,19 +1083,43 @@ function checkPointLoss(
 function checkPointWin(
   r1: number,
   r2: number,
-  rallyLength: number
+  rallyLength: number,
+  r1Breakdown?: {
+    playerBFootwork?: number
+    playerAPlacement?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  r2Breakdown?: {
+    playerBStroke?: number
+    playerBSpin?: number
+    playerAStroke?: number
+    playerASpin?: number
+    playerBReceive?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  isServe: boolean = false
 ): { won: boolean; reason: string | null } {
   // Very strong individual stats can win immediately
   if (r1 > 30) {
-    return { won: true, reason: 'R1 > 30 (superior footwork/placement)' }
+    const cause = analyzeR1WinCause(r1, r1Breakdown, isServe)
+    return { won: true, reason: `overwhelming advantage through ${cause}` }
   }
   if (r2 > 30) {
-    return { won: true, reason: 'R2 > 30 (superior stroke/spin)' }
+    const cause = analyzeR2WinCause(r2, r2Breakdown, isServe)
+    return { won: true, reason: `overwhelming advantage through ${cause}` }
   }
 
   // Very strong combined performance
   if (r1 + r2 > 40) {
-    return { won: true, reason: 'R1 + R2 > 40 (overwhelming advantage)' }
+    const r1Cause = analyzeR1WinCause(r1, r1Breakdown, isServe)
+    const r2Cause = analyzeR2WinCause(r2, r2Breakdown, isServe)
+    return { won: true, reason: `overwhelming advantage (${r1Cause} and ${r2Cause})` }
   }
 
   // Strong shots have a chance to win based on quality difference
@@ -975,7 +1130,11 @@ function checkPointWin(
     const adjustedChance = Math.max(0.05, winChance - rallyPenalty)
 
     if (Math.random() < adjustedChance) {
-      return { won: true, reason: 'Strong shot quality wins the point' }
+      const r1Cause = analyzeR1WinCause(r1, r1Breakdown, isServe)
+      const r2Cause = analyzeR2WinCause(r2, r2Breakdown, isServe)
+      // Determine primary cause
+      const primaryCause = r1 > r2 ? r1Cause : r2Cause
+      return { won: true, reason: `strong ${primaryCause} wins the point` }
     }
   }
 
@@ -986,11 +1145,261 @@ function checkPointWin(
     const adjustedChance = Math.max(0.02, winChance - rallyPenalty)
 
     if (Math.random() < adjustedChance) {
-      return { won: true, reason: 'Good shot quality wins the point' }
+      const r1Cause = analyzeR1WinCause(r1, r1Breakdown, isServe)
+      const r2Cause = analyzeR2WinCause(r2, r2Breakdown, isServe)
+      const primaryCause = r1 > r2 ? r1Cause : r2Cause
+      return { won: true, reason: `good ${primaryCause} wins the point` }
     }
   }
 
   return { won: false, reason: null }
+}
+
+/**
+ * Analyze what caused R1 win - determine which stat was dominant
+ */
+function analyzeR1WinCause(
+  r1: number,
+  breakdown?: {
+    playerBFootwork?: number
+    playerAPlacement?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  isServe: boolean = false
+): string {
+  if (!breakdown) {
+    return isServe ? 'my powerful serve' : 'my excellent placement'
+  }
+
+  if (isServe && breakdown.playerAServe) {
+    // For serve: my serve vs opponent's footwork
+    const serveAdvantage = breakdown.playerAServe - (breakdown.playerBFootwork || 0)
+    if (serveAdvantage > 10) {
+      return 'my powerful serve'
+    } else if (serveAdvantage > 5) {
+      return 'my strong serve'
+    } else {
+      return "my serve (opponent's poor footwork)"
+    }
+  } else if (breakdown.playerAPlacement) {
+    // For rally: my placement vs opponent's footwork
+    const placementAdvantage =
+      breakdown.playerAPlacement - (breakdown.playerBFootwork || 0)
+    if (placementAdvantage > 10) {
+      return 'my excellent placement'
+    } else if (placementAdvantage > 5) {
+      return 'my good placement'
+    } else {
+      return "my placement (opponent's poor footwork)"
+    }
+  } else if (breakdown.playerBFootwork) {
+    // My superior footwork
+    return 'my superior footwork'
+  }
+
+  return isServe ? 'my serve' : 'my placement'
+}
+
+/**
+ * Analyze what caused R2 win - determine which stat was dominant
+ */
+function analyzeR2WinCause(
+  r2: number,
+  breakdown?: {
+    playerBStroke?: number
+    playerBSpin?: number
+    playerAStroke?: number
+    playerASpin?: number
+    playerBReceive?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  isServe: boolean = false
+): string {
+  if (!breakdown) {
+    return isServe ? 'my powerful serve' : 'my powerful stroke'
+  }
+
+  if (isServe && breakdown.playerAServe && breakdown.playerBReceive) {
+    // For serve: my serve vs opponent's receive
+    const serveAdvantage = breakdown.playerAServe - breakdown.playerBReceive
+    if (serveAdvantage > 10) {
+      return 'my powerful serve'
+    } else if (serveAdvantage > 5) {
+      return 'my strong serve'
+    } else {
+      return "my serve (opponent's poor receive)"
+    }
+  } else if (breakdown.playerBStroke && breakdown.playerBSpin) {
+    // For rally: my stroke/spin vs opponent's
+    const myWeighted = breakdown.playerBStroke * 0.6 + breakdown.playerBSpin * 0.4
+    const opponentWeighted =
+      (breakdown.playerAStroke || 0) * 0.6 + (breakdown.playerASpin || 0) * 0.4
+    const advantage = myWeighted - opponentWeighted
+
+    // Determine which aspect was stronger
+    const strokeAdvantage =
+      (breakdown.playerBStroke || 0) - (breakdown.playerAStroke || 0)
+    const spinAdvantage = (breakdown.playerBSpin || 0) - (breakdown.playerASpin || 0)
+
+    if (advantage > 10) {
+      if (Math.abs(strokeAdvantage) > Math.abs(spinAdvantage)) {
+        return `my powerful ${breakdown.playerBStroke > 50 ? 'forehand' : 'backhand'}`
+      } else {
+        return 'my heavy spin'
+      }
+    } else if (advantage > 5) {
+      if (Math.abs(strokeAdvantage) > Math.abs(spinAdvantage)) {
+        return `my strong ${breakdown.playerBStroke > 50 ? 'forehand' : 'backhand'}`
+      } else {
+        return 'my strong spin'
+      }
+    } else {
+      return "my stroke/spin (opponent's weakness)"
+    }
+  } else if (breakdown.playerBReceive) {
+    // My superior receive
+    return 'my superior receive'
+  }
+
+  return isServe ? 'my serve' : 'my stroke/spin'
+}
+
+/**
+ * Generate commentary explaining what R1 and R2 mean for a return
+ */
+function generateReturnCommentary(
+  r1: number,
+  r2: number,
+  r1Breakdown?: {
+    playerBFootwork?: number
+    playerAPlacement?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  r2Breakdown?: {
+    playerBStroke?: number
+    playerBSpin?: number
+    playerAStroke?: number
+    playerASpin?: number
+    playerBReceive?: number
+    playerAServe?: number
+    noise1?: number
+    noise2?: number
+    bonus?: number
+  },
+  isServe: boolean = false
+): string {
+  if (!r1Breakdown || !r2Breakdown) {
+    return `R1: ${Math.round(r1)}, R2: ${Math.round(r2)}`
+  }
+
+  const parts: string[] = []
+
+  // R1 commentary
+  if (isServe) {
+    // For serve: footwork vs serve
+    const footwork = r1Breakdown.playerBFootwork || 0
+    const serve = r1Breakdown.playerAServe || 0
+    const r1Diff = footwork - serve
+
+    if (r1 >= 10) {
+      parts.push(`R1: ${Math.round(r1)} (excellent footwork vs weak serve)`)
+    } else if (r1 >= 5) {
+      parts.push(`R1: ${Math.round(r1)} (good footwork vs serve)`)
+    } else if (r1 >= 0) {
+      parts.push(`R1: ${Math.round(r1)} (footwork ≈ serve)`)
+    } else if (r1 >= -5) {
+      parts.push(`R1: ${Math.round(r1)} (serve slightly better)`)
+    } else if (r1 >= -10) {
+      parts.push(`R1: ${Math.round(r1)} (strong serve vs footwork)`)
+    } else {
+      parts.push(`R1: ${Math.round(r1)} (powerful serve overwhelms footwork)`)
+    }
+  } else {
+    // For rally: footwork vs placement
+    const footwork = r1Breakdown.playerBFootwork || 0
+    const placement = r1Breakdown.playerAPlacement || 0
+    const r1Diff = footwork - placement
+
+    if (r1 >= 10) {
+      parts.push(`R1: ${Math.round(r1)} (excellent footwork vs weak placement)`)
+    } else if (r1 >= 5) {
+      parts.push(`R1: ${Math.round(r1)} (good footwork vs placement)`)
+    } else if (r1 >= 0) {
+      parts.push(`R1: ${Math.round(r1)} (footwork ≈ placement)`)
+    } else if (r1 >= -5) {
+      parts.push(`R1: ${Math.round(r1)} (placement slightly better)`)
+    } else if (r1 >= -10) {
+      parts.push(`R1: ${Math.round(r1)} (good placement vs footwork)`)
+    } else {
+      parts.push(`R1: ${Math.round(r1)} (excellent placement overwhelms footwork)`)
+    }
+  }
+
+  // R2 commentary
+  if (isServe) {
+    // For serve: receive vs serve
+    const receive = r2Breakdown.playerBReceive || 0
+    const serve = r2Breakdown.playerAServe || 0
+    const r2Diff = receive - serve
+
+    if (r2 >= 10) {
+      parts.push(`R2: ${Math.round(r2)} (excellent receive vs weak serve)`)
+    } else if (r2 >= 5) {
+      parts.push(`R2: ${Math.round(r2)} (good receive vs serve)`)
+    } else if (r2 >= 0) {
+      parts.push(`R2: ${Math.round(r2)} (receive ≈ serve)`)
+    } else if (r2 >= -5) {
+      parts.push(`R2: ${Math.round(r2)} (serve slightly better)`)
+    } else if (r2 >= -10) {
+      parts.push(`R2: ${Math.round(r2)} (strong serve vs receive)`)
+    } else {
+      parts.push(`R2: ${Math.round(r2)} (powerful serve overwhelms receive)`)
+    }
+  } else {
+    // For rally: stroke+spin vs stroke+spin
+    const myStroke = r2Breakdown.playerBStroke || 0
+    const mySpin = r2Breakdown.playerBSpin || 0
+    const oppStroke = r2Breakdown.playerAStroke || 0
+    const oppSpin = r2Breakdown.playerASpin || 0
+    const myWeighted = myStroke * 0.6 + mySpin * 0.4
+    const oppWeighted = oppStroke * 0.6 + oppSpin * 0.4
+    const r2Diff = myWeighted - oppWeighted
+
+    // Determine which stroke
+    const strokeType = myStroke > 50 ? 'forehand' : 'backhand'
+    const oppStrokeType = oppStroke > 50 ? 'forehand' : 'backhand'
+
+    if (r2 >= 15) {
+      parts.push(
+        `R2: ${Math.round(r2)} (powerful ${strokeType}+spin vs weak ${oppStrokeType})`
+      )
+    } else if (r2 >= 10) {
+      parts.push(`R2: ${Math.round(r2)} (strong ${strokeType}+spin vs ${oppStrokeType})`)
+    } else if (r2 >= 5) {
+      parts.push(`R2: ${Math.round(r2)} (good ${strokeType} vs ${oppStrokeType})`)
+    } else if (r2 >= 0) {
+      parts.push(`R2: ${Math.round(r2)} (${strokeType} ≈ ${oppStrokeType})`)
+    } else if (r2 >= -5) {
+      parts.push(`R2: ${Math.round(r2)} (${oppStrokeType} slightly better)`)
+    } else if (r2 >= -10) {
+      parts.push(`R2: ${Math.round(r2)} (strong ${oppStrokeType}+spin vs ${strokeType})`)
+    } else {
+      parts.push(
+        `R2: ${Math.round(r2)} (powerful ${oppStrokeType}+spin overwhelms ${strokeType})`
+      )
+    }
+  }
+
+  return parts.join(', ')
 }
 
 /**
@@ -1085,15 +1494,28 @@ export function simulateRally(
   const serveR2 = serveR2Result.r2
 
   // Log the return attempt first (so we can see R1/R2 values even for service aces)
+  const returnCommentary = generateReturnCommentary(
+    serveR1,
+    serveR2,
+    serveR1Result.breakdown,
+    serveR2Result.breakdown,
+    true
+  )
   events.push({
     type: 'return',
     player: 1 - currentPlayer,
-    description: `${receiver.shortName || receiver.firstName} returns (R1: ${Math.round(serveR1)}, R2: ${Math.round(serveR2)})`,
+    description: `${receiver.shortName || receiver.firstName} returns (${returnCommentary})`,
     timestamp: Date.now()
   })
 
   // Check if receiver loses point on serve return (service ace)
-  const serveLossCheck = checkPointLoss(serveR1, serveR2)
+  const serveLossCheck = checkPointLoss(
+    serveR1,
+    serveR2,
+    serveR1Result.breakdown,
+    serveR2Result.breakdown,
+    true
+  )
   if (serveLossCheck.lost) {
     const serverName = server.shortName || server.firstName
     const receiverName = receiver.shortName || receiver.firstName
@@ -1142,7 +1564,14 @@ export function simulateRally(
   }
 
   // Check if receiver wins point on serve return (strong return) - after consistency check
-  const serveWinCheck = checkPointWin(serveR1, serveR2, rallyLength)
+  const serveWinCheck = checkPointWin(
+    serveR1,
+    serveR2,
+    rallyLength,
+    serveR1Result.breakdown,
+    serveR2Result.breakdown,
+    true
+  )
   if (serveWinCheck.won) {
     const serverName = server.shortName || server.firstName
     const receiverName = receiver.shortName || receiver.firstName
@@ -1260,7 +1689,13 @@ export function simulateRally(
     const r2 = r2Result.r2
 
     // Check if hitter loses point
-    const lossCheck = checkPointLoss(r1, r2)
+    const lossCheck = checkPointLoss(
+      r1,
+      r2,
+      r1Result.breakdown,
+      r2Result.breakdown,
+      false
+    )
     if (lossCheck.lost) {
       const hitterName = hitter.shortName || hitter.firstName
       const opponentName = opponent.shortName || opponent.firstName
@@ -1278,7 +1713,14 @@ export function simulateRally(
     }
 
     // Check if hitter wins point (strong shot)
-    const winCheck = checkPointWin(r1, r2, rallyLength)
+    const winCheck = checkPointWin(
+      r1,
+      r2,
+      rallyLength,
+      r1Result.breakdown,
+      r2Result.breakdown,
+      false
+    )
     if (winCheck.won) {
       const hitterName = hitter.shortName || hitter.firstName
       const opponentName = opponent.shortName || opponent.firstName
@@ -1326,10 +1768,17 @@ export function simulateRally(
     // Calculate cumulative bonus for next shot: (R1+R2)/2
     cumulativeR1R2Bonus = (r1 + r2) / 2
 
+    const returnCommentary = generateReturnCommentary(
+      r1,
+      r2,
+      r1Result.breakdown,
+      r2Result.breakdown,
+      false
+    )
     events.push({
       type: 'return',
       player: currentPlayer,
-      description: `${hitter.shortName || hitter.firstName} returns (R1: ${Math.round(r1)}, R2: ${Math.round(r2)})`,
+      description: `${hitter.shortName || hitter.firstName} returns (${returnCommentary})`,
       timestamp: Date.now()
     })
 
