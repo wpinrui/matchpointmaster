@@ -7,8 +7,9 @@ import { ScreenProps, Screens } from '../../screen_manager/screens'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
-import { GamePhase, getNextPhase } from '../../utils/gamePhases'
-import { generatePhaseProgressionEmail } from '../../utils/emailGenerator'
+import { GamePhase } from '../../utils/gamePhases'
+import { completeDraftAndProgress } from '../../utils/phaseProgression'
+import { validateTeamBeforeDraft } from '../../utils/draftHelpers'
 import { generatePlayer, IntakeQuality } from '../../utils/playerGeneration'
 import {
   attractivenessToIntakeQuality,
@@ -53,40 +54,33 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   const handleConfirmLeave = () => {
     // Check if team is empty
-    if (teamRoster.length === 0) {
+    const validation = validateTeamBeforeDraft(teamRoster)
+    if (!validation.isValid) {
       setShowLeaveConfirm(false)
       setShowEmptyTeamDialog(true)
       return
     }
 
-    const currentMonth = season.month
-    const currentYear = season.year
-    const currentPhase = GamePhase.DRAFT
-
-    // Mark draft as completed
-    updateSeason.setDraftCompleted(true)
-
     // Progress to February training phase (if still in January/DRAFT)
     if (season.phase === 'draft' && season.month === 1) {
-      const nextPhase = getNextPhase(GamePhase.DRAFT, currentMonth)
-      updateSeason.setMonth(nextPhase.month)
-      updateSeason.setPhase(nextPhase.phase)
-
-      // Generate and add phase progression email
-      const phaseProgressionEmail = generatePhaseProgressionEmail(
-        manager.fullName || 'Coach',
-        school.name || 'the school',
-        players,
-        teamRoster,
-        currentMonth,
-        currentYear,
-        currentPhase,
-        nextPhase.month,
-        currentYear,
-        nextPhase.phase as GamePhase,
-        [] // No previous snapshots for draft phase
+      completeDraftAndProgress(
+        {
+          currentMonth: season.month,
+          currentYear: season.year,
+          players,
+          teamRoster,
+          manager,
+          school
+        },
+        {
+          updateSeason: {
+            setDraftCompleted: updateSeason.setDraftCompleted,
+            setMonth: updateSeason.setMonth,
+            setPhase: updateSeason.setPhase
+          },
+          addEmail
+        }
       )
-      addEmail(phaseProgressionEmail)
     }
 
     setShowLeaveConfirm(false)
@@ -94,45 +88,36 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   const handleEndDraft = () => {
-    // Show confirmation dialog first
-    setShowEndDraftConfirm(true)
-  }
-
-  const handleConfirmEndDraft = () => {
-    // Check if team is empty
-    if (teamRoster.length === 0) {
-      setShowEndDraftConfirm(false)
+    // Check if team is empty BEFORE showing confirmation
+    const validation = validateTeamBeforeDraft(teamRoster)
+    if (!validation.isValid) {
       setShowEmptyTeamDialog(true)
       return
     }
 
-    const currentMonth = season.month
-    const currentYear = season.year
-    const currentPhase = GamePhase.DRAFT
+    // Show confirmation dialog only if team is not empty
+    setShowEndDraftConfirm(true)
+  }
 
-    // Mark draft as completed
-    updateSeason.setDraftCompleted(true)
-
-    // Progress to February training phase
-    const nextPhase = getNextPhase(GamePhase.DRAFT, currentMonth)
-    updateSeason.setMonth(nextPhase.month)
-    updateSeason.setPhase(nextPhase.phase)
-
-    // Generate and add phase progression email
-    const phaseProgressionEmail = generatePhaseProgressionEmail(
-      manager.fullName || 'Coach',
-      school.name || 'the school',
-      players,
-      teamRoster,
-      currentMonth,
-      currentYear,
-      currentPhase,
-      nextPhase.month,
-      currentYear,
-      nextPhase.phase as GamePhase,
-      [] // No previous snapshots for draft phase
+  const handleConfirmEndDraft = () => {
+    completeDraftAndProgress(
+      {
+        currentMonth: season.month,
+        currentYear: season.year,
+        players,
+        teamRoster,
+        manager,
+        school
+      },
+      {
+        updateSeason: {
+          setDraftCompleted: updateSeason.setDraftCompleted,
+          setMonth: updateSeason.setMonth,
+          setPhase: updateSeason.setPhase
+        },
+        addEmail
+      }
     )
-    addEmail(phaseProgressionEmail)
 
     // Navigate to home
     setShowEndDraftConfirm(false)
