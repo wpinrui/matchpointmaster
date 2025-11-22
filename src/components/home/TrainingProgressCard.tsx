@@ -13,7 +13,6 @@ import {
   calculateTeamTotalImprovement
 } from '../../utils/trainingInsights'
 import {
-  getImprovementInsights,
   getImprovementChartData,
   getYearToDateSnapshots
 } from '../../utils/trainingAnalytics'
@@ -33,7 +32,7 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
   currentYear,
   currentMonth
 }) => {
-  const { players, teamRoster, manager, school, trainingPlan } = useSaveDataContext()
+  const { players, teamRoster } = useSaveDataContext()
   const [viewMode, setViewMode] = useState<'month' | 'year'>('month')
 
   // Get team players
@@ -92,35 +91,6 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
   const chartData = useMemo(() => {
     return getImprovementChartData(comparisonSnapshots, teamPlayers)
   }, [comparisonSnapshots, teamPlayers])
-
-  // Get improvement insights
-  const insights = useMemo(() => {
-    if (!trainingPlan) return []
-
-    const playerTrainings = trainingPlan.playerAssignments.map((assignment) => ({
-      playerId: assignment.playerId,
-      focus: assignment.focus,
-      isIndividualCoaching: assignment.isIndividualCoaching
-    }))
-
-    return getImprovementInsights(
-      comparisonSnapshots,
-      teamPlayers,
-      manager.playStyle,
-      manager.stats.coachingEffectiveness,
-      school.funding,
-      trainingPlan.teamFocus,
-      playerTrainings,
-      8 // Max 8 insights
-    )
-  }, [
-    comparisonSnapshots,
-    teamPlayers,
-    manager.playStyle,
-    manager.stats.coachingEffectiveness,
-    school.funding,
-    trainingPlan
-  ])
 
   if (teamPlayers.length === 0) {
     return (
@@ -409,117 +379,6 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
           }}
         >
           <ImprovementBarChart data={chartData} maxBars={10} />
-        </div>
-      )}
-
-      {/* Improvement Insights */}
-      {insights.length > 0 && (
-        <div
-          style={{
-            marginTop: theme.spacing.lg,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.sm
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: theme.typography.fontFamily.heading,
-              fontSize: theme.typography.fontSize.base,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              margin: 0,
-              marginBottom: theme.spacing.xs
-            }}
-          >
-            Improvement Insights:
-          </h3>
-          {insights.map((insight, index) => (
-            <div
-              key={`${insight.player.id}-${insight.skill}-${index}`}
-              style={{
-                padding: theme.spacing.sm,
-                background: insight.isMax
-                  ? theme.colors.success.main + '20'
-                  : theme.colors.error.main + '20',
-                borderRadius: theme.borderRadius.sm,
-                border: `1px solid ${
-                  insight.isMax ? theme.colors.success.main : theme.colors.error.main
-                }`
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: theme.spacing.xs
-                }}
-              >
-                <div>
-                  <strong
-                    style={{
-                      color: theme.colors.text.primary,
-                      fontSize: theme.typography.fontSize.sm
-                    }}
-                  >
-                    {insight.player.firstName} {insight.player.lastName}
-                  </strong>
-                  <span
-                    style={{
-                      fontSize: theme.typography.fontSize.xs,
-                      color: theme.colors.text.secondary,
-                      marginLeft: theme.spacing.xs
-                    }}
-                  >
-                    — {insight.skillLabel}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    fontWeight: theme.typography.fontWeight.bold,
-                    color: insight.isMax
-                      ? theme.colors.success.main
-                      : theme.colors.error.main
-                  }}
-                >
-                  {insight.improvement > 0 ? '+' : ''}
-                  {Math.floor(insight.improvement)}
-                </span>
-              </div>
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize.xs,
-                  color: theme.colors.text.secondary,
-                  lineHeight: 1.5
-                }}
-              >
-                {insight.isMax ? (
-                  <span style={{ color: theme.colors.success.main }}>
-                    <strong>Strong Improvement:</strong>
-                  </span>
-                ) : (
-                  <span style={{ color: theme.colors.error.main }}>
-                    <strong>Limited Improvement:</strong>
-                  </span>
-                )}
-                <ul
-                  style={{
-                    margin: `${theme.spacing.xs} 0 0 ${theme.spacing.md}`,
-                    padding: 0,
-                    listStyle: 'disc'
-                  }}
-                >
-                  {insight.reasons.map((reason, reasonIndex) => (
-                    <li key={reasonIndex} style={{ marginBottom: theme.spacing.xs }}>
-                      {reason}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
         </div>
       )}
     </GameCard>

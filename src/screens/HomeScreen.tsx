@@ -3,6 +3,7 @@ import GameButton from '../components/buttons/GameButton'
 import GameCard from '../components/cards/GameCard'
 import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
 import { EmailCard } from '../components/emails/EmailCard'
+import { PlayerInsightsCard } from '../components/home/PlayerInsightsCard'
 import { TimelineItem } from '../components/home/TimelineItem'
 import { TopProspectsCard } from '../components/home/TopProspectsCard'
 import { TrainingInsightsCard } from '../components/home/TrainingInsightsCard'
@@ -42,8 +43,10 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const isTrainingPhase =
     season.phase === GamePhase.TRAINING || season.phase === GamePhase.TRAINING_2
 
-  // Check if this is February (first training month) or later
-  const isFirstTrainingMonth = isTrainingPhase && season.month === 2
+  // Check if this is the first training month of either training phase
+  // February is first month of TRAINING phase, August is first month of TRAINING_2 phase
+  const isFirstTrainingMonth =
+    isTrainingPhase && (season.month === 2 || season.month === 8)
 
   // Get previous month's snapshots for progress comparison
   // Only compare within the same training phase (Feb-May or Aug-Oct)
@@ -104,8 +107,10 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           currentPhaseString === GamePhase.TRAINING ||
           currentPhaseString === GamePhase.TRAINING_2
         ) {
-          if (trainingPlan && !trainingPlan.completed) {
-            // Create skill snapshots before progression
+          // Always process progression during training phase, regardless of completed flag
+          // This ensures players improve every month during training phase
+          if (trainingPlan) {
+            // Create skill snapshots before progression (snapshot of current month before advancing)
             const snapshots = createSkillSnapshots(
               players,
               teamRoster,
@@ -125,7 +130,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               season.month
             )
             updatePlayers.set(updatedPlayers)
-            // Mark training plan as completed
+            // Mark training plan as completed for this month
             updateTrainingPlan.setCompleted(true)
           }
         }
@@ -136,6 +141,21 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         if (nextPhase.month === 1) {
           // New year - reset draft
           updateSeason.setDraftCompleted(false)
+        }
+
+        // If entering a new training month, reset completed flag and update month/year
+        if (
+          (nextPhase.phase === GamePhase.TRAINING ||
+            nextPhase.phase === GamePhase.TRAINING_2) &&
+          trainingPlan
+        ) {
+          // Check if training plan month/year doesn't match next month (new training month)
+          const newYear = nextPhase.month === 1 ? season.year + 1 : season.year
+          if (trainingPlan.month !== nextPhase.month || trainingPlan.year !== newYear) {
+            // Update training plan to reflect new month/year and reset completed flag
+            updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
+            updateTrainingPlan.setCompleted(false)
+          }
         }
       }
     }
@@ -281,17 +301,23 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             {/* Training Insights Card - February (first training month) */}
             {isFirstTrainingMonth && <TrainingInsightsCard changeScreen={changeScreen} />}
 
-            {/* Training Progress Card - Training months after February */}
-            {isTrainingPhase &&
-              !isFirstTrainingMonth &&
-              previousMonthSnapshots.length > 0 && (
+            {/* Training Progress Card - Training months after first month (Mar-May, Sep-Oct) */}
+            {isTrainingPhase && !isFirstTrainingMonth && (
+              <>
                 <TrainingProgressCard
                   oldSnapshots={previousMonthSnapshots}
                   allSnapshots={skillSnapshots}
                   currentYear={season.year}
                   currentMonth={season.month}
                 />
-              )}
+                <PlayerInsightsCard
+                  oldSnapshots={previousMonthSnapshots}
+                  allSnapshots={skillSnapshots}
+                  currentYear={season.year}
+                  currentMonth={season.month}
+                />
+              </>
+            )}
 
             {/* Season Timeline Card - Always visible, narrower */}
             <GameCard

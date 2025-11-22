@@ -356,6 +356,14 @@ export const useSaveData = () => {
           ? { ...prevData.trainingPlan, completed }
           : null
       }))
+    },
+    setMonthAndYear: (month: number, year: number) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingPlan: prevData.trainingPlan
+          ? { ...prevData.trainingPlan, month, year }
+          : null
+      }))
     }
   }
 

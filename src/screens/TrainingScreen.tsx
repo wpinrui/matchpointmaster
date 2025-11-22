@@ -223,8 +223,14 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             const nextPhase = getNextPhase(currentPhase, season.month)
 
             // Process player progression before advancing phase
-            if (trainingPlan && !trainingPlan.completed) {
-              // Create skill snapshots before progression
+            // Always process progression during training phase, regardless of completed flag
+            // This ensures players improve every month during training phase
+            if (
+              (currentPhase === GamePhase.TRAINING ||
+                currentPhase === GamePhase.TRAINING_2) &&
+              trainingPlan
+            ) {
+              // Create skill snapshots before progression (snapshot of current month before advancing)
               const snapshots = createSkillSnapshots(
                 players,
                 teamRoster,
@@ -244,13 +250,32 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 season.month
               )
               updatePlayers.set(updatedPlayers)
-              // Mark training plan as completed
+
+              // Mark training plan as completed for this month
               updateTrainingPlan.setCompleted(true)
             }
 
             // Update season to next month/phase
             updateSeason.setMonth(nextPhase.month)
             updateSeason.setPhase(nextPhase.phase)
+
+            // If entering a new training month, reset completed flag and update month/year
+            if (
+              (nextPhase.phase === GamePhase.TRAINING ||
+                nextPhase.phase === GamePhase.TRAINING_2) &&
+              trainingPlan
+            ) {
+              // Check if training plan month/year doesn't match next month (new training month)
+              const newYear = nextPhase.month === 1 ? season.year + 1 : season.year
+              if (
+                trainingPlan.month !== nextPhase.month ||
+                trainingPlan.year !== newYear
+              ) {
+                // Update training plan to reflect new month/year and reset completed flag
+                updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
+                updateTrainingPlan.setCompleted(false)
+              }
+            }
 
             // Reset draft if it's a new year
             if (nextPhase.month === 1) {
