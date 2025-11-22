@@ -48,7 +48,11 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   >(null)
   const [showSetTeamFocus, setShowSetTeamFocus] = useState(false)
   const [showAdvanceMonthDialog, setShowAdvanceMonthDialog] = useState(false)
-  const [pendingAdvanceAction, setPendingAdvanceAction] = useState<(() => void) | null>(null)
+  const [pendingAdvanceAction, setPendingAdvanceAction] = useState<(() => void) | null>(
+    null
+  )
+  const [showCoachingSlotsDialog, setShowCoachingSlotsDialog] = useState(false)
+  const [coachingSlotsMessage, setCoachingSlotsMessage] = useState('')
 
   // Initialize training plan if we're in training phase and don't have one yet
   useEffect(() => {
@@ -125,7 +129,8 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
     // If adding coaching and no slots available, don't allow
     if (isIndividualCoaching && !hasCoaching && currentSlotsUsed >= maxCoachingSlots) {
-      alert(`No coaching slots available. Maximum: ${maxCoachingSlots}`)
+      setCoachingSlotsMessage(`No coaching slots available. Maximum: ${maxCoachingSlots}`)
+      setShowCoachingSlotsDialog(true)
       return
     }
 
@@ -331,7 +336,7 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                   // Navigate back to home screen
                   changeScreen(Screens.HOME)
                 }
-                
+
                 setPendingAdvanceAction(advanceAction)
                 setShowAdvanceMonthDialog(true)
               }}
@@ -647,6 +652,18 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           setPendingAdvanceAction(null)
         }}
       />
+
+      {/* Coaching Slots Dialog */}
+      <ConfirmDialog
+        isOpen={showCoachingSlotsDialog}
+        title="Coaching Slots Unavailable"
+        message={coachingSlotsMessage}
+        confirmText="OK"
+        cancelText={null}
+        onConfirm={() => setShowCoachingSlotsDialog(false)}
+        onCancel={() => setShowCoachingSlotsDialog(false)}
+        variant="danger"
+      />
     </div>
   )
 }
@@ -814,3 +831,6 @@ const PlayerTrainingDialog: React.FC<PlayerTrainingDialogProps> = ({
       </div>
     </GameCard>
   )
+}
+
+export default TrainingScreen

@@ -33,6 +33,7 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   } = useSaveDataContext()
 
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showEmptyTeamDialog, setShowEmptyTeamDialog] = useState(false)
   const hasGeneratedInitialPoolRef = useRef<boolean>(false)
 
   // Helper to pick a random element from an array
@@ -52,8 +53,8 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const handleConfirmLeave = () => {
     // Check if team is empty
     if (teamRoster.length === 0) {
-      alert('You cannot leave the draft with an empty team. Please add at least one player before leaving.')
       setShowLeaveConfirm(false)
+      setShowEmptyTeamDialog(true)
       return
     }
 
@@ -94,7 +95,7 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const handleEndDraft = () => {
     // Check if team is empty
     if (teamRoster.length === 0) {
-      alert('You cannot end the draft with an empty team. Please add at least one player before ending.')
+      setShowEmptyTeamDialog(true)
       return
     }
 
@@ -442,6 +443,17 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         onConfirm={handleConfirmLeave}
         onCancel={handleCancelLeave}
         variant="primary"
+      />
+
+      <ConfirmDialog
+        isOpen={showEmptyTeamDialog}
+        title="Empty Team"
+        message="You cannot leave the draft with an empty team. Please add at least one player before leaving."
+        confirmText="OK"
+        cancelText={null}
+        onConfirm={() => setShowEmptyTeamDialog(false)}
+        onCancel={() => setShowEmptyTeamDialog(false)}
+        variant="danger"
       />
     </div>
   )

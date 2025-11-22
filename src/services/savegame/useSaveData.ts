@@ -160,24 +160,36 @@ export const useSaveData = () => {
 
   /**
    * Export current save to JSON file (manual download)
+   * Returns { success: boolean, message: string } to allow components to show dialogs
    */
-  const exportToJson = () => {
+  const exportToJson = (): { success: boolean; message: string } => {
     try {
       if (!currentSaveId) {
-        alert('No active save to export. Please create or load a save first.')
-        return
+        return {
+          success: false,
+          message: 'No active save to export. Please create or load a save first.'
+        }
       }
       const slot = getSaveSlot(currentSaveId)
       if (!slot) {
-        alert('Save slot not found. Please try again.')
-        return
+        return {
+          success: false,
+          message: 'Save slot not found. Please try again.'
+        }
       }
       const json = exportSaveSlotToJson(slot)
       const filename = `${sanitizeFilename(slot.name)}_${slot.id.slice(0, 8)}.json`
       downloadJsonFile(json, filename)
+      return {
+        success: true,
+        message: 'Save exported successfully!'
+      }
     } catch (error) {
       console.error('Error exporting save file:', error)
-      alert('Failed to export save file. Please try again.')
+      return {
+        success: false,
+        message: 'Failed to export save file. Please try again.'
+      }
     }
   }
 

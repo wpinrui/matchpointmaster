@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react'
 import GameButton from '../components/buttons/GameButton'
 import GameCard from '../components/cards/GameCard'
-import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
+import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
 import { EmailCard } from '../components/emails/EmailCard'
 import { PlayerInsightsCard } from '../components/home/PlayerInsightsCard'
 import { TimelineItem } from '../components/home/TimelineItem'
@@ -38,7 +38,9 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   } = useSaveDataContext()
   const [showDraftDialog, setShowDraftDialog] = useState(false)
   const [showTimeProgressionDialog, setShowTimeProgressionDialog] = useState(false)
-  const [pendingTimeProgression, setPendingTimeProgression] = useState<(() => void) | null>(null)
+  const [pendingTimeProgression, setPendingTimeProgression] = useState<
+    (() => void) | null
+  >(null)
 
   const phaseDisplayName = getPhaseDisplayName(season.phase as GamePhase, season.month)
 
@@ -117,7 +119,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       disabled: !isPhaseImplemented,
       action: () => {
         if (!isPhaseImplemented) return // Disabled phase
-        
+
         // Store the progression action and show confirmation dialog
         const progressionAction = () => {
           // Process player progression if leaving training phase
@@ -208,7 +210,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           )
           addEmail(phaseProgressionEmail)
         }
-        
+
         setPendingTimeProgression(progressionAction)
         setShowTimeProgressionDialog(true)
       }

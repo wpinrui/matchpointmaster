@@ -8,7 +8,7 @@ interface ConfirmDialogProps {
   title: string
   message: string
   confirmText?: string
-  cancelText?: string
+  cancelText?: string | null
   onConfirm: () => void
   onCancel: () => void
   variant?: 'primary' | 'danger'
@@ -78,9 +78,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           justifyContent: 'flex-end'
         }}
       >
-        <GameButton variant="secondary" onClick={onCancel} type="button">
-          {cancelText}
-        </GameButton>
+        {cancelText !== null && (
+          <GameButton variant="secondary" onClick={onCancel} type="button">
+            {cancelText}
+          </GameButton>
+        )}
         <GameButton
           variant={variant === 'danger' ? 'danger' : 'primary'}
           onClick={onConfirm}
