@@ -231,13 +231,13 @@ export const useSaveData = () => {
     key: K,
     value: SaveData['season'][K]
   ) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        season: {
-          ...prevData.season,
+    setSaveData((prevData) => ({
+      ...prevData,
+      season: {
+        ...prevData.season,
         [key]: value
-        }
-      }))
+      }
+    }))
   }
 
   const updateSeason = {
