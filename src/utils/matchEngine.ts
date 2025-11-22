@@ -283,6 +283,20 @@ function determineShotType(player: Player, variance: number): ShotType {
 }
 
 /**
+ * Shot quality breakdown for analysis
+ */
+type ShotQualityBreakdown = {
+  baseQuality: number
+  difficultyPenalty: number
+  momentumMultiplier: number
+  finalQuality: number
+  primaryStat: string
+  primaryStatValue: number
+  shotType: ShotType
+  isForehand: boolean
+}
+
+/**
  * Calculate shot quality (0-100) using weighted stats
  */
 function calculateShotQuality(
@@ -294,52 +308,129 @@ function calculateShotQuality(
     receiveMultiplier: number
     consistencyMultiplier: number
   }
-): number {
+): { quality: number; breakdown: ShotQualityBreakdown } {
   const weights = SHOT_TYPE_WEIGHTS[shotType]
   const skills = player.skills
 
   let quality = 0
+  let primaryStat = 'consistency'
+  let primaryStatValue = skills.consistency
+  let maxContribution = 0
 
   // Apply weights to relevant stats
   // For shot types with both forehand and backhand weights, use the appropriate one
   if (weights.forehand && weights.backhand) {
     // Both weights exist - use the appropriate side
     if (isForehand) {
-      quality += skills.forehand * weights.forehand
+      const contribution = skills.forehand * weights.forehand
+      quality += contribution
+      if (contribution > maxContribution) {
+        maxContribution = contribution
+        primaryStat = 'forehand'
+        primaryStatValue = skills.forehand
+      }
     } else {
-      quality += skills.backhand * weights.backhand
+      const contribution = skills.backhand * weights.backhand
+      quality += contribution
+      if (contribution > maxContribution) {
+        maxContribution = contribution
+        primaryStat = 'backhand'
+        primaryStatValue = skills.backhand
+      }
     }
   } else {
     // Only one weight exists, or neither
     if (weights.forehand && isForehand) {
-      quality += skills.forehand * weights.forehand
+      const contribution = skills.forehand * weights.forehand
+      quality += contribution
+      if (contribution > maxContribution) {
+        maxContribution = contribution
+        primaryStat = 'forehand'
+        primaryStatValue = skills.forehand
+      }
     }
     if (weights.backhand && !isForehand) {
-      quality += skills.backhand * weights.backhand
+      const contribution = skills.backhand * weights.backhand
+      quality += contribution
+      if (contribution > maxContribution) {
+        maxContribution = contribution
+        primaryStat = 'backhand'
+        primaryStatValue = skills.backhand
+      }
     }
   }
   if (weights.footwork) {
-    quality += skills.footwork * weights.footwork
+    const contribution = skills.footwork * weights.footwork
+    quality += contribution
+    if (contribution > maxContribution) {
+      maxContribution = contribution
+      primaryStat = 'footwork'
+      primaryStatValue = skills.footwork
+    }
   }
   if (weights.serve) {
-    quality += skills.serve * weights.serve
+    const contribution = skills.serve * weights.serve
+    quality += contribution
+    if (contribution > maxContribution) {
+      maxContribution = contribution
+      primaryStat = 'serve'
+      primaryStatValue = skills.serve
+    }
   }
   if (weights.receive) {
-    quality += skills.receive * weights.receive * equipmentModifiers.receiveMultiplier
+    const contribution =
+      skills.receive * weights.receive * equipmentModifiers.receiveMultiplier
+    quality += contribution
+    if (contribution > maxContribution) {
+      maxContribution = contribution
+      primaryStat = 'receive'
+      primaryStatValue = skills.receive
+    }
   }
   if (weights.spin) {
-    quality += skills.spin * weights.spin * equipmentModifiers.spinMultiplier
+    const contribution = skills.spin * weights.spin * equipmentModifiers.spinMultiplier
+    quality += contribution
+    if (contribution > maxContribution) {
+      maxContribution = contribution
+      primaryStat = 'spin'
+      primaryStatValue = skills.spin
+    }
   }
   if (weights.placement) {
-    quality += skills.placement * weights.placement
+    const contribution = skills.placement * weights.placement
+    quality += contribution
+    if (contribution > maxContribution) {
+      maxContribution = contribution
+      primaryStat = 'placement'
+      primaryStatValue = skills.placement
+    }
   }
   if (weights.consistency) {
-    quality +=
+    const contribution =
       skills.consistency * weights.consistency * equipmentModifiers.consistencyMultiplier
+    quality += contribution
+    if (contribution > maxContribution) {
+      maxContribution = contribution
+      primaryStat = 'consistency'
+      primaryStatValue = skills.consistency
+    }
   }
 
-  // Clamp to 0-100
-  return Math.max(0, Math.min(100, quality))
+  const baseQuality = Math.max(0, Math.min(100, quality))
+
+  return {
+    quality: baseQuality,
+    breakdown: {
+      baseQuality,
+      difficultyPenalty: 0, // Will be set later
+      momentumMultiplier: 1, // Will be set later
+      finalQuality: baseQuality,
+      primaryStat,
+      primaryStatValue,
+      shotType,
+      isForehand
+    }
+  }
 }
 
 /**
@@ -352,15 +443,51 @@ function calculateServeQuality(
     receiveMultiplier: number
     consistencyMultiplier: number
   }
-): number {
+): { quality: number; breakdown: ShotQualityBreakdown } {
   const skills = player.skills
   let quality = 0
 
-  quality += skills.serve * SERVE_WEIGHTS.serve!
-  quality += skills.forehand * SERVE_WEIGHTS.forehand!
-  quality += skills.spin * SERVE_WEIGHTS.spin! * equipmentModifiers.spinMultiplier
+  const serveContribution = skills.serve * SERVE_WEIGHTS.serve!
+  const forehandContribution = skills.forehand * SERVE_WEIGHTS.forehand!
+  const spinContribution =
+    skills.spin * SERVE_WEIGHTS.spin! * equipmentModifiers.spinMultiplier
 
-  return Math.max(0, Math.min(100, quality))
+  quality += serveContribution
+  quality += forehandContribution
+  quality += spinContribution
+
+  // Determine primary stat
+  let primaryStat = 'serve'
+  let primaryStatValue = skills.serve
+  if (
+    forehandContribution > serveContribution &&
+    forehandContribution > spinContribution
+  ) {
+    primaryStat = 'forehand'
+    primaryStatValue = skills.forehand
+  } else if (
+    spinContribution > serveContribution &&
+    spinContribution > forehandContribution
+  ) {
+    primaryStat = 'spin'
+    primaryStatValue = skills.spin
+  }
+
+  const baseQuality = Math.max(0, Math.min(100, quality))
+
+  return {
+    quality: baseQuality,
+    breakdown: {
+      baseQuality,
+      difficultyPenalty: 0,
+      momentumMultiplier: 1,
+      finalQuality: baseQuality,
+      primaryStat,
+      primaryStatValue,
+      shotType: ShotType.AGGRESSIVE_ATTACK, // Serve is treated as aggressive
+      isForehand: true // Serves typically use forehand
+    }
+  }
 }
 
 /**
@@ -429,6 +556,60 @@ function checkLuckyBounce(shotQuality: number): {
 }
 
 /**
+ * Generate human-friendly feedback explaining why a point was won or lost
+ */
+function generatePointFeedback(
+  winner: number,
+  winnerQuality: number,
+  loserQuality: number,
+  qualityDiff: number,
+  winnerBreakdown: ShotQualityBreakdown | null,
+  loserBreakdown: ShotQualityBreakdown | null,
+  winnerName: string,
+  loserName: string,
+  wasError: boolean
+): string {
+  if (wasError) {
+    return `${loserName} made an unforced error. ${loserName}'s consistency needs improvement to reduce these mistakes.`
+  }
+
+  const qualityGap = Math.abs(qualityDiff)
+
+  if (qualityGap > 20) {
+    // Large quality difference - decisive win
+    if (qualityDiff > 0) {
+      // Winner had much better shot
+      const primaryStat = winnerBreakdown?.primaryStat || 'skill'
+      const statValue = winnerBreakdown?.primaryStatValue || 50
+      return `${winnerName} won with a decisive shot (quality ${Math.round(winnerQuality)} vs ${Math.round(loserQuality)}). ${winnerName}'s strong ${primaryStat} (${statValue}) was the key factor. ${loserName} struggled to handle the difficulty of the incoming ball.`
+    } else {
+      // Loser had much worse shot
+      const primaryStat = loserBreakdown?.primaryStat || 'skill'
+      const statValue = loserBreakdown?.primaryStatValue || 50
+      return `${winnerName} won because ${loserName}'s return was too weak (quality ${Math.round(loserQuality)} vs ${Math.round(winnerQuality)}). ${loserName}'s ${primaryStat} (${statValue}) wasn't strong enough to handle the pressure.`
+    }
+  } else if (qualityGap > 10) {
+    // Moderate quality difference
+    if (qualityDiff > 0) {
+      const primaryStat = winnerBreakdown?.primaryStat || 'skill'
+      return `${winnerName} won with a solid shot (quality ${Math.round(winnerQuality)} vs ${Math.round(loserQuality)}). ${winnerName}'s ${primaryStat} gave them the edge.`
+    } else {
+      return `${winnerName} won as ${loserName}'s return quality (${Math.round(loserQuality)}) was insufficient against ${winnerName}'s shot (${Math.round(winnerQuality)}).`
+    }
+  } else {
+    // Close quality difference - small margins
+    if (Math.abs(qualityDiff) < 2) {
+      // Essentially equal qualities - point decided by small margins or luck
+      return `${winnerName} won a very close point (quality ${Math.round(winnerQuality)} vs ${Math.round(loserQuality)}). The point was decided by the smallest of margins - execution timing, positioning, or a bit of luck.`
+    } else if (qualityDiff > 0) {
+      return `${winnerName} won a close point (quality ${Math.round(winnerQuality)} vs ${Math.round(loserQuality)}). Small advantages in shot quality made the difference.`
+    } else {
+      return `${winnerName} won as ${loserName}'s return quality (${Math.round(loserQuality)}) was slightly insufficient against ${winnerName}'s shot (${Math.round(winnerQuality)}).`
+    }
+  }
+}
+
+/**
  * Check win conditions
  */
 function checkWinCondition(
@@ -447,9 +628,19 @@ function checkWinCondition(
   }
 
   // Probability-based win (quality difference affects win chance)
-  const winChance = 0.3 + (qualityDiff / 100) * 0.4 // 10-70% chance based on quality diff
+  // When qualities are very close, win chance should be very low
+  let winChance: number
+  if (Math.abs(qualityDiff) < 2) {
+    // Essentially equal qualities - very low win chance (5-10%)
+    // This simulates that equal quality shots rarely win immediately
+    winChance = 0.05 + (qualityDiff / 100) * 0.05 // 0-10% when very close
+  } else {
+    // Normal win chance based on quality difference
+    winChance = 0.3 + (qualityDiff / 100) * 0.4 // 10-70% chance based on quality diff
+  }
+
   const rallyPenalty = Math.min(0.1, rallyLength * 0.01) // Slight penalty for long rallies
-  const adjustedChance = winChance - rallyPenalty
+  const adjustedChance = Math.max(0, winChance - rallyPenalty) // Ensure non-negative
 
   if (Math.random() < adjustedChance) {
     return { won: true, winner: 'returner' }
@@ -484,7 +675,9 @@ export function simulateRally(
   const receiver = currentPlayer === 0 ? player2 : player1
   const serverModifiers = getEquipmentModifiers(server.forehandRubber)
 
-  let serveQuality = calculateServeQuality(server, serverModifiers)
+  const serveResult = calculateServeQuality(server, serverModifiers)
+  let serveQuality = serveResult.quality
+  const serveBreakdown = serveResult.breakdown
 
   // Check for serve error (consistency check)
   // Make serve errors rarer - serves are more controlled
@@ -494,16 +687,35 @@ export function simulateRally(
   const totalServeErrorChance = Math.min(0.15, serveErrorChance + serveQualityPenalty)
 
   if (Math.random() < totalServeErrorChance) {
+    const serverName = server.shortName || server.firstName
+    const receiverName = receiver.shortName || receiver.firstName
     events.push({
       type: 'error',
       player: currentPlayer,
-      description: `${server.shortName || server.firstName} serves out`,
+      description: `${serverName} serves out`,
       timestamp: Date.now()
     })
     events.push({
       type: 'point',
       player: 1 - currentPlayer,
-      description: `${receiver.shortName || receiver.firstName} wins the point (serve error)`,
+      description: `${receiverName} wins the point (serve error)`,
+      timestamp: Date.now()
+    })
+    const feedback = generatePointFeedback(
+      1 - currentPlayer,
+      0,
+      0,
+      0,
+      null,
+      serveBreakdown,
+      receiverName,
+      serverName,
+      true
+    )
+    events.push({
+      type: 'return',
+      player: 1 - currentPlayer,
+      description: `📊 ${feedback}`,
       timestamp: Date.now()
     })
     return {
@@ -526,6 +738,7 @@ export function simulateRally(
   }
 
   incomingQuality = serveQuality
+  let incomingBreakdown: ShotQualityBreakdown | null = serveBreakdown
   recentQualities.push(serveQuality)
 
   events.push({
@@ -571,25 +784,34 @@ export function simulateRally(
     const shotType = determineShotType(hitter, variance)
 
     // Calculate base return quality
-    let returnQuality = calculateShotQuality(
-      hitter,
-      shotType,
-      isForehand,
-      hitterModifiers
-    )
+    const shotResult = calculateShotQuality(hitter, shotType, isForehand, hitterModifiers)
+    let returnQuality = shotResult.quality
+    const returnBreakdown = shotResult.breakdown
 
     // Apply difficulty penalty from incoming ball
     const difficulty = calculateDifficulty(incomingQuality)
+    const baseQualityBeforePenalty = returnQuality
     returnQuality = applyDifficultyPenalty(
       returnQuality,
       difficulty,
       hitter.skills.footwork
     )
+    returnBreakdown.difficultyPenalty = baseQualityBeforePenalty - returnQuality
 
     // Apply momentum
     const momentum = calculateMomentum(recentQualities)
+    const qualityBeforeMomentum = returnQuality
     returnQuality *= momentum
     returnQuality = Math.max(0, Math.min(100, returnQuality))
+    returnBreakdown.momentumMultiplier = momentum
+
+    // Add small random variance to make identical stats produce slightly different results
+    // This simulates natural variation in execution
+    const executionVariance = (Math.random() - 0.5) * 2 // -1 to +1
+    returnQuality += executionVariance
+    returnQuality = Math.max(0, Math.min(100, returnQuality))
+
+    returnBreakdown.finalQuality = returnQuality
 
     // Check for error (consistency check)
     // Make errors much rarer - only on very low consistency or very low quality shots
@@ -601,16 +823,36 @@ export function simulateRally(
     const totalErrorChance = Math.min(0.25, baseErrorChance + qualityPenalty) // Cap at 25%
 
     if (Math.random() < totalErrorChance) {
+      const hitterName = hitter.shortName || hitter.firstName
+      const opponentName = opponent.shortName || opponent.firstName
       events.push({
         type: 'error',
         player: currentPlayer,
-        description: `${hitter.shortName || hitter.firstName} hits the ball out`,
+        description: `${hitterName} hits the ball out`,
         timestamp: Date.now()
       })
+      const feedback = generatePointFeedback(
+        1 - currentPlayer,
+        0, // Winner quality not relevant for errors
+        0, // Loser quality not relevant for errors
+        0,
+        null,
+        returnBreakdown,
+        opponentName,
+        hitterName,
+        true
+      )
       events.push({
         type: 'point',
         player: 1 - currentPlayer,
-        description: `${opponent.shortName || opponent.firstName} wins the point (error)`,
+        description: `${opponentName} wins the point (error)`,
+        timestamp: Date.now()
+      })
+      // Add feedback as a separate event
+      events.push({
+        type: 'return',
+        player: 1 - currentPlayer,
+        description: `📊 ${feedback}`,
         timestamp: Date.now()
       })
       pointWon = true
@@ -647,10 +889,44 @@ export function simulateRally(
     const winCheck = checkWinCondition(returnQuality, incomingQuality, rallyLength)
     if (winCheck.won) {
       const winner = winCheck.winner === 'returner' ? currentPlayer : 1 - currentPlayer
+      const winnerPlayer = winner === 0 ? player1 : player2
+      const loserPlayer = winner === 0 ? player2 : player1
+      const winnerName = winnerPlayer.shortName || winnerPlayer.firstName
+      const loserName = loserPlayer.shortName || loserPlayer.firstName
+
+      const qualityDiff = returnQuality - incomingQuality
+      const winnerQuality =
+        winCheck.winner === 'returner' ? returnQuality : incomingQuality
+      const loserQuality =
+        winCheck.winner === 'returner' ? incomingQuality : returnQuality
+      const winnerBreakdown =
+        winCheck.winner === 'returner' ? returnBreakdown : incomingBreakdown
+      const loserBreakdown =
+        winCheck.winner === 'returner' ? incomingBreakdown : returnBreakdown
+
+      const feedback = generatePointFeedback(
+        winner,
+        winnerQuality,
+        loserQuality,
+        qualityDiff,
+        winnerBreakdown,
+        loserBreakdown,
+        winnerName,
+        loserName,
+        false
+      )
+
       events.push({
         type: 'point',
         player: winner,
-        description: `${winner === 0 ? player1.shortName || player1.firstName : player2.shortName || player2.firstName} wins the point`,
+        description: `${winnerName} wins the point`,
+        timestamp: Date.now()
+      })
+      // Add feedback as a separate event
+      events.push({
+        type: 'return',
+        player: winner,
+        description: `📊 ${feedback}`,
         timestamp: Date.now()
       })
       pointWon = true
@@ -663,6 +939,7 @@ export function simulateRally(
 
     // Continue rally
     incomingQuality = returnQuality
+    incomingBreakdown = returnBreakdown
     currentPlayer = 1 - currentPlayer
     rallyLength++
   }
