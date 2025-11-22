@@ -76,18 +76,8 @@ export const generateFaceUrl = (config: FaceConfig): string => {
     top: [randomHairStyle]
   }
 
-  // Randomize hair color for variety (colors without # prefix)
-  const hairColors = [
-    'A55728',
-    '2C1B18',
-    'B58143',
-    'D6B370',
-    '724133',
-    'C93305',
-    'E8E1E1'
-  ]
-  const randomHairColor = hairColors[Math.floor(Math.random() * hairColors.length)]
-  options.hairColor = [randomHairColor]
+  // Always use black hair color
+  options.hairColor = ['2C1B18'] // Black
 
   // Don't include clothing - it will be added based on school colors later
   // Clothing is hardcoded to coach attire style

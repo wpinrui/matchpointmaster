@@ -1,16 +1,50 @@
-import { createAvatar } from '@dicebear/core'
 import { avataaars } from '@dicebear/collection'
+import { createAvatar } from '@dicebear/core'
 import { Gender } from '../services/savegame/types'
-import type { RacialCategory } from './playerGeneration'
 import {
-  SKIN_TONES,
-  MALE_HAIR_STYLES,
+  ACCESSORIES,
+  CLOTHING,
   FEMALE_HAIR_STYLES,
   HAIR_COLORS,
-  ACCESSORIES,
-  FACIAL_HAIR,
-  CLOTHING
+  MALE_HAIR_STYLES,
+  SKIN_TONES
 } from './faceConstants'
+import type { RacialCategory } from './playerGeneration'
+
+/**
+ * Get appropriate hair color based on racial category
+ * Hair colors: '2C1B18' (Black), 'A55728' (Brown), '724133' (Dark Brown), 'B58143' (Blonde), 'D6B370' (Light Blonde), 'C93305' (Red), 'E8E1E1' (Gray)
+ */
+function getHairColorForRacialCategory(racialCategory?: RacialCategory): string {
+  if (!racialCategory) {
+    // If no category provided, use random selection (backward compatibility)
+    return HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)]
+  }
+
+  switch (racialCategory) {
+    case 'Singapore (Chinese)':
+    case 'Singapore (Malay)':
+    case 'Singapore (Indian)':
+      // Asian ethnicities: predominantly black hair
+      return '2C1B18' // Black
+
+    case 'Other': {
+      // Other (European-origin): diverse hair colors
+      const rand = Math.random()
+      // 40% brown, 25% dark brown, 20% blonde, 10% light blonde, 3% red, 2% black
+      if (rand < 0.4) return 'A55728' // Brown
+      if (rand < 0.65) return '724133' // Dark Brown
+      if (rand < 0.85) return 'B58143' // Blonde
+      if (rand < 0.95) return 'D6B370' // Light Blonde
+      if (rand < 0.98) return 'C93305' // Red
+      return '2C1B18' // Black (rare)
+    }
+
+    default:
+      // Fallback: random selection
+      return HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)]
+  }
+}
 
 /**
  * Get appropriate skin tone based on racial category with natural variation
@@ -81,17 +115,11 @@ export const generateRandomFace = (
     const randomSkinTone = getSkinToneForRacialCategory(racialCategory)
     const randomHairStyle =
       availableHairStyles[Math.floor(Math.random() * availableHairStyles.length)]
-    const randomHairColor = HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)]
+    // Select hair color based on racial category
+    const randomHairColor = getHairColorForRacialCategory(racialCategory)
     const randomAccessory =
       Math.random() > 0.5
         ? ACCESSORIES[Math.floor(Math.random() * ACCESSORIES.length)]
-        : 'blank'
-
-    // Facial hair is more common for males, rare for females
-    const facialHairProbability = gender === Gender.FEMALE ? 0.05 : 0.3
-    const randomFacialHair =
-      Math.random() < facialHairProbability
-        ? FACIAL_HAIR[Math.floor(Math.random() * FACIAL_HAIR.length)]
         : 'blank'
     const randomClothing = CLOTHING[Math.floor(Math.random() * CLOTHING.length)]
 
@@ -109,10 +137,7 @@ export const generateRandomFace = (
       options.accessories = [randomAccessory]
     }
 
-    // Add facial hair if not blank
-    if (randomFacialHair !== 'blank') {
-      options.facialHair = [randomFacialHair]
-    }
+    // No facial hair - don't add facialHair option
 
     const avatar = createAvatar(avataaars, options)
     return avatar.toDataUri()
