@@ -44,6 +44,27 @@ export type SaveData = {
   trainingPlan: TrainingPlan | null // Current month's training plan, null if not set
   skillSnapshots: SkillSnapshot[] // Historical skill snapshots for progress tracking
   trainingGoals: TrainingGoal[] // Active training goals across all periods
+  aiSchools: AISchool[] // AI competitor schools (99 schools)
+}
+
+/**
+ * AI School data structure
+ */
+export type AISchool = {
+  id: number // School ID from schools_data.json
+  name: string
+  primaryColor: string
+  secondaryColor: string
+  accentColor: string
+  reputation: number // Current reputation rank (lower is better)
+  funding: number // Current funding rank (lower is better)
+  teamType: 'boys' | 'girls' | 'both'
+  crestPath: string
+  players: Player[] // All players in this school
+  teamRoster: string[] // Array of player IDs on the team
+  trainingPlan: TrainingPlan | null // Current month's training plan
+  managerStats: ManagerStats // AI manager stats (randomized)
+  managerPlayStyle: PlayStyle // AI manager play style (randomized)
 }
 
 /**

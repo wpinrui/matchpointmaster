@@ -12,6 +12,19 @@ interface PlayerCardProps {
 export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) => {
   const fullName = getPlayerFullName(player)
 
+  // Calculate average rating (average of all skills)
+  const averageRating = Math.round(
+    (player.skills.forehand +
+      player.skills.backhand +
+      player.skills.footwork +
+      player.skills.serve +
+      player.skills.receive +
+      player.skills.spin +
+      player.skills.placement +
+      player.skills.consistency) /
+      8
+  )
+
   return (
     <GameCard
       style={{
@@ -87,6 +100,14 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
                 }}
               >
                 ELO {player.elo}
+              </span>
+              <span
+                style={{
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.accent.main
+                }}
+              >
+                Rating {averageRating}
               </span>
             </div>
           </div>

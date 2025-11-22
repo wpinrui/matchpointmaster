@@ -45,11 +45,13 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     school,
     trainingPlan,
     skillSnapshots,
+    aiSchools,
     addEmail,
     updateTrainingPlan,
     updateSeason,
     updatePlayers,
-    updateSkillSnapshots
+    updateSkillSnapshots,
+    updateAISchools
   } = useSaveDataContext()
 
   const [selectedPlayerForTraining, setSelectedPlayerForTraining] = useState<
@@ -296,7 +298,8 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 manager,
                 school,
                 trainingPlan,
-                skillSnapshots
+                skillSnapshots,
+                aiSchools
               }
 
               const callbacks: PhaseProgressionCallbacks = {
@@ -304,6 +307,7 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 updatePlayers,
                 updateTrainingPlan,
                 updateSkillSnapshots,
+                updateAISchools,
                 addEmail
               }
 

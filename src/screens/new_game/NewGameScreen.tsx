@@ -19,6 +19,11 @@ import { generateCrestSvg } from '../../utils/crestGenerator'
 import { generateInitialEmails } from '../../utils/emailGenerator'
 import { generateRandomFace } from '../../utils/faceGeneration'
 import { initializeSeasonData } from '../../utils/gamePhases'
+import { loadSchoolsData } from '../../utils/loadSchoolsData'
+import {
+  initializeAISchools,
+  generateInitialAISchoolPlayers
+} from '../../utils/aiSchools'
 import { determineSchoolTeamType } from '../../utils/schoolTeamType'
 import {
   ManagerValidationErrors,
@@ -126,11 +131,26 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         emails: [], // Will be populated below
         trainingPlan: null,
         skillSnapshots: [],
-        trainingGoals: []
+        trainingGoals: [],
+        aiSchools: [] // Will be initialized below
       }
 
       // Generate initial emails with actual names and in-game dates
       combinedData.emails = generateInitialEmails(combinedData)
+
+      // Initialize AI schools
+      const schoolsData = loadSchoolsData()
+      const aiSchools = initializeAISchools(schoolsData)
+
+      // Generate initial players for each AI school (Sec 2, 3, 4)
+      aiSchools.forEach((school) => {
+        const players = generateInitialAISchoolPlayers(school, schoolsData)
+        school.players = players
+        school.teamRoster = players.map((p) => p.id)
+      })
+
+      combinedData.aiSchools = aiSchools
+
       createNewSave(saveName, combinedData)
       changeScreen(Screens.HOME)
     } else {
@@ -249,11 +269,26 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       emails: [],
       trainingPlan: null,
       skillSnapshots: [],
-      trainingGoals: []
+      trainingGoals: [],
+      aiSchools: [] // Will be initialized below
     }
 
     // Generate initial emails with actual names and in-game dates
     combinedData.emails = generateInitialEmails(combinedData)
+
+    // Initialize AI schools
+    const schoolsData = loadSchoolsData()
+    const aiSchools = initializeAISchools(schoolsData)
+
+    // Generate initial players for each AI school (Sec 2, 3, 4)
+    aiSchools.forEach((school) => {
+      const players = generateInitialAISchoolPlayers(school, schoolsData)
+      school.players = players
+      school.teamRoster = players.map((p) => p.id)
+    })
+
+    combinedData.aiSchools = aiSchools
+
     createNewSave(saveName, combinedData)
     changeScreen(Screens.HOME)
   }

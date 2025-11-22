@@ -10,7 +10,8 @@ import {
   SaveData,
   TrainingFocus,
   PlayerTraining,
-  TrainingGoal
+  TrainingGoal,
+  Player
 } from './types'
 import {
   getCurrentSaveData,
@@ -409,6 +410,39 @@ export const useSaveData = () => {
     }
   }
 
+  const updateAISchools = {
+    set: (schools: SaveData['aiSchools']) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        aiSchools: schools
+      }))
+    },
+    update: (schoolId: number, updates: Partial<SaveData['aiSchools'][0]>) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        aiSchools: prevData.aiSchools.map((school) =>
+          school.id === schoolId ? { ...school, ...updates } : school
+        )
+      }))
+    },
+    updateSchoolPlayers: (schoolId: number, players: Player[]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        aiSchools: prevData.aiSchools.map((school) =>
+          school.id === schoolId ? { ...school, players } : school
+        )
+      }))
+    },
+    updateSchoolRoster: (schoolId: number, roster: string[]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        aiSchools: prevData.aiSchools.map((school) =>
+          school.id === schoolId ? { ...school, teamRoster: roster } : school
+        )
+      }))
+    }
+  }
+
   return {
     saveData,
     manager: saveData.manager,
@@ -421,6 +455,7 @@ export const useSaveData = () => {
     trainingPlan: saveData.trainingPlan,
     skillSnapshots: saveData.skillSnapshots,
     trainingGoals: saveData.trainingGoals,
+    aiSchools: saveData.aiSchools,
     currentSaveId,
     updateManager,
     updateSchool,
@@ -430,6 +465,7 @@ export const useSaveData = () => {
     updateTrainingPlan,
     updateSkillSnapshots,
     updateTrainingGoals,
+    updateAISchools,
     markEmailAsRead,
     addEmail,
     exportToJson,

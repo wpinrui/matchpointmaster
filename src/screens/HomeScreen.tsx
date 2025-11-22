@@ -40,10 +40,12 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     trainingPlan,
     manager,
     school,
+    aiSchools,
     updatePlayers,
     updateTrainingPlan,
     skillSnapshots,
     updateSkillSnapshots,
+    updateAISchools,
     addEmail
   } = useSaveDataContext()
   const [showDraftDialog, setShowDraftDialog] = useState(false)
@@ -130,7 +132,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             manager,
             school,
             trainingPlan,
-            skillSnapshots
+            skillSnapshots,
+            aiSchools
           }
 
           const callbacks: PhaseProgressionCallbacks = {
@@ -138,6 +141,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             updatePlayers,
             updateTrainingPlan,
             updateSkillSnapshots,
+            updateAISchools,
             addEmail
           }
 

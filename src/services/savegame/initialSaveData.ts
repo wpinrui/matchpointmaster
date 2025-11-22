@@ -45,5 +45,6 @@ export const initialSaveData: SaveData = {
   emails: [], // Emails will be generated when game is created with actual names
   trainingPlan: null, // Training plan will be set during training phase
   skillSnapshots: [], // Skill snapshots for progress tracking
-  trainingGoals: [] // Training goals will be set by player
+  trainingGoals: [], // Training goals will be set by player
+  aiSchools: [] // AI schools will be initialized when game starts
 }

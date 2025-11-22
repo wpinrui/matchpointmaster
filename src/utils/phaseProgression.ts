@@ -10,12 +10,14 @@ import {
   generateTrainingResultsEmail
 } from './emailGenerator'
 import { createSkillSnapshots, processPlayerProgression } from './applyProgression'
+import { initializeAISchoolTraining, applyAISchoolTraining } from './aiSchools'
 import type {
   Player,
   SaveData,
   TrainingPlan,
   SkillSnapshot,
-  Email
+  Email,
+  AISchool
 } from '../services/savegame/types'
 
 type Manager = SaveData['manager']
@@ -48,6 +50,7 @@ export interface PhaseProgressionParams {
   trainingPlan: TrainingPlan | null
   skillSnapshots: SkillSnapshot[]
   previousMonthSnapshots?: SkillSnapshot[]
+  aiSchools?: AISchool[]
 }
 
 export interface PhaseProgressionCallbacks {
@@ -66,6 +69,9 @@ export interface PhaseProgressionCallbacks {
   }
   updateSkillSnapshots: {
     addMany: (snapshots: SkillSnapshot[]) => void
+  }
+  updateAISchools?: {
+    set: (schools: AISchool[]) => void
   }
   addEmail: (email: Email) => void
 }
@@ -137,6 +143,39 @@ export function advanceToNextPhase(
   // Process training progression if leaving a training phase
   processTrainingProgression(params, callbacks)
 
+  // Process AI school training
+  if (params.aiSchools && callbacks.updateAISchools) {
+    const updatedAISchools = params.aiSchools.map((school) => {
+      // Initialize training if entering training phase
+      const nextPhase = getNextPhase(currentPhase, currentMonth)
+      if (
+        (nextPhase.phase === GamePhase.TRAINING ||
+          nextPhase.phase === GamePhase.TRAINING_2) &&
+        !school.trainingPlan
+      ) {
+        return initializeAISchoolTraining(
+          school,
+          nextPhase.month === 1 ? currentYear + 1 : currentYear,
+          nextPhase.month,
+          nextPhase.phase
+        )
+      }
+
+      // Apply training if leaving training phase
+      if (
+        (currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2) &&
+        school.trainingPlan &&
+        !school.trainingPlan.completed
+      ) {
+        const teamPlayers = school.players.filter((p) => school.teamRoster.includes(p.id))
+        return applyAISchoolTraining(school, teamPlayers)
+      }
+
+      return school
+    })
+    callbacks.updateAISchools.set(updatedAISchools)
+  }
+
   // Calculate next phase
   const nextPhase = getNextPhase(currentPhase, currentMonth)
   const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
@@ -166,6 +205,26 @@ export function advanceToNextPhase(
       updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
       updateTrainingPlan.setCompleted(false)
     }
+  }
+
+  // Initialize AI school training for new training months
+  if (
+    params.aiSchools &&
+    callbacks.updateAISchools &&
+    (nextPhase.phase === GamePhase.TRAINING || nextPhase.phase === GamePhase.TRAINING_2)
+  ) {
+    const updatedAISchools = params.aiSchools.map((school) => {
+      if (!school.trainingPlan || school.trainingPlan.month !== nextPhase.month) {
+        return initializeAISchoolTraining(
+          school,
+          newYear,
+          nextPhase.month,
+          nextPhase.phase
+        )
+      }
+      return school
+    })
+    callbacks.updateAISchools.set(updatedAISchools)
   }
 
   // Generate and add phase progression email

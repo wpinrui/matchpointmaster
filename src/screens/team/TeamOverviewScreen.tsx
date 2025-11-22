@@ -1,23 +1,130 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import GameButton from '../../components/buttons/GameButton'
 import GameCard from '../../components/cards/GameCard'
 import { PlayerCard } from '../../components/players/PlayerCard'
 import { ScreenProps } from '../../screen_manager/screens'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
+import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import { calculateMaxTeamSize } from '../../utils/schoolReputation'
 
-const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
-  const { players, teamRoster, updateTeamRoster, school } = useSaveDataContext()
+type TeamType = 'C boys' | 'C girls' | 'B boys' | 'B girls'
 
-  // Get players currently on the team
-  const teamPlayers = useMemo(() => {
-    return players.filter((p) => teamRoster.includes(p.id))
-  }, [players, teamRoster])
+const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
+  const { players, teamRoster, updateTeamRoster, school, aiSchools } =
+    useSaveDataContext()
+
+  // State for selected school and team
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('user') // 'user' or AI school ID
+  const [selectedTeam, setSelectedTeam] = useState<TeamType>('C boys')
+
+  // Get all available schools (user's school + AI schools)
+  const allSchools = useMemo(() => {
+    const schools = [
+      {
+        id: 'user',
+        name: school.name || 'Your School',
+        teamType: school.teamType,
+        isUser: true
+      }
+    ]
+    if (aiSchools) {
+      aiSchools.forEach((aiSchool) => {
+        schools.push({
+          id: aiSchool.id.toString(),
+          name: aiSchool.name,
+          teamType: aiSchool.teamType,
+          isUser: false
+        })
+      })
+    }
+    return schools
+  }, [school, aiSchools])
+
+  // Get selected school data
+  const selectedSchool = useMemo(() => {
+    if (selectedSchoolId === 'user') {
+      return {
+        id: 'user',
+        name: school.name || 'Your School',
+        teamType: school.teamType,
+        players: players,
+        teamRoster: teamRoster,
+        funding: school.funding,
+        isUser: true
+      }
+    } else {
+      const aiSchool = aiSchools?.find((s) => s.id.toString() === selectedSchoolId)
+      if (!aiSchool) return null
+      return {
+        id: aiSchool.id.toString(),
+        name: aiSchool.name,
+        teamType: aiSchool.teamType,
+        players: aiSchool.players,
+        teamRoster: aiSchool.teamRoster,
+        funding: aiSchool.funding,
+        isUser: false
+      }
+    }
+  }, [selectedSchoolId, school, players, teamRoster, aiSchools])
+
+  // Get available teams based on selected school
+  const availableTeams = useMemo(() => {
+    if (!selectedSchool) return []
+    const teams: TeamType[] = []
+    if (selectedSchool.teamType === 'boys' || selectedSchool.teamType === 'both') {
+      teams.push('C boys', 'B boys')
+    }
+    if (selectedSchool.teamType === 'girls' || selectedSchool.teamType === 'both') {
+      teams.push('C girls', 'B girls')
+    }
+    return teams
+  }, [selectedSchool])
+
+  // Update selected team if current selection is invalid
+  React.useEffect(() => {
+    if (selectedSchool && !availableTeams.includes(selectedTeam)) {
+      setSelectedTeam(availableTeams[0] || 'C boys')
+    }
+  }, [selectedSchool, availableTeams, selectedTeam])
+
+  // Filter players based on selected school and team
+  const filteredPlayers = useMemo(() => {
+    if (!selectedSchool) return []
+
+    // Get players from selected school
+    const schoolPlayers = selectedSchool.players.filter((p) =>
+      selectedSchool.teamRoster.includes(p.id)
+    )
+
+    // Parse team selection
+    const isLowerSecondary = selectedTeam.startsWith('C')
+    const isUpperSecondary = selectedTeam.startsWith('B')
+    const isBoys = selectedTeam.includes('boys')
+    const isGirls = selectedTeam.includes('girls')
+
+    // Filter by year level
+    let yearFiltered = schoolPlayers
+    if (isLowerSecondary) {
+      yearFiltered = schoolPlayers.filter((p) => p.year === 1 || p.year === 2)
+    } else if (isUpperSecondary) {
+      yearFiltered = schoolPlayers.filter((p) => p.year === 3 || p.year === 4)
+    }
+
+    // Filter by gender
+    let genderFiltered = yearFiltered
+    if (isBoys) {
+      genderFiltered = yearFiltered.filter((p) => p.gender === Gender.MALE)
+    } else if (isGirls) {
+      genderFiltered = yearFiltered.filter((p) => p.gender === Gender.FEMALE)
+    }
+
+    return genderFiltered
+  }, [selectedSchool, selectedTeam])
 
   // Calculate team statistics
   const teamStats = useMemo(() => {
-    if (teamPlayers.length === 0) {
+    if (filteredPlayers.length === 0) {
       return {
         averageElo: 0,
         totalPlayers: 0,
@@ -27,10 +134,26 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       }
     }
 
-    const totalElo = teamPlayers.reduce((sum, p) => sum + p.elo, 0)
-    const averageElo = Math.round(totalElo / teamPlayers.length)
+    const totalElo = filteredPlayers.reduce((sum, p) => sum + p.elo, 0)
+    const averageElo = Math.round(totalElo / filteredPlayers.length)
 
-    const byYear = teamPlayers.reduce(
+    // Calculate average rating (average of all skills)
+    const totalRating = filteredPlayers.reduce((sum, p) => {
+      const playerRating =
+        (p.skills.forehand +
+          p.skills.backhand +
+          p.skills.footwork +
+          p.skills.serve +
+          p.skills.receive +
+          p.skills.spin +
+          p.skills.placement +
+          p.skills.consistency) /
+        8
+      return sum + playerRating
+    }, 0)
+    const averageRating = Math.round(totalRating / filteredPlayers.length)
+
+    const byYear = filteredPlayers.reduce(
       (acc, p) => {
         acc[p.year] = (acc[p.year] || 0) + 1
         return acc
@@ -44,20 +167,25 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
     return {
       averageElo,
-      totalPlayers: teamPlayers.length,
+      averageRating,
+      totalPlayers: filteredPlayers.length,
       byYear,
       lowerSecondary,
       upperSecondary
     }
-  }, [teamPlayers])
+  }, [filteredPlayers])
 
   // Calculate max team size based on funding
   const maxTeamSize = useMemo(() => {
-    return calculateMaxTeamSize(school.funding)
-  }, [school.funding])
+    if (!selectedSchool) return 0
+    return calculateMaxTeamSize(selectedSchool.funding)
+  }, [selectedSchool])
 
   const handleRemoveFromTeam = (playerId: string) => {
-    updateTeamRoster.remove(playerId)
+    // Only allow removing from user's team
+    if (selectedSchoolId === 'user') {
+      updateTeamRoster.remove(playerId)
+    }
   }
 
   return (
@@ -74,7 +202,9 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: theme.spacing.xl
+          marginBottom: theme.spacing.xl,
+          flexWrap: 'wrap',
+          gap: theme.spacing.md
         }}
       >
         <div style={{ flex: 1 }}>
@@ -93,7 +223,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           >
             Team Overview
           </h1>
-          {school.teamType && (
+          {selectedSchool && (
             <p
               style={{
                 fontSize: theme.typography.fontSize.base,
@@ -102,135 +232,241 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 fontStyle: 'italic'
               }}
             >
-              {school.teamType === 'boys'
-                ? 'Boys Only Team'
-                : school.teamType === 'girls'
-                  ? 'Girls Only Team'
-                  : 'Both Boys and Girls Teams'}
+              {selectedSchool.name}
             </p>
           )}
         </div>
       </div>
 
-      {/* Team Statistics */}
+      {/* School and Team Selection */}
       <GameCard
         style={{
           padding: theme.spacing.lg,
-          marginBottom: theme.spacing.xl
+          marginBottom: theme.spacing.lg
         }}
       >
-        <h3
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            marginBottom: theme.spacing.lg,
-            textAlign: 'left'
-          }}
-        >
-          Team Statistics
-        </h3>
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: theme.spacing.lg
+            display: 'flex',
+            gap: theme.spacing.md,
+            flexWrap: 'wrap',
+            alignItems: 'center'
           }}
         >
-          <div style={{ textAlign: 'center' }}>
-            <p
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <label
               style={{
+                display: 'block',
                 fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary,
-                margin: 0,
+                fontWeight: theme.typography.fontWeight.semibold,
+                color: theme.colors.text.primary,
                 marginBottom: theme.spacing.xs
               }}
             >
-              Team Size
-            </p>
-            <p
+              School
+            </label>
+            <select
+              value={selectedSchoolId}
+              onChange={(e) => setSelectedSchoolId(e.target.value)}
               style={{
-                fontSize: theme.typography.fontSize['2xl'],
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.primary.main,
-                margin: 0
+                width: '100%',
+                padding: theme.spacing.sm,
+                fontSize: theme.typography.fontSize.base,
+                fontFamily: theme.typography.fontFamily.primary,
+                border: `1px solid ${theme.colors.neutral.gray300}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.colors.background.primary,
+                color: theme.colors.text.primary,
+                cursor: 'pointer'
               }}
             >
-              {teamStats.totalPlayers} / {maxTeamSize}
-            </p>
+              {allSchools.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <p
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <label
               style={{
+                display: 'block',
                 fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary,
-                margin: 0,
+                fontWeight: theme.typography.fontWeight.semibold,
+                color: theme.colors.text.primary,
                 marginBottom: theme.spacing.xs
               }}
             >
-              Average ELO
-            </p>
-            <p
+              Team
+            </label>
+            <select
+              value={selectedTeam}
+              onChange={(e) => setSelectedTeam(e.target.value as TeamType)}
               style={{
-                fontSize: theme.typography.fontSize['2xl'],
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.accent.main,
-                margin: 0
+                width: '100%',
+                padding: theme.spacing.sm,
+                fontSize: theme.typography.fontSize.base,
+                fontFamily: theme.typography.fontFamily.primary,
+                border: `1px solid ${theme.colors.neutral.gray300}`,
+                borderRadius: theme.borderRadius.md,
+                backgroundColor: theme.colors.background.primary,
+                color: theme.colors.text.primary,
+                cursor: 'pointer'
               }}
             >
-              {teamStats.averageElo || 'N/A'}
-            </p>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <p
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary,
-                margin: 0,
-                marginBottom: theme.spacing.xs
-              }}
-            >
-              Lower Secondary
-            </p>
-            <p
-              style={{
-                fontSize: theme.typography.fontSize['2xl'],
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.secondary.light,
-                margin: 0
-              }}
-            >
-              {teamStats.lowerSecondary}
-            </p>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <p
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary,
-                margin: 0,
-                marginBottom: theme.spacing.xs
-              }}
-            >
-              Upper Secondary
-            </p>
-            <p
-              style={{
-                fontSize: theme.typography.fontSize['2xl'],
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.secondary.light,
-                margin: 0
-              }}
-            >
-              {teamStats.upperSecondary}
-            </p>
+              {availableTeams.map((team) => (
+                <option key={team} value={team}>
+                  {team}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </GameCard>
 
+      {/* Team Statistics */}
+      {selectedSchool && (
+        <GameCard
+          style={{
+            padding: theme.spacing.lg,
+            marginBottom: theme.spacing.xl
+          }}
+        >
+          <h3
+            style={{
+              fontFamily: theme.typography.fontFamily.heading,
+              fontSize: theme.typography.fontSize.xl,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.text.primary,
+              marginBottom: theme.spacing.lg,
+              textAlign: 'left'
+            }}
+          >
+            Team Statistics
+          </h3>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: theme.spacing.lg
+            }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary,
+                  margin: 0,
+                  marginBottom: theme.spacing.xs
+                }}
+              >
+                Team Size
+              </p>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize['2xl'],
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.primary.main,
+                  margin: 0
+                }}
+              >
+                {teamStats.totalPlayers} / {maxTeamSize}
+              </p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary,
+                  margin: 0,
+                  marginBottom: theme.spacing.xs
+                }}
+              >
+                Average ELO
+              </p>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize['2xl'],
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.accent.main,
+                  margin: 0
+                }}
+              >
+                {teamStats.averageElo || 'N/A'}
+              </p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary,
+                  margin: 0,
+                  marginBottom: theme.spacing.xs
+                }}
+              >
+                Average Rating
+              </p>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize['2xl'],
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.accent.light,
+                  margin: 0
+                }}
+              >
+                {teamStats.averageRating || 'N/A'}
+              </p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary,
+                  margin: 0,
+                  marginBottom: theme.spacing.xs
+                }}
+              >
+                Lower Secondary
+              </p>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize['2xl'],
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.secondary.light,
+                  margin: 0
+                }}
+              >
+                {teamStats.lowerSecondary}
+              </p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary,
+                  margin: 0,
+                  marginBottom: theme.spacing.xs
+                }}
+              >
+                Upper Secondary
+              </p>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize['2xl'],
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.secondary.light,
+                  margin: 0
+                }}
+              >
+                {teamStats.upperSecondary}
+              </p>
+            </div>
+          </div>
+        </GameCard>
+      )}
+
       {/* Team Roster */}
-      {teamPlayers.length === 0 ? (
+      {!selectedSchool ? (
         <div
           style={{
             textAlign: 'center',
@@ -238,7 +474,19 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             color: theme.colors.text.secondary
           }}
         >
-          <p style={{ fontSize: theme.typography.fontSize.lg }}>Your team is empty.</p>
+          <p style={{ fontSize: theme.typography.fontSize.lg }}>No school selected.</p>
+        </div>
+      ) : filteredPlayers.length === 0 ? (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: theme.spacing.xl,
+            color: theme.colors.text.secondary
+          }}
+        >
+          <p style={{ fontSize: theme.typography.fontSize.lg }}>
+            No players found for {selectedTeam} team.
+          </p>
         </div>
       ) : (
         <div>
@@ -251,7 +499,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               marginBottom: theme.spacing.lg
             }}
           >
-            Team Roster ({teamPlayers.length})
+            {selectedTeam} Roster ({filteredPlayers.length})
           </h2>
           <div
             style={{
@@ -260,22 +508,24 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               gap: theme.spacing.md
             }}
           >
-            {teamPlayers.map((player) => (
+            {filteredPlayers.map((player) => (
               <PlayerCard
                 key={player.id}
                 player={player}
                 actionButton={
-                  <GameButton
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleRemoveFromTeam(player.id)}
-                    type="button"
-                    style={{
-                      width: '100%'
-                    }}
-                  >
-                    Remove
-                  </GameButton>
+                  selectedSchoolId === 'user' ? (
+                    <GameButton
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleRemoveFromTeam(player.id)}
+                      type="button"
+                      style={{
+                        width: '100%'
+                      }}
+                    >
+                      Remove
+                    </GameButton>
+                  ) : null
                 }
               />
             ))}
