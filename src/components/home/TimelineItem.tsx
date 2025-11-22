@@ -28,9 +28,11 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
         background: isCurrent
           ? theme.colors.primary.light + '20'
           : isPast
-            ? theme.colors.neutral.gray100
+            ? theme.colors.background.nested + '40'
             : 'transparent',
-        border: isCurrent ? `2px solid ${theme.colors.primary.main}` : 'none'
+        border: isCurrent
+          ? `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
+          : 'none'
       }}
     >
       <div
