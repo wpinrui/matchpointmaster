@@ -4,21 +4,20 @@
  */
 import {
   AISchool,
-  Player,
   Gender,
-  TrainingPlan,
-  ManagerStats,
+  Player,
   PlayStyle,
-  TrainingFocus
+  TrainingFocus,
+  TrainingPlan
 } from '../services/savegame/types'
 import { generatePlayer, IntakeQuality } from './playerGeneration'
+import { applySkillImprovements, calculatePlayerProgression } from './playerProgression'
 import {
-  calculateMaxTeamSize,
   attractivenessToIntakeQuality,
+  calculateMaxTeamSize,
   calculateSchoolAttractiveness
 } from './schoolReputation'
 import { initializeTrainingPlan } from './trainingPlans'
-import { calculatePlayerProgression, applySkillImprovements } from './playerProgression'
 
 /**
  * School data from schools_data.json
@@ -82,8 +81,57 @@ export function initializeAISchools(schoolsData: SchoolData[]): AISchool[] {
 }
 
 /**
+ * Simulate training phases for a player
+ * Applies multiple months of training to represent experience
+ */
+function simulateTrainingPhases(
+  player: Player,
+  numPhases: number,
+  school: AISchool,
+  teammates: Player[]
+): Player {
+  let trainedPlayer = player
+
+  // Simulate each training phase (each phase = 1 month of training)
+  for (let phase = 0; phase < numPhases; phase++) {
+    // Select a random training focus for this phase (mimics AI coach behavior)
+    // Use similar logic to selectAITrainingFocus but simpler
+    const commonFocuses: TrainingFocus[] = [
+      TrainingFocus.MATCH_PLAY,
+      TrainingFocus.FUNDAMENTALS,
+      TrainingFocus.FOREHAND,
+      TrainingFocus.BACKHAND,
+      TrainingFocus.FOOTWORK,
+      TrainingFocus.CONSISTENCY
+    ]
+
+    // 20% chance of no focus (just general training)
+    const teamFocus =
+      Math.random() < 0.2
+        ? null
+        : commonFocuses[Math.floor(Math.random() * commonFocuses.length)]
+
+    // Calculate progression (no individual coaching during simulation)
+    const improvements = calculatePlayerProgression(
+      trainedPlayer,
+      null, // no individual coaching assignment
+      teamFocus,
+      school.managerStats,
+      school.managerPlayStyle,
+      school.funding,
+      teammates.filter((p) => p.id !== trainedPlayer.id)
+    )
+
+    // Apply improvements
+    trainedPlayer = applySkillImprovements(trainedPlayer, improvements)
+  }
+
+  return trainedPlayer
+}
+
+/**
  * Generate initial players for an AI school (Sec 2, 3, 4)
- * Each level should be ~5 points higher on average than previous
+ * Simulates training phases instead of artificially boosting stats
  */
 export function generateInitialAISchoolPlayers(
   school: AISchool,
@@ -161,113 +209,86 @@ export function generateInitialAISchoolPlayers(
     const sec4Boys = Math.floor(sec4Players / 2)
     const sec4Girls = Math.ceil(sec4Players / 2)
 
-    // Generate Sec 3 boys
-    for (let i = 0; i < sec3Boys; i++) {
-      const player = generatePlayer(intakeQuality, 3, Gender.MALE)
-      const skillBoost = 5 + (Math.random() - 0.5) * 5
-      Object.keys(player.skills).forEach((skillKey) => {
-        const skill = skillKey as keyof typeof player.skills
-        player.skills[skill] = Math.min(
-          100,
-          Math.max(0, Math.round(player.skills[skill] + skillBoost))
-        )
-      })
-      players.push(player)
-    }
-
-    // Generate Sec 3 girls
-    for (let i = 0; i < sec3Girls; i++) {
-      const player = generatePlayer(intakeQuality, 3, Gender.FEMALE)
-      const skillBoost = 5 + (Math.random() - 0.5) * 5
-      Object.keys(player.skills).forEach((skillKey) => {
-        const skill = skillKey as keyof typeof player.skills
-        player.skills[skill] = Math.min(
-          100,
-          Math.max(0, Math.round(player.skills[skill] + skillBoost))
-        )
-      })
-      players.push(player)
-    }
-
+    // Generate Sec 4 players first (they've been training longest)
     // Generate Sec 4 boys
     for (let i = 0; i < sec4Boys; i++) {
       const player = generatePlayer(intakeQuality, 4, Gender.MALE)
-      const skillBoost = 10 + (Math.random() - 0.5) * 5
-      Object.keys(player.skills).forEach((skillKey) => {
-        const skill = skillKey as keyof typeof player.skills
-        player.skills[skill] = Math.min(
-          100,
-          Math.max(0, Math.round(player.skills[skill] + skillBoost))
-        )
-      })
-      players.push(player)
+      // Simulate 18 training phases (they've been training for 1.5 years)
+      const trainedPlayer = simulateTrainingPhases(player, 18, school, players)
+      players.push(trainedPlayer)
     }
 
     // Generate Sec 4 girls
     for (let i = 0; i < sec4Girls; i++) {
       const player = generatePlayer(intakeQuality, 4, Gender.FEMALE)
-      const skillBoost = 10 + (Math.random() - 0.5) * 5
-      Object.keys(player.skills).forEach((skillKey) => {
-        const skill = skillKey as keyof typeof player.skills
-        player.skills[skill] = Math.min(
-          100,
-          Math.max(0, Math.round(player.skills[skill] + skillBoost))
-        )
-      })
-      players.push(player)
+      // Simulate 18 training phases (they've been training for 1.5 years)
+      const trainedPlayer = simulateTrainingPhases(player, 18, school, players)
+      players.push(trainedPlayer)
+    }
+
+    // Generate Sec 3 players
+    // Generate Sec 3 boys
+    for (let i = 0; i < sec3Boys; i++) {
+      const player = generatePlayer(intakeQuality, 3, Gender.MALE)
+      // Simulate 12 training phases (they've been training for 1 year)
+      const trainedPlayer = simulateTrainingPhases(player, 12, school, players)
+      players.push(trainedPlayer)
+    }
+
+    // Generate Sec 3 girls
+    for (let i = 0; i < sec3Girls; i++) {
+      const player = generatePlayer(intakeQuality, 3, Gender.FEMALE)
+      // Simulate 12 training phases (they've been training for 1 year)
+      const trainedPlayer = simulateTrainingPhases(player, 12, school, players)
+      players.push(trainedPlayer)
     }
 
     // C div: split evenly between boys and girls (7 each)
     const sec2Boys = Math.floor(sec2Capacity / 2)
     const sec2Girls = Math.ceil(sec2Capacity / 2)
 
+    // Generate Sec 2 players last
     // Generate Sec 2 boys
     for (let i = 0; i < sec2Boys; i++) {
       const player = generatePlayer(intakeQuality, 2, Gender.MALE)
-      players.push(player)
+      // Simulate 6 training phases (they've been training for 6 months)
+      const trainedPlayer = simulateTrainingPhases(player, 6, school, players)
+      players.push(trainedPlayer)
     }
 
     // Generate Sec 2 girls
     for (let i = 0; i < sec2Girls; i++) {
       const player = generatePlayer(intakeQuality, 2, Gender.FEMALE)
-      players.push(player)
+      // Simulate 6 training phases (they've been training for 6 months)
+      const trainedPlayer = simulateTrainingPhases(player, 6, school, players)
+      players.push(trainedPlayer)
     }
   } else {
     // Single-gender school: all players are the same gender
     const gender = gendersToGenerate[0] // Only one gender in the array
 
+    // Generate Sec 4 players first (they've been training longest)
+    for (let i = 0; i < sec4Players; i++) {
+      const player = generatePlayer(intakeQuality, 4, gender)
+      // Simulate 18 training phases (they've been training for 1.5 years)
+      const trainedPlayer = simulateTrainingPhases(player, 18, school, players)
+      players.push(trainedPlayer)
+    }
+
     // Generate Sec 3 players
     for (let i = 0; i < sec3Players; i++) {
       const player = generatePlayer(intakeQuality, 3, gender)
-      const skillBoost = 5 + (Math.random() - 0.5) * 5
-      Object.keys(player.skills).forEach((skillKey) => {
-        const skill = skillKey as keyof typeof player.skills
-        player.skills[skill] = Math.min(
-          100,
-          Math.max(0, Math.round(player.skills[skill] + skillBoost))
-        )
-      })
-      players.push(player)
+      // Simulate 12 training phases (they've been training for 1 year)
+      const trainedPlayer = simulateTrainingPhases(player, 12, school, players)
+      players.push(trainedPlayer)
     }
 
-    // Generate Sec 4 players
-    for (let i = 0; i < sec4Players; i++) {
-      const player = generatePlayer(intakeQuality, 4, gender)
-      const skillBoost = 10 + (Math.random() - 0.5) * 5
-      Object.keys(player.skills).forEach((skillKey) => {
-        const skill = skillKey as keyof typeof player.skills
-        player.skills[skill] = Math.min(
-          100,
-          Math.max(0, Math.round(player.skills[skill] + skillBoost))
-        )
-      })
-      players.push(player)
-    }
-
-    // Generate Sec 2 players
+    // Generate Sec 2 players last
     for (let i = 0; i < sec2Capacity; i++) {
       const player = generatePlayer(intakeQuality, 2, gender)
-      players.push(player)
+      // Simulate 6 training phases (they've been training for 6 months)
+      const trainedPlayer = simulateTrainingPhases(player, 6, school, players)
+      players.push(trainedPlayer)
     }
   }
 
