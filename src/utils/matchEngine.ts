@@ -949,15 +949,15 @@ function checkPointLoss(
       // Combined deficit - analyze both
       const r1Cause = analyzeR1LossCause(r1, r1Breakdown, isServe)
       const r2Cause = analyzeR2LossCause(r2, r2Breakdown, isServe)
-      reason = `overwhelmingly outclassed (${r1Cause} and ${r2Cause}, ${Math.round(combinedLossProb * 100)}% loss chance)`
+      reason = `lost to ${r1Cause} and ${r2Cause}`
     } else if (r1LossProb >= r2LossProb) {
       // R1 deficit
       const cause = analyzeR1LossCause(r1, r1Breakdown, isServe)
-      reason = `unable to handle ${cause} (${Math.round(r1LossProb * 100)}% loss chance)`
+      reason = `lost to ${cause}`
     } else {
       // R2 deficit
       const cause = analyzeR2LossCause(r2, r2Breakdown, isServe)
-      reason = `unable to counter ${cause} (${Math.round(r2LossProb * 100)}% loss chance)`
+      reason = `lost to ${cause}`
     }
 
     return { lost: true, reason }
@@ -1134,7 +1134,7 @@ function checkPointWin(
       const r2Cause = analyzeR2WinCause(r2, r2Breakdown, isServe)
       // Determine primary cause
       const primaryCause = r1 > r2 ? r1Cause : r2Cause
-      return { won: true, reason: `strong ${primaryCause} wins the point` }
+      return { won: true, reason: `won with strong ${primaryCause}` }
     }
   }
 
@@ -1148,7 +1148,7 @@ function checkPointWin(
       const r1Cause = analyzeR1WinCause(r1, r1Breakdown, isServe)
       const r2Cause = analyzeR2WinCause(r2, r2Breakdown, isServe)
       const primaryCause = r1 > r2 ? r1Cause : r2Cause
-      return { won: true, reason: `good ${primaryCause} wins the point` }
+      return { won: true, reason: `won with good ${primaryCause}` }
     }
   }
 
@@ -1171,36 +1171,36 @@ function analyzeR1WinCause(
   isServe: boolean = false
 ): string {
   if (!breakdown) {
-    return isServe ? 'my powerful serve' : 'my excellent placement'
+    return isServe ? 'powerful serve' : 'excellent placement'
   }
 
   if (isServe && breakdown.playerAServe) {
     // For serve: my serve vs opponent's footwork
     const serveAdvantage = breakdown.playerAServe - (breakdown.playerBFootwork || 0)
     if (serveAdvantage > 10) {
-      return 'my powerful serve'
+      return 'powerful serve'
     } else if (serveAdvantage > 5) {
-      return 'my strong serve'
+      return 'strong serve'
     } else {
-      return "my serve (opponent's poor footwork)"
+      return "serve (opponent's poor footwork)"
     }
   } else if (breakdown.playerAPlacement) {
     // For rally: my placement vs opponent's footwork
     const placementAdvantage =
       breakdown.playerAPlacement - (breakdown.playerBFootwork || 0)
     if (placementAdvantage > 10) {
-      return 'my excellent placement'
+      return 'excellent placement'
     } else if (placementAdvantage > 5) {
-      return 'my good placement'
+      return 'good placement'
     } else {
-      return "my placement (opponent's poor footwork)"
+      return "placement (opponent's poor footwork)"
     }
   } else if (breakdown.playerBFootwork) {
     // My superior footwork
-    return 'my superior footwork'
+    return 'superior footwork'
   }
 
-  return isServe ? 'my serve' : 'my placement'
+  return isServe ? 'serve' : 'placement'
 }
 
 /**
@@ -1222,18 +1222,18 @@ function analyzeR2WinCause(
   isServe: boolean = false
 ): string {
   if (!breakdown) {
-    return isServe ? 'my powerful serve' : 'my powerful stroke'
+    return isServe ? 'powerful serve' : 'powerful stroke'
   }
 
   if (isServe && breakdown.playerAServe && breakdown.playerBReceive) {
     // For serve: my serve vs opponent's receive
     const serveAdvantage = breakdown.playerAServe - breakdown.playerBReceive
     if (serveAdvantage > 10) {
-      return 'my powerful serve'
+      return 'powerful serve'
     } else if (serveAdvantage > 5) {
-      return 'my strong serve'
+      return 'strong serve'
     } else {
-      return "my serve (opponent's poor receive)"
+      return "serve (opponent's poor receive)"
     }
   } else if (breakdown.playerBStroke && breakdown.playerBSpin) {
     // For rally: my stroke/spin vs opponent's
@@ -1249,25 +1249,25 @@ function analyzeR2WinCause(
 
     if (advantage > 10) {
       if (Math.abs(strokeAdvantage) > Math.abs(spinAdvantage)) {
-        return `my powerful ${breakdown.playerBStroke > 50 ? 'forehand' : 'backhand'}`
+        return `powerful ${breakdown.playerBStroke > 50 ? 'forehand' : 'backhand'}`
       } else {
-        return 'my heavy spin'
+        return 'heavy spin'
       }
     } else if (advantage > 5) {
       if (Math.abs(strokeAdvantage) > Math.abs(spinAdvantage)) {
-        return `my strong ${breakdown.playerBStroke > 50 ? 'forehand' : 'backhand'}`
+        return `strong ${breakdown.playerBStroke > 50 ? 'forehand' : 'backhand'}`
       } else {
-        return 'my strong spin'
+        return 'strong spin'
       }
     } else {
-      return "my stroke/spin (opponent's weakness)"
+      return `${breakdown.playerBStroke > 50 ? 'forehand' : 'backhand'}/spin (opponent's weakness)`
     }
   } else if (breakdown.playerBReceive) {
     // My superior receive
-    return 'my superior receive'
+    return 'superior receive'
   }
 
-  return isServe ? 'my serve' : 'my stroke/spin'
+  return isServe ? 'serve' : 'stroke/spin'
 }
 
 /**
@@ -1493,20 +1493,7 @@ export function simulateRally(
   const serveR1 = serveR1Result.r1
   const serveR2 = serveR2Result.r2
 
-  // Log the return attempt first (so we can see R1/R2 values even for service aces)
-  const returnCommentary = generateReturnCommentary(
-    serveR1,
-    serveR2,
-    serveR1Result.breakdown,
-    serveR2Result.breakdown,
-    true
-  )
-  events.push({
-    type: 'return',
-    player: 1 - currentPlayer,
-    description: `${receiver.shortName || receiver.firstName} returns (${returnCommentary})`,
-    timestamp: Date.now()
-  })
+  // No need to log return attempts - only log point wins/losses
 
   // Check if receiver loses point on serve return (service ace)
   const serveLossCheck = checkPointLoss(
@@ -1768,19 +1755,7 @@ export function simulateRally(
     // Calculate cumulative bonus for next shot: (R1+R2)/2
     cumulativeR1R2Bonus = (r1 + r2) / 2
 
-    const returnCommentary = generateReturnCommentary(
-      r1,
-      r2,
-      r1Result.breakdown,
-      r2Result.breakdown,
-      false
-    )
-    events.push({
-      type: 'return',
-      player: currentPlayer,
-      description: `${hitter.shortName || hitter.firstName} returns (${returnCommentary})`,
-      timestamp: Date.now()
-    })
+    // No need to log return attempts - only log point wins/losses
 
     // Switch players
     currentPlayer = 1 - currentPlayer
