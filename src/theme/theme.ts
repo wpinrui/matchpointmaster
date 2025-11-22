@@ -13,9 +13,9 @@ export const theme = {
       contrast: '#FFFFFF'
     },
     secondary: {
-      main: '#004E89', // Deep blue
-      light: '#1A6BA3',
-      dark: '#003A66',
+      main: '#1A6BA3', // Lighter blue for better visibility on dark theme
+      light: '#4A9FD4',
+      dark: '#004E89',
       contrast: '#FFFFFF'
     },
     accent: {

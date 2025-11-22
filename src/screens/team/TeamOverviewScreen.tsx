@@ -197,7 +197,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               style={{
                 fontSize: theme.typography.fontSize['2xl'],
                 fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.secondary.main,
+                color: theme.colors.secondary.light,
                 margin: 0
               }}
             >
@@ -219,7 +219,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               style={{
                 fontSize: theme.typography.fontSize['2xl'],
                 fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.secondary.main,
+                color: theme.colors.secondary.light,
                 margin: 0
               }}
             >

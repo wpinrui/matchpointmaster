@@ -32,7 +32,7 @@ export const CrestImagePicker: React.FC<CrestImagePickerProps> = ({
               borderRadius: theme.borderRadius.lg,
               border: `3px solid ${theme.colors.secondary.main}`,
               objectFit: 'contain',
-              background: theme.colors.neutral.white,
+              background: 'transparent',
               padding: theme.spacing.sm,
               boxShadow: theme.shadows.lg
             }}

@@ -135,9 +135,9 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
                   width: '120px',
                   height: '120px',
                   borderRadius: theme.borderRadius.lg,
-                  border: `3px solid ${theme.colors.secondary.main}`,
+                  border: `${theme.borderWidth.thick} solid ${theme.colors.secondary.light}`,
                   objectFit: 'contain',
-                  background: theme.colors.neutral.white,
+                  background: 'transparent',
                   padding: theme.spacing.sm
                 }}
               />
@@ -196,7 +196,7 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
                       style={{
                         width: `${Math.min(100, ((100 - school.reputation) * 100) / 100)}%`,
                         height: '100%',
-                        background: theme.colors.secondary.main,
+                        background: theme.colors.secondary.light,
                         borderRadius: theme.borderRadius.sm,
                         transition: 'width 0.5s ease-in-out'
                       }}

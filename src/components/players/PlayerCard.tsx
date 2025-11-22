@@ -41,7 +41,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
                 width: '80px',
                 height: '80px',
                 borderRadius: theme.borderRadius.md,
-                border: `2px solid ${theme.colors.secondary.main}`,
+                border: `${theme.borderWidth.default} solid ${theme.colors.secondary.light}`,
                 objectFit: 'cover'
               }}
             />
