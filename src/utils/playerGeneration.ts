@@ -63,12 +63,13 @@ function randomFromArray<T>(array: T[]): T {
  */
 function generateSkills(quality: IntakeQuality, gender: Gender): PlayerSkills {
   // Base skill ranges by quality
+  // Bad schools should have attributes close to 0
   const qualityRanges: Record<IntakeQuality, { min: number; max: number }> = {
-    [IntakeQuality.POOR]: { min: 20, max: 50 },
-    [IntakeQuality.BELOW_AVERAGE]: { min: 35, max: 65 },
-    [IntakeQuality.AVERAGE]: { min: 50, max: 75 },
-    [IntakeQuality.ABOVE_AVERAGE]: { min: 65, max: 85 },
-    [IntakeQuality.EXCELLENT]: { min: 75, max: 95 }
+    [IntakeQuality.POOR]: { min: 0, max: 25 }, // Very low for bad schools
+    [IntakeQuality.BELOW_AVERAGE]: { min: 15, max: 45 },
+    [IntakeQuality.AVERAGE]: { min: 35, max: 65 },
+    [IntakeQuality.ABOVE_AVERAGE]: { min: 55, max: 80 },
+    [IntakeQuality.EXCELLENT]: { min: 70, max: 95 }
   }
 
   const range = qualityRanges[quality]

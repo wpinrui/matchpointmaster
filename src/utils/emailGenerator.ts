@@ -50,7 +50,7 @@ export function generateInitialEmails(saveData: SaveData): Email[] {
   const year = season.year
   const schoolName = school.name || 'the school'
   const managerName = manager.fullName || 'Coach'
-  const maxTeamSize = calculateMaxTeamSize(school.funding)
+  const maxTeamSize = calculateMaxTeamSize(school.funding, school.teamType)
 
   // Welcome email - sent 2 days before current date (January 1st)
   const welcomeEmail: Email = {

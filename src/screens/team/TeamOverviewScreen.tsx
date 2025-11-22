@@ -178,7 +178,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   // Calculate max team size based on funding
   const maxTeamSize = useMemo(() => {
     if (!selectedSchool) return 0
-    return calculateMaxTeamSize(selectedSchool.funding)
+    return calculateMaxTeamSize(selectedSchool.funding, selectedSchool.teamType)
   }, [selectedSchool])
 
   const handleRemoveFromTeam = (playerId: string) => {

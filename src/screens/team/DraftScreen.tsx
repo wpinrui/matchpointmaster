@@ -169,8 +169,8 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   // Calculate max team size based on funding
   const maxTeamSize = useMemo(() => {
-    return calculateMaxTeamSize(school.funding)
-  }, [school.funding])
+    return calculateMaxTeamSize(school.funding, school.teamType)
+  }, [school.funding, school.teamType])
 
   // Generate initial player pool ONCE when draft screen first loads
   // Only if there are no players yet and we haven't already generated
