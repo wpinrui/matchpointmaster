@@ -4,6 +4,11 @@ import { theme } from '../../theme/theme'
 import GameCard from '../cards/GameCard'
 import { getPlayerFullName } from '../../utils/playerGeneration'
 import { getStatColor } from '../../utils/managerStats'
+import {
+  calculateOverallRating,
+  getCardTier,
+  getCardTierStyle
+} from '../../utils/cardTiers'
 
 interface PlayerCardProps {
   player: Player
@@ -13,33 +18,58 @@ interface PlayerCardProps {
 export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) => {
   const fullName = getPlayerFullName(player)
 
-  // Calculate average rating (average of all skills)
-  const averageRating = Math.round(
-    (player.skills.forehand +
-      player.skills.backhand +
-      player.skills.footwork +
-      player.skills.serve +
-      player.skills.receive +
-      player.skills.spin +
-      player.skills.placement +
-      player.skills.consistency) /
-      8
-  )
+  // Calculate overall rating
+  const overall = calculateOverallRating(player.skills)
+  const tier = getCardTier(overall)
+  const tierStyle = getCardTierStyle(tier)
 
   return (
-    <GameCard
-      style={{
-        background: theme.gradients.nestedCard
-      }}
-    >
+    <div style={{ position: 'relative' }}>
+      {/* Overall Rating Badge - Top Left (FIFA style) */}
       <div
         style={{
+          position: 'absolute',
+          top: theme.spacing.sm,
+          left: theme.spacing.sm,
+          width: '50px',
+          height: '50px',
+          background: tierStyle.overallBg,
+          borderRadius: theme.borderRadius.md,
           display: 'flex',
-          flexDirection: 'column',
-          gap: theme.spacing.md,
-          width: '100%'
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+          border: `2px solid ${tierStyle.borderColor}`,
+          boxShadow: `0 2px 8px rgba(0, 0, 0, 0.5)`
         }}
       >
+        <span
+          style={{
+            fontSize: theme.typography.fontSize.xl,
+            fontWeight: theme.typography.fontWeight.extrabold,
+            color: tierStyle.overallText,
+            fontFamily: theme.typography.fontFamily.heading,
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          {overall}
+        </span>
+      </div>
+
+      <GameCard
+        style={{
+          background: theme.gradients.nestedCard,
+          paddingTop: theme.spacing['2xl']
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: theme.spacing.md,
+            width: '100%'
+          }}
+        >
         {/* Header with avatar and basic info */}
         <div
           style={{
@@ -80,7 +110,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
                 flexDirection: 'column',
                 fontSize: theme.typography.fontSize.sm,
                 color: theme.colors.text.secondary,
-                lineHeight: 1.1
+                lineHeight: 1.3
               }}
             >
               <span
@@ -95,21 +125,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
                 {player.gender}
               </span>
               <span>Secondary {player.year}</span>
-              <span
-                style={{
-                  fontWeight: theme.typography.fontWeight.bold
-                }}
-              >
-                ELO {player.elo}
-              </span>
-              <span
-                style={{
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.accent.main
-                }}
-              >
-                Rating {averageRating}
-              </span>
             </div>
           </div>
         </div>
@@ -185,8 +200,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
             {actionButton}
           </div>
         )}
-      </div>
-    </GameCard>
+        </div>
+      </GameCard>
+    </div>
   )
 }
 

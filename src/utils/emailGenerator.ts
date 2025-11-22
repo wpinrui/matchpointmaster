@@ -552,7 +552,7 @@ function getPhaseDescription(phase: GamePhase, month: number): string {
       return `The second **Training Phase** continues. Keep up the excellent work developing your players.`
 
     case GamePhase.SINGLES_SELECTION:
-      return `Welcome to the **Singles Selection** phase. Players will be notified of their selection for the national singles tournament based on their ELO rankings.`
+      return `Welcome to the **Singles Selection** phase. Players will be notified of their selection for the national singles tournament based on their overall ratings.`
 
     case GamePhase.SINGLES_TOURNAMENT:
       return `This is the **National Singles Tournament** phase! The top 64 boys and 64 girls from across the country will compete. This is a prestigious competition - best of luck to your players!`

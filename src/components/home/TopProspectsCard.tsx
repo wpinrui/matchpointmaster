@@ -4,6 +4,7 @@ import { PlayerCard } from '../players/PlayerCard'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { theme } from '../../theme/theme'
 import { Gender } from '../../services/savegame/types'
+import { calculateOverallRating } from '../../utils/cardTiers'
 
 export const TopProspectsCard: React.FC = () => {
   const { players, teamRoster, school } = useSaveDataContext()
@@ -20,8 +21,10 @@ export const TopProspectsCard: React.FC = () => {
       filtered = available.filter((p) => p.gender === Gender.FEMALE)
     }
 
-    // Sort by ELO (highest first) and take top 3
-    return filtered.sort((a, b) => b.elo - a.elo).slice(0, 3)
+    // Sort by overall rating (highest first) and take top 3
+    return filtered
+      .sort((a, b) => calculateOverallRating(b.skills) - calculateOverallRating(a.skills))
+      .slice(0, 3)
   }, [players, teamRoster, school.teamType])
 
   return (

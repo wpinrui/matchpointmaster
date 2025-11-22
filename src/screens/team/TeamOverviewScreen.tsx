@@ -7,6 +7,7 @@ import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import { calculateMaxTeamSize } from '../../utils/schoolReputation'
+import { calculateOverallRating } from '../../utils/cardTiers'
 
 type TeamType = 'C boys' | 'C girls' | 'B boys' | 'B girls'
 
@@ -159,23 +160,22 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       genderFiltered = yearFiltered.filter((p) => p.gender === Gender.FEMALE)
     }
 
-    return genderFiltered
+    // Sort by overall rating (highest first)
+    return genderFiltered.sort(
+      (a, b) => calculateOverallRating(b.skills) - calculateOverallRating(a.skills)
+    )
   }, [selectedSchool, selectedTeam])
 
   // Calculate team statistics
   const teamStats = useMemo(() => {
     if (filteredPlayers.length === 0) {
       return {
-        averageElo: 0,
         totalPlayers: 0,
         byYear: { 1: 0, 2: 0, 3: 0, 4: 0 },
         lowerSecondary: 0,
         upperSecondary: 0
       }
     }
-
-    const totalElo = filteredPlayers.reduce((sum, p) => sum + p.elo, 0)
-    const averageElo = Math.round(totalElo / filteredPlayers.length)
 
     // Calculate average rating (average of all skills)
     const totalRating = filteredPlayers.reduce((sum, p) => {
@@ -206,7 +206,6 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     const upperSecondary = (byYear[3] || 0) + (byYear[4] || 0)
 
     return {
-      averageElo,
       averageRating,
       totalPlayers: filteredPlayers.length,
       byYear,
@@ -451,28 +450,6 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 }}
               >
                 {teamStats.totalPlayers} / {maxTeamSize}
-              </p>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <p
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.xs
-                }}
-              >
-                Average ELO
-              </p>
-              <p
-                style={{
-                  fontSize: theme.typography.fontSize['2xl'],
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.accent.main,
-                  margin: 0
-                }}
-              >
-                {teamStats.averageElo || 'N/A'}
               </p>
             </div>
             <div style={{ textAlign: 'center' }}>
