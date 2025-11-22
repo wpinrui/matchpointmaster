@@ -9,7 +9,8 @@ import {
   RubberType,
   SaveData,
   TrainingFocus,
-  PlayerTraining
+  PlayerTraining,
+  TrainingGoal
 } from './types'
 import {
   getCurrentSaveData,
@@ -379,6 +380,35 @@ export const useSaveData = () => {
     }
   }
 
+  const updateTrainingGoals = {
+    add: (goal: SaveData['trainingGoals'][0]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingGoals: [...prevData.trainingGoals, goal]
+      }))
+    },
+    remove: (goalId: string) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingGoals: prevData.trainingGoals.filter((g) => g.id !== goalId)
+      }))
+    },
+    update: (goalId: string, updates: Partial<SaveData['trainingGoals'][0]>) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingGoals: prevData.trainingGoals.map((g) =>
+          g.id === goalId ? { ...g, ...updates } : g
+        )
+      }))
+    },
+    set: (goals: SaveData['trainingGoals']) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingGoals: goals
+      }))
+    }
+  }
+
   return {
     saveData,
     manager: saveData.manager,
@@ -390,6 +420,7 @@ export const useSaveData = () => {
     emails: saveData.emails,
     trainingPlan: saveData.trainingPlan,
     skillSnapshots: saveData.skillSnapshots,
+    trainingGoals: saveData.trainingGoals,
     currentSaveId,
     updateManager,
     updateSchool,
@@ -398,6 +429,7 @@ export const useSaveData = () => {
     updateSeason,
     updateTrainingPlan,
     updateSkillSnapshots,
+    updateTrainingGoals,
     markEmailAsRead,
     addEmail,
     exportToJson,

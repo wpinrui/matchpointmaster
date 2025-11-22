@@ -12,12 +12,13 @@ import {
   calculateTeamAverageImprovement,
   calculateTeamTotalImprovement
 } from '../../utils/trainingInsights'
+import { getTrainingFocusDisplayName } from '../../utils/trainingPlans'
+import { TrainingFocus, Player, SkillSnapshot } from '../../services/savegame/types'
 import {
   getImprovementChartData,
   getYearToDateSnapshots
 } from '../../utils/trainingAnalytics'
 import { ImprovementBarChart } from './ImprovementBarChart'
-import { Player, SkillSnapshot } from '../../services/savegame/types'
 
 interface TrainingProgressCardProps {
   oldSnapshots: SkillSnapshot[] // Previous month's snapshots (for "Past Month" view)
@@ -32,7 +33,7 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
   currentYear,
   currentMonth
 }) => {
-  const { players, teamRoster } = useSaveDataContext()
+  const { players, teamRoster, trainingPlan } = useSaveDataContext()
   const [viewMode, setViewMode] = useState<'month' | 'year'>('month')
 
   // Get team players
@@ -254,7 +255,8 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            marginBottom: theme.spacing.xs
           }}
         >
           <span
@@ -275,6 +277,57 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
             +{teamAvgImprovement} per skill
           </span>
         </div>
+        {/* Training Feedback */}
+        {trainingPlan?.teamFocus && (
+          <div
+            style={{
+              marginTop: theme.spacing.sm,
+              paddingTop: theme.spacing.sm,
+              borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
+            }}
+          >
+            <div
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.secondary,
+                marginBottom: theme.spacing.xs
+              }}
+            >
+              <strong style={{ color: theme.colors.text.primary }}>
+                Training Focus:
+              </strong>{' '}
+              {getTrainingFocusDisplayName(trainingPlan.teamFocus)}
+            </div>
+            {teamTotalImprovement > 50 ? (
+              <div
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.success.main
+                }}
+              >
+                ✓ Excellent results! The training focus is working well.
+              </div>
+            ) : teamTotalImprovement > 30 ? (
+              <div
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary
+                }}
+              >
+                ✓ Good progress. Consider adjusting focus if needed.
+              </div>
+            ) : (
+              <div
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary
+                }}
+              >
+                ⚠ Lower than expected. Review training plan effectiveness.
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Top Improvers */}

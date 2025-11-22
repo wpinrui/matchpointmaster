@@ -72,7 +72,8 @@ export function initializeTrainingPlan(year: number, month: number): TrainingPla
     teamFocus: null,
     playerAssignments: [],
     coachingSlotsUsed: 0,
-    completed: false
+    completed: false,
+    goals: []
   }
 }
 

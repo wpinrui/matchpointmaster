@@ -4,7 +4,11 @@
  */
 
 import { GamePhase, getNextPhase } from './gamePhases'
-import { generatePhaseProgressionEmail } from './emailGenerator'
+import {
+  generatePhaseProgressionEmail,
+  generateTrainingMotivationEmail,
+  generateTrainingResultsEmail
+} from './emailGenerator'
 import { createSkillSnapshots, processPlayerProgression } from './applyProgression'
 import type {
   Player,
@@ -179,6 +183,49 @@ export function advanceToNextPhase(
     monthSnapshots
   )
   addEmail(phaseProgressionEmail)
+
+  // Generate training motivation email if entering a training month
+  // Date it to the previous month (the month we're leaving) so it appears in the past
+  // This ensures the email shows as "X days ago" rather than in the future
+  if (
+    (nextPhase.phase === GamePhase.TRAINING ||
+      nextPhase.phase === GamePhase.TRAINING_2) &&
+    trainingPlan
+  ) {
+    const motivationEmail = generateTrainingMotivationEmail(
+      manager.fullName || 'Coach',
+      school.name || 'the school',
+      players,
+      teamRoster,
+      currentMonth, // Use the month we're leaving, not the new month
+      currentYear, // Use current year (may be different if crossing year boundary)
+      trainingPlan
+    )
+    if (motivationEmail) {
+      addEmail(motivationEmail)
+    }
+  }
+
+  // Generate training results email if leaving a training month
+  if (
+    (currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2) &&
+    trainingPlan &&
+    monthSnapshots.length > 0
+  ) {
+    const resultsEmail = generateTrainingResultsEmail(
+      manager.fullName || 'Coach',
+      school.name || 'the school',
+      players,
+      teamRoster,
+      currentMonth,
+      currentYear,
+      monthSnapshots,
+      trainingPlan
+    )
+    if (resultsEmail) {
+      addEmail(resultsEmail)
+    }
+  }
 }
 
 /**

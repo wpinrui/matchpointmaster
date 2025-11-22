@@ -71,6 +71,19 @@ export function migrateSaveData(data: SaveData): SaveData {
     migrated.skillSnapshots = []
   }
 
+  // Ensure training goals exist
+  if (!migrated.trainingGoals) {
+    migrated.trainingGoals = []
+  }
+
+  // Ensure training plan has goals field
+  if (migrated.trainingPlan && !('goals' in migrated.trainingPlan)) {
+    migrated.trainingPlan = {
+      ...(migrated.trainingPlan as any),
+      goals: []
+    }
+  }
+
   // Ensure players have traits field
   if (migrated.players) {
     migrated.players = migrated.players.map((player) => {
@@ -103,7 +116,9 @@ export function needsMigration(data: SaveData): boolean {
     data.draftCompleted === undefined ||
     !data.emails ||
     data.trainingPlan === undefined ||
-    !data.skillSnapshots
+    !data.skillSnapshots ||
+    !data.trainingGoals ||
+    (data.trainingPlan && !('goals' in data.trainingPlan))
 
   // Check if any player is missing traits
   const hasPlayersWithoutTraits =

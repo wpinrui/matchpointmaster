@@ -15,6 +15,7 @@ import {
   calculateTeamTotalImprovement
 } from './trainingInsights'
 import { getImprovementChartData, getYearToDateSnapshots } from './trainingAnalytics'
+import { getTrainingFocusDisplayName } from './trainingPlans'
 
 /**
  * Generate a timestamp based on in-game date
@@ -327,6 +328,194 @@ School Administration`
     timestamp: getInGameTimestamp(currentYear, currentMonth, 1, 9, 0), // First day of month, 9 AM
     read: false,
     tags
+  }
+}
+
+/**
+ * Generate training motivation email during training phases
+ */
+export function generateTrainingMotivationEmail(
+  managerName: string,
+  schoolName: string,
+  players: Player[],
+  teamRoster: string[],
+  month: number,
+  year: number,
+  trainingPlan: { teamFocus: string | null; playerAssignments: any[] } | null
+): Email | null {
+  const teamPlayers = players.filter((p) => teamRoster.includes(p.id))
+  if (teamPlayers.length === 0 || !trainingPlan) return null
+
+  const monthName = MONTH_NAMES[month - 1]
+  const playerNames = teamPlayers
+    .slice(0, 3)
+    .map((p) => `${p.firstName} ${p.lastName}`)
+    .join(', ')
+  const morePlayers = teamPlayers.length > 3 ? ` and ${teamPlayers.length - 3} more` : ''
+
+  // Random motivational messages
+  const messages = [
+    {
+      subject: `Training Update: ${playerNames}${morePlayers} Showing Great Progress`,
+      body: `Dear ${managerName},
+
+I wanted to reach out and share some positive feedback about the training sessions this month.
+
+## Player Observations
+
+${playerNames}${morePlayers} have been particularly engaged during training. The coaching staff has noticed improved focus and dedication, especially during ${trainingPlan.teamFocus ? getTrainingFocusDisplayName(trainingPlan.teamFocus as any) : 'the current training focus'} sessions.
+
+## Team Morale
+
+The team's energy has been excellent. Players are pushing each other to improve, and there's a real sense of camaraderie developing. This kind of positive atmosphere is exactly what we need heading into the competitive season.
+
+## Looking Forward
+
+Keep up the excellent work! The foundation you're building now will pay dividends when tournament season arrives.
+
+Best regards,
+Assistant Coach`
+    },
+    {
+      subject: `Training Note: Team Working Hard in ${monthName}`,
+      body: `Dear ${managerName},
+
+Just a quick note to let you know that the team has been putting in solid work this month.
+
+## Training Highlights
+
+The players have been responding well to the training program. ${playerNames}${morePlayers} in particular have shown noticeable improvement in their technique and consistency.
+
+## Coach's Perspective
+
+From a coaching standpoint, it's encouraging to see players taking initiative and asking questions during training. This level of engagement suggests they're truly invested in their development.
+
+## Next Steps
+
+Continue monitoring individual progress and adjust training plans as needed. Every player develops at their own pace, and personalized attention can make a big difference.
+
+Keep up the great work!
+
+Best regards,
+Training Coordinator`
+    },
+    {
+      subject: `Player Feedback: Training Intensity Paying Off`,
+      body: `Dear ${managerName},
+
+I've been observing the training sessions this month, and I wanted to share some positive observations.
+
+## Player Development
+
+${playerNames}${morePlayers} have been showing real commitment to improvement. Their work ethic during ${trainingPlan.teamFocus ? getTrainingFocusDisplayName(trainingPlan.teamFocus as any) : 'training'} sessions has been exemplary.
+
+## Team Dynamics
+
+The team is gelling well. Players are supporting each other and creating a positive training environment. This kind of team chemistry often translates to better performance in competition.
+
+## Coach's Notes
+
+The training plan you've set up is working well. Players are engaged and showing measurable progress. Keep building on this momentum!
+
+All the best,
+School Sports Coordinator`
+    }
+  ]
+
+  const message = messages[Math.floor(Math.random() * messages.length)]
+
+  // Generate timestamp for late in the month (day 20 to last day of month) so it appears recent when we advance to next month
+  // This ensures the email appears in the past (a few days ago) when entering the new month
+  const getDaysInMonth = (year: number, month: number): number => {
+    // Month is 1-12, Date constructor expects 0-11
+    return new Date(year, month, 0).getDate()
+  }
+
+  const daysInMonth = getDaysInMonth(year, month)
+  const minDay = 20
+  const maxDay = daysInMonth
+  const emailDay = Math.floor(Math.random() * (maxDay - minDay + 1)) + minDay // Day 20 to last day of month
+
+  return {
+    id: `training-motivation-${year}-${month}-${Date.now()}`,
+    from: 'Training Staff',
+    subject: message.subject,
+    body: message.body,
+    timestamp: getInGameTimestamp(year, month, emailDay, 14, 0), // Late month, afternoon
+    read: false,
+    tags: [EmailTag.TRAINING, EmailTag.SOCIAL]
+  }
+}
+
+/**
+ * Generate training results email after training month
+ */
+export function generateTrainingResultsEmail(
+  managerName: string,
+  schoolName: string,
+  players: Player[],
+  teamRoster: string[],
+  month: number,
+  year: number,
+  previousMonthSnapshots: SkillSnapshot[],
+  trainingPlan: { teamFocus: string | null } | null
+): Email | null {
+  const teamPlayers = players.filter((p) => teamRoster.includes(p.id))
+  if (teamPlayers.length === 0 || previousMonthSnapshots.length === 0) return null
+
+  const monthName = MONTH_NAMES[month - 1]
+  const topImprovers = getTopImprovers(previousMonthSnapshots, teamPlayers, 2)
+
+  let body = `Dear ${managerName},
+
+## ${monthName} Training Results Summary
+
+I'm pleased to share the results from this month's training program.
+
+### Overall Performance
+
+The team has made solid progress this month. All players have been working hard, and the results speak for themselves.
+
+`
+
+  if (topImprovers.length > 0) {
+    body += `### Standout Performers
+
+${topImprovers
+  .map(
+    (improver: any, index: number) =>
+      `${index + 1}. **${improver.player.firstName} ${improver.player.lastName}** - Made significant improvements across all skills, showing excellent dedication to training.`
+  )
+  .join('\n')}
+
+`
+  }
+
+  if (trainingPlan?.teamFocus) {
+    body += `### Training Focus Impact
+
+The focus on **${getTrainingFocusDisplayName(trainingPlan.teamFocus as any)}** has been effective. Players have shown improvement in the targeted areas, and the structured approach is paying dividends.
+
+`
+  }
+
+  body += `### Looking Ahead
+
+Continue building on this momentum. The foundation you're establishing now will be crucial for tournament success.
+
+Keep up the excellent work!
+
+Best regards,
+Training Coordinator`
+
+  return {
+    id: `training-results-${year}-${month}-${Date.now()}`,
+    from: 'Training Coordinator',
+    subject: `${monthName} Training Results: Positive Progress`,
+    body,
+    timestamp: getInGameTimestamp(year, month, 28, 16, 0), // End of month
+    read: false,
+    tags: [EmailTag.TRAINING, EmailTag.ADMINISTRATIVE]
   }
 }
 

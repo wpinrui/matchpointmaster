@@ -43,6 +43,7 @@ export type SaveData = {
   emails: Email[] // In-game emails
   trainingPlan: TrainingPlan | null // Current month's training plan, null if not set
   skillSnapshots: SkillSnapshot[] // Historical skill snapshots for progress tracking
+  trainingGoals: TrainingGoal[] // Active training goals across all periods
 }
 
 /**
@@ -208,6 +209,21 @@ export type PlayerTraining = {
 }
 
 /**
+ * Training goal for tracking objectives
+ */
+export type TrainingGoal = {
+  id: string // Unique identifier
+  type: 'team_average' | 'player_skill' | 'team_improvement' | 'player_improvement'
+  target: number // Target value
+  current: number // Current value
+  playerId?: string // For player-specific goals
+  skill?: keyof PlayerSkills // For skill-specific goals
+  month: number // Target month
+  year: number // Target year
+  completed: boolean // Whether goal is achieved
+}
+
+/**
  * Training plan for the current month
  */
 export type TrainingPlan = {
@@ -217,4 +233,5 @@ export type TrainingPlan = {
   playerAssignments: PlayerTraining[] // Individual assignments
   coachingSlotsUsed: number // How many coaching slots are in use (max 5)
   completed: boolean // Whether this month's training is complete
+  goals: TrainingGoal[] // Training goals for this period
 }

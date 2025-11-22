@@ -247,11 +247,24 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
                 style={{
                   fontSize: theme.typography.fontSize.sm,
                   color: theme.colors.text.secondary,
-                  margin: 0
+                  margin: 0,
+                  marginBottom: theme.spacing.xs
                 }}
               >
                 {rec.reason}
               </p>
+              <GameButton
+                variant={rec.priority === 'high' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => {
+                  changeScreen(Screens.TRAINING)
+                  // Store the recommended focus in sessionStorage so TrainingScreen can apply it
+                  sessionStorage.setItem('recommendedTrainingFocus', rec.focus)
+                }}
+                style={{ width: '100%', marginTop: theme.spacing.xs }}
+              >
+                Apply This Recommendation
+              </GameButton>
             </div>
           ))}
         </div>

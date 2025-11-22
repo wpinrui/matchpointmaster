@@ -44,5 +44,6 @@ export const initialSaveData: SaveData = {
   draftCompleted: false,
   emails: [], // Emails will be generated when game is created with actual names
   trainingPlan: null, // Training plan will be set during training phase
-  skillSnapshots: [] // Skill snapshots for progress tracking
+  skillSnapshots: [], // Skill snapshots for progress tracking
+  trainingGoals: [] // Training goals will be set by player
 }
