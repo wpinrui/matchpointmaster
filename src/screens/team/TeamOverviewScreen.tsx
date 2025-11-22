@@ -18,27 +18,65 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('user') // 'user' or AI school ID
   const [selectedTeam, setSelectedTeam] = useState<TeamType>('C boys')
 
-  // Get all available schools (user's school + AI schools)
+  // Calculate school rankings (mean of reputation and funding, lower is better)
+  const schoolRankings = useMemo(() => {
+    if (!aiSchools) return new Map<string, number>()
+
+    // Collect all schools with their mean ranking
+    const schoolsWithRanking: Array<{
+      id: string
+      meanRanking: number
+    }> = []
+
+    // Add user school
+    schoolsWithRanking.push({
+      id: 'user',
+      meanRanking: (school.reputation + school.funding) / 2
+    })
+
+    // Add AI schools
+    aiSchools.forEach((aiSchool) => {
+      schoolsWithRanking.push({
+        id: aiSchool.id.toString(),
+        meanRanking: (aiSchool.reputation + aiSchool.funding) / 2
+      })
+    })
+
+    // Sort by mean ranking (ascending - lower is better)
+    schoolsWithRanking.sort((a, b) => a.meanRanking - b.meanRanking)
+
+    // Create map of school ID to rank (1-indexed)
+    const rankings = new Map<string, number>()
+    schoolsWithRanking.forEach((school, index) => {
+      rankings.set(school.id, index + 1)
+    })
+
+    return rankings
+  }, [school, aiSchools])
+
+  // Get all available schools (user's school + AI schools), sorted alphabetically
   const allSchools = useMemo(() => {
-    const schools = [
-      {
-        id: 'user',
-        name: school.name || 'Your School',
-        teamType: school.teamType,
-        isUser: true
-      }
-    ]
-    if (aiSchools) {
-      aiSchools.forEach((aiSchool) => {
-        schools.push({
+    const userSchool = {
+      id: 'user',
+      name: school.name || 'Your School',
+      teamType: school.teamType,
+      isUser: true
+    }
+
+    const aiSchoolList = aiSchools
+      ? aiSchools.map((aiSchool) => ({
           id: aiSchool.id.toString(),
           name: aiSchool.name,
           teamType: aiSchool.teamType,
           isUser: false
-        })
-      })
-    }
-    return schools
+        }))
+      : []
+
+    // Sort AI schools alphabetically by name
+    aiSchoolList.sort((a, b) => a.name.localeCompare(b.name))
+
+    // User school always first, then sorted AI schools
+    return [userSchool, ...aiSchoolList]
   }, [school, aiSchools])
 
   // Get selected school data
@@ -51,6 +89,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         players: players,
         teamRoster: teamRoster,
         funding: school.funding,
+        crestPath: school.crestPath,
         isUser: true
       }
     } else {
@@ -63,6 +102,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         players: aiSchool.players,
         teamRoster: aiSchool.teamRoster,
         funding: aiSchool.funding,
+        crestPath: aiSchool.crestPath,
         isUser: false
       }
     }
@@ -224,16 +264,56 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             Team Overview
           </h1>
           {selectedSchool && (
-            <p
+            <div
               style={{
-                fontSize: theme.typography.fontSize.base,
-                color: theme.colors.text.secondary,
-                margin: 0,
-                fontStyle: 'italic'
+                display: 'flex',
+                alignItems: 'center',
+                gap: theme.spacing.md,
+                flexWrap: 'wrap'
               }}
             >
-              {selectedSchool.name}
-            </p>
+              {selectedSchool.crestPath && (
+                <img
+                  src={selectedSchool.crestPath}
+                  alt="School Crest"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: theme.borderRadius.lg,
+                    border: `${theme.borderWidth.default} solid ${theme.colors.secondary.light}`,
+                    objectFit: 'contain',
+                    background: 'transparent',
+                    padding: theme.spacing.xs,
+                    flexShrink: 0
+                  }}
+                />
+              )}
+              <div>
+                <p
+                  style={{
+                    fontSize: theme.typography.fontSize.base,
+                    color: theme.colors.text.secondary,
+                    margin: 0,
+                    fontStyle: 'italic'
+                  }}
+                >
+                  {selectedSchool.name}
+                </p>
+                {schoolRankings.has(selectedSchool.id) && (
+                  <p
+                    style={{
+                      fontSize: theme.typography.fontSize.sm,
+                      color: theme.colors.text.light,
+                      margin: 0,
+                      marginTop: theme.spacing.xs,
+                      fontWeight: theme.typography.fontWeight.medium
+                    }}
+                  >
+                    #{schoolRankings.get(selectedSchool.id)} ranked school
+                  </p>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>
