@@ -72,7 +72,8 @@ export function getCardTierStyle(tier: CardTier): CardTierStyle {
         borderColor: '#00d4ff',
         overallBg: 'linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)',
         overallText: '#ffffff',
-        gradient: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 153, 204, 0.2) 100%)',
+        gradient:
+          'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 153, 204, 0.2) 100%)',
         glowColor: 'rgba(0, 212, 255, 0.5)'
       }
     case CardTier.GOLD:
@@ -83,7 +84,8 @@ export function getCardTierStyle(tier: CardTier): CardTierStyle {
         borderColor: '#ffd700',
         overallBg: 'linear-gradient(135deg, #ffd700 0%, #ffb300 100%)',
         overallText: '#000000',
-        gradient: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 179, 0, 0.2) 100%)',
+        gradient:
+          'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 179, 0, 0.2) 100%)',
         glowColor: 'rgba(255, 215, 0, 0.4)'
       }
     case CardTier.SILVER:
@@ -94,7 +96,8 @@ export function getCardTierStyle(tier: CardTier): CardTierStyle {
         borderColor: '#c0c0c0',
         overallBg: 'linear-gradient(135deg, #e8e8e8 0%, #c0c0c0 100%)',
         overallText: '#000000',
-        gradient: 'linear-gradient(135deg, rgba(200, 200, 200, 0.1) 0%, rgba(160, 160, 160, 0.2) 100%)',
+        gradient:
+          'linear-gradient(135deg, rgba(200, 200, 200, 0.1) 0%, rgba(160, 160, 160, 0.2) 100%)',
         glowColor: 'rgba(192, 192, 192, 0.3)'
       }
     case CardTier.BRONZE:
@@ -105,7 +108,8 @@ export function getCardTierStyle(tier: CardTier): CardTierStyle {
         borderColor: '#cd7f32',
         overallBg: 'linear-gradient(135deg, #cd7f32 0%, #a0522d 100%)',
         overallText: '#ffffff',
-        gradient: 'linear-gradient(135deg, rgba(205, 127, 50, 0.1) 0%, rgba(160, 82, 45, 0.2) 100%)',
+        gradient:
+          'linear-gradient(135deg, rgba(205, 127, 50, 0.1) 0%, rgba(160, 82, 45, 0.2) 100%)',
         glowColor: 'rgba(205, 127, 50, 0.3)'
       }
     case CardTier.GREY:
@@ -117,9 +121,9 @@ export function getCardTierStyle(tier: CardTier): CardTierStyle {
         borderColor: '#666666',
         overallBg: 'linear-gradient(135deg, #888888 0%, #666666 100%)',
         overallText: '#ffffff',
-        gradient: 'linear-gradient(135deg, rgba(136, 136, 136, 0.1) 0%, rgba(102, 102, 102, 0.2) 100%)',
+        gradient:
+          'linear-gradient(135deg, rgba(136, 136, 136, 0.1) 0%, rgba(102, 102, 102, 0.2) 100%)',
         glowColor: 'rgba(102, 102, 102, 0.2)'
       }
   }
 }
-

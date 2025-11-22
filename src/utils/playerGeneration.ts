@@ -121,7 +121,7 @@ const RACIAL_DISTRIBUTION = {
   Other: 0.016
 } as const
 
-type RacialCategory = keyof typeof RACIAL_DISTRIBUTION
+export type RacialCategory = keyof typeof RACIAL_DISTRIBUTION
 
 /**
  * Select a racial category based on distribution
@@ -1364,6 +1364,7 @@ function generateName(gender: Gender): {
   lastName: string
   shortName: string
   isChinese: boolean
+  racialCategory: RacialCategory
 } {
   const category = selectRacialCategory()
 
@@ -1420,7 +1421,7 @@ function generateName(gender: Gender): {
   // shortName is always the first name (given name)
   const shortName = firstName
 
-  return { firstName, lastName, shortName, isChinese }
+  return { firstName, lastName, shortName, isChinese, racialCategory: category }
 }
 
 /**
@@ -1449,12 +1450,17 @@ export function generatePlayer(
   genderOverride?: Gender
 ): Player {
   const gender = genderOverride || randomFromArray([Gender.MALE, Gender.FEMALE])
-  const { firstName, lastName, shortName, isChinese } = generateName(gender)
+  const { firstName, lastName, shortName, isChinese, racialCategory } =
+    generateName(gender)
   const skills = generateSkills(quality, gender)
   const elo = calculateElo(skills)
 
-  // Generate avatar
-  const imagePath = generateRandomFace(`${firstName}-${lastName}-${Date.now()}`, gender)
+  // Generate avatar with racial category for appropriate skin tone
+  const imagePath = generateRandomFace(
+    `${firstName}-${lastName}-${Date.now()}`,
+    gender,
+    racialCategory
+  )
 
   // Determine play style based on skills
   const playStyle = determinePlayStyle(skills)

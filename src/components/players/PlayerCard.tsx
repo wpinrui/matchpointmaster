@@ -70,136 +70,136 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
             width: '100%'
           }}
         >
-        {/* Header with avatar and basic info */}
-        <div
-          style={{
-            display: 'flex',
-            gap: theme.spacing.md,
-            alignItems: 'center'
-          }}
-        >
-          {player.imagePath && (
-            <img
-              src={player.imagePath}
-              alt={fullName}
-              style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: theme.borderRadius.md,
-                border: `${theme.borderWidth.default} solid ${theme.colors.secondary.light}`,
-                objectFit: 'cover'
-              }}
-            />
-          )}
-          <div style={{ flex: 1 }}>
-            <h3
-              style={{
-                fontFamily: theme.typography.fontFamily.heading,
-                fontSize: theme.typography.fontSize.lg,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                margin: 0,
-                marginBottom: theme.spacing.xs
-              }}
-            >
-              {fullName}
-            </h3>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary,
-                lineHeight: 1.3
-              }}
-            >
-              <span
+          {/* Header with avatar and basic info */}
+          <div
+            style={{
+              display: 'flex',
+              gap: theme.spacing.md,
+              alignItems: 'center'
+            }}
+          >
+            {player.imagePath && (
+              <img
+                src={player.imagePath}
+                alt={fullName}
                 style={{
-                  color:
-                    player.gender === Gender.FEMALE
-                      ? theme.colors.gender.female
-                      : theme.colors.gender.male,
-                  fontWeight: theme.typography.fontWeight.semibold
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: theme.borderRadius.md,
+                  border: `${theme.borderWidth.default} solid ${theme.colors.secondary.light}`,
+                  objectFit: 'cover'
+                }}
+              />
+            )}
+            <div style={{ flex: 1 }}>
+              <h3
+                style={{
+                  fontFamily: theme.typography.fontFamily.heading,
+                  fontSize: theme.typography.fontSize.lg,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  color: theme.colors.text.primary,
+                  margin: 0,
+                  marginBottom: theme.spacing.xs
                 }}
               >
-                {player.gender}
-              </span>
-              <span>Secondary {player.year}</span>
+                {fullName}
+              </h3>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary,
+                  lineHeight: 1.3
+                }}
+              >
+                <span
+                  style={{
+                    color:
+                      player.gender === Gender.FEMALE
+                        ? theme.colors.gender.female
+                        : theme.colors.gender.male,
+                    fontWeight: theme.typography.fontWeight.semibold
+                  }}
+                >
+                  {player.gender}
+                </span>
+                <span>Secondary {player.year}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Skills Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: theme.spacing.sm,
-            marginTop: theme.spacing.sm
-          }}
-        >
-          <SkillBar label="Forehand" value={player.skills.forehand} />
-          <SkillBar label="Backhand" value={player.skills.backhand} />
-          <SkillBar label="Footwork" value={player.skills.footwork} />
-          <SkillBar label="Serve" value={player.skills.serve} />
-          <SkillBar label="Receive" value={player.skills.receive} />
-          <SkillBar label="Spin" value={player.skills.spin} />
-          <SkillBar label="Placement" value={player.skills.placement} />
-          <SkillBar label="Consistency" value={player.skills.consistency} />
-        </div>
-
-        {/* Equipment and Style */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.xs,
-            marginTop: theme.spacing.sm,
-            paddingTop: theme.spacing.sm,
-            borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
-          }}
-        >
+          {/* Skills Grid */}
           <div
             style={{
-              fontSize: theme.typography.fontSize.sm,
-              color: theme.colors.text.secondary
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: theme.spacing.sm,
+              marginTop: theme.spacing.sm
             }}
           >
-            <strong style={{ color: theme.colors.text.primary }}>Style:</strong>{' '}
-            {player.playStyle}
+            <SkillBar label="Forehand" value={player.skills.forehand} />
+            <SkillBar label="Backhand" value={player.skills.backhand} />
+            <SkillBar label="Footwork" value={player.skills.footwork} />
+            <SkillBar label="Serve" value={player.skills.serve} />
+            <SkillBar label="Receive" value={player.skills.receive} />
+            <SkillBar label="Spin" value={player.skills.spin} />
+            <SkillBar label="Placement" value={player.skills.placement} />
+            <SkillBar label="Consistency" value={player.skills.consistency} />
           </div>
-          <div
-            style={{
-              fontSize: theme.typography.fontSize.sm,
-              color: theme.colors.text.secondary
-            }}
-          >
-            <strong style={{ color: theme.colors.text.primary }}>Equipment:</strong>{' '}
-            {player.gripStyle} • {player.forehandRubber} / {player.backhandRubber}
-          </div>
-          <div
-            style={{
-              fontSize: theme.typography.fontSize.sm,
-              color: theme.colors.text.secondary
-            }}
-          >
-            <strong style={{ color: theme.colors.text.primary }}>Tendency:</strong>{' '}
-            {player.forehandBackhandTendency} • {player.handedness} handed
-          </div>
-        </div>
 
-        {/* Action Button */}
-        {actionButton && (
+          {/* Equipment and Style */}
           <div
             style={{
-              marginTop: theme.spacing.md,
-              paddingTop: theme.spacing.md,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: theme.spacing.xs,
+              marginTop: theme.spacing.sm,
+              paddingTop: theme.spacing.sm,
               borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
             }}
           >
-            {actionButton}
+            <div
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.secondary
+              }}
+            >
+              <strong style={{ color: theme.colors.text.primary }}>Style:</strong>{' '}
+              {player.playStyle}
+            </div>
+            <div
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.secondary
+              }}
+            >
+              <strong style={{ color: theme.colors.text.primary }}>Equipment:</strong>{' '}
+              {player.gripStyle} • {player.forehandRubber} / {player.backhandRubber}
+            </div>
+            <div
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.secondary
+              }}
+            >
+              <strong style={{ color: theme.colors.text.primary }}>Tendency:</strong>{' '}
+              {player.forehandBackhandTendency} • {player.handedness} handed
+            </div>
           </div>
-        )}
+
+          {/* Action Button */}
+          {actionButton && (
+            <div
+              style={{
+                marginTop: theme.spacing.md,
+                paddingTop: theme.spacing.md,
+                borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
+              }}
+            >
+              {actionButton}
+            </div>
+          )}
         </div>
       </GameCard>
     </div>
