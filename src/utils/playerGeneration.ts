@@ -222,7 +222,8 @@ export function generatePlayer(
     ]),
     forehandBackhandTendency,
     playStyle,
-    imagePath
+    imagePath,
+    traits: [] // Players start with no traits, can earn them over time
   }
 }
 

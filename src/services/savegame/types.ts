@@ -133,6 +133,22 @@ export type PlayerSkills = {
 }
 
 /**
+ * Player traits that affect development and performance
+ * Flexible system - can add more traits in the future
+ */
+export enum PlayerTrait {
+  HARD_WORKER = 'hard_worker', // +training effectiveness
+  NATURAL_TALENT = 'natural_talent', // +potential, may be less consistent
+  INJURY_PRONE = 'injury_prone', // Random missed training
+  QUICK_LEARNER = 'quick_learner', // Faster improvement
+  LAZY = 'lazy', // -training effectiveness
+  UNDERDOG = 'underdog', // Overperforms when expectations are low, struggles when expectations rise
+  PRODIGY = 'prodigy', // Exceptional talent, very fast improvement
+  RESILIENT = 'resilient', // Maintains performance regardless of circumstances
+  VULNERABLE = 'vulnerable' // Struggles after early success/setbacks
+}
+
+/**
  * Player attributes and stats
  */
 export type Player = {
@@ -151,6 +167,7 @@ export type Player = {
   forehandBackhandTendency: FavourStyle
   playStyle: PlayStyle
   imagePath: string // Avatar image path
+  traits: PlayerTrait[] // Player traits (can earn/lose over time)
 }
 
 /**
@@ -176,7 +193,6 @@ export enum TrainingFocus {
 export type PlayerTraining = {
   playerId: string
   focus: TrainingFocus | null // null means following team training
-  intensity: 'light' | 'moderate' | 'intensive'
   isIndividualCoaching: boolean // Uses coaching slot if true
 }
 

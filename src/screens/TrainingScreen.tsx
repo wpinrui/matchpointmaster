@@ -23,6 +23,7 @@ import {
   getRecommendedTrainingFocus,
   isTournamentPrepPhase
 } from '../utils/trainingPlans'
+import { processPlayerProgression } from '../utils/applyProgression'
 
 const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const {
@@ -30,9 +31,11 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     teamRoster,
     season,
     manager,
+    school,
     trainingPlan,
     updateTrainingPlan,
-    updateSeason
+    updateSeason,
+    updatePlayers
   } = useSaveDataContext()
 
   const [selectedPlayerForTraining, setSelectedPlayerForTraining] = useState<
@@ -105,7 +108,6 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const handleSetPlayerTraining = (
     playerId: string,
     focus: TrainingFocus | null,
-    intensity: 'light' | 'moderate' | 'intensive',
     isIndividualCoaching: boolean
   ) => {
     if (!trainingPlan) return
@@ -128,7 +130,6 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       const assignment: PlayerTraining = {
         playerId,
         focus,
-        intensity,
         isIndividualCoaching
       }
       updateTrainingPlan.addPlayerAssignment(assignment)
@@ -219,6 +220,22 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           onClick={() => {
             const currentPhase = season.phase as GamePhase
             const nextPhase = getNextPhase(currentPhase, season.month)
+
+            // Process player progression before advancing phase
+            if (trainingPlan && !trainingPlan.completed) {
+              const updatedPlayers = processPlayerProgression(
+                players,
+                teamRoster,
+                trainingPlan,
+                manager,
+                school,
+                season.phase,
+                season.month
+              )
+              updatePlayers.set(updatedPlayers)
+              // Mark training plan as completed
+              updateTrainingPlan.setCompleted(true)
+            }
 
             // Update season to next month/phase
             updateSeason.setMonth(nextPhase.month)
@@ -419,11 +436,10 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           coachingSlotsUsed={trainingPlan.coachingSlotsUsed}
           maxCoachingSlots={maxCoachingSlots}
           hasCoaching={hasIndividualCoaching(selectedPlayerForTraining)}
-          onSet={(focus, intensity, isIndividualCoaching) =>
+          onSet={(focus, isIndividualCoaching) =>
             handleSetPlayerTraining(
               selectedPlayerForTraining,
               focus,
-              intensity,
               isIndividualCoaching
             )
           }
@@ -504,9 +520,6 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                           >
                             {hasCoaching ? '🎯' : '👥'}{' '}
                             {getTrainingFocusDisplayName(playerFocus)}
-                            {playerAssignment && playerAssignment.intensity && (
-                              <> • {playerAssignment.intensity}</>
-                            )}
                           </div>
                         )}
                         <GameButton
@@ -538,11 +551,7 @@ interface PlayerTrainingDialogProps {
   coachingSlotsUsed: number
   maxCoachingSlots: number
   hasCoaching: boolean
-  onSet: (
-    focus: TrainingFocus | null,
-    intensity: 'light' | 'moderate' | 'intensive',
-    isIndividualCoaching: boolean
-  ) => void
+  onSet: (focus: TrainingFocus | null, isIndividualCoaching: boolean) => void
   onRemove: () => void
   onClose: () => void
 }
@@ -562,9 +571,6 @@ const PlayerTrainingDialog: React.FC<PlayerTrainingDialogProps> = ({
   const [selectedFocus, setSelectedFocus] = useState<TrainingFocus | null>(
     currentAssignment?.focus ?? teamFocus ?? null
   )
-  const [selectedIntensity, setSelectedIntensity] = useState<
-    'light' | 'moderate' | 'intensive'
-  >(currentAssignment?.intensity ?? 'moderate')
   const [useIndividualCoaching, setUseIndividualCoaching] = useState<boolean>(hasCoaching)
 
   const player = players.find((p) => p.id === playerId)
@@ -579,7 +585,7 @@ const PlayerTrainingDialog: React.FC<PlayerTrainingDialogProps> = ({
     if (selectedFocus === null) {
       onRemove()
     } else {
-      onSet(selectedFocus, selectedIntensity, useIndividualCoaching && canUseCoaching)
+      onSet(selectedFocus, useIndividualCoaching && canUseCoaching)
     }
   }
 
@@ -639,32 +645,6 @@ const PlayerTrainingDialog: React.FC<PlayerTrainingDialogProps> = ({
                 onClick={() => setSelectedFocus(focus)}
               >
                 {getTrainingFocusDisplayName(focus)}
-              </GameButton>
-            ))}
-          </div>
-        </div>
-
-        {/* Intensity Selection */}
-        <div>
-          <label
-            style={{
-              display: 'block',
-              marginBottom: theme.spacing.xs,
-              fontWeight: theme.typography.fontWeight.medium,
-              color: theme.colors.text.primary
-            }}
-          >
-            Intensity
-          </label>
-          <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-            {(['light', 'moderate', 'intensive'] as const).map((intensity) => (
-              <GameButton
-                key={intensity}
-                variant={selectedIntensity === intensity ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => setSelectedIntensity(intensity)}
-              >
-                {intensity.charAt(0).toUpperCase() + intensity.slice(1)}
               </GameButton>
             ))}
           </div>

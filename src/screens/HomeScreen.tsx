@@ -11,10 +11,23 @@ import { Email } from '../services/savegame/types'
 import { theme } from '../theme/theme'
 import { MONTH_NAMES } from '../utils/constants'
 import { GamePhase, getPhaseDisplayName, getNextPhase } from '../utils/gamePhases'
+import { processPlayerProgression } from '../utils/applyProgression'
 
 const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
-  const { season, draftCompleted, emails, markEmailAsRead, updateSeason } =
-    useSaveDataContext()
+  const {
+    season,
+    draftCompleted,
+    emails,
+    markEmailAsRead,
+    updateSeason,
+    players,
+    teamRoster,
+    trainingPlan,
+    manager,
+    school,
+    updatePlayers,
+    updateTrainingPlan
+  } = useSaveDataContext()
   const [showDraftDialog, setShowDraftDialog] = useState(false)
 
   const phaseDisplayName = getPhaseDisplayName(season.phase as GamePhase, season.month)
@@ -35,6 +48,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   // Get action button text and action based on phase
   const getActionButton = () => {
     const currentPhase = season.phase as GamePhase
+    // Store the phase string before type narrowing for progression check
+    const currentPhaseString = season.phase
 
     if (currentPhase === GamePhase.DRAFT && !draftCompleted) {
       return {
@@ -53,9 +68,35 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
     // For other phases, progress to next month/phase
     const nextPhase = getNextPhase(currentPhase, season.month)
+
     return {
       text: 'Continue',
       action: () => {
+        // Process player progression if leaving training phase
+        // Check the string phase to avoid type narrowing issues
+        // This handles cases where we're advancing from a training phase
+        // (though this path typically won't be hit since training phase shows "Open Training" button)
+        if (
+          currentPhaseString === GamePhase.TRAINING ||
+          currentPhaseString === GamePhase.TRAINING_2
+        ) {
+          if (trainingPlan && !trainingPlan.completed) {
+            const updatedPlayers = processPlayerProgression(
+              players,
+              teamRoster,
+              trainingPlan,
+              manager,
+              school,
+              season.phase,
+              season.month
+            )
+            updatePlayers.set(updatedPlayers)
+            // Mark training plan as completed
+            updateTrainingPlan.setCompleted(true)
+          }
+        }
+
+        // Advance phase
         updateSeason.setMonth(nextPhase.month)
         updateSeason.setPhase(nextPhase.phase)
         if (nextPhase.month === 1) {

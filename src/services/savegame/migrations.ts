@@ -61,6 +61,24 @@ export function migrateSaveData(data: SaveData): SaveData {
     migrated.emails = []
   }
 
+  // Ensure training plan exists
+  if (migrated.trainingPlan === undefined) {
+    migrated.trainingPlan = null
+  }
+
+  // Ensure players have traits field
+  if (migrated.players) {
+    migrated.players = migrated.players.map((player) => {
+      if (!player.traits) {
+        return {
+          ...player,
+          traits: []
+        }
+      }
+      return player
+    })
+  }
+
   return migrated
 }
 
@@ -68,7 +86,7 @@ export function migrateSaveData(data: SaveData): SaveData {
  * Check if save data needs migration
  */
 export function needsMigration(data: SaveData): boolean {
-  return (
+  const hasMissingFields =
     !data.manager.stats ||
     !data.teamRoster ||
     data.school.reputation === undefined ||
@@ -78,6 +96,12 @@ export function needsMigration(data: SaveData): boolean {
     !data.school.teamType ||
     !data.season ||
     data.draftCompleted === undefined ||
-    !data.emails
-  )
+    !data.emails ||
+    data.trainingPlan === undefined
+
+  // Check if any player is missing traits
+  const hasPlayersWithoutTraits =
+    data.players && data.players.some((player) => !player.traits)
+
+  return hasMissingFields || hasPlayersWithoutTraits
 }
