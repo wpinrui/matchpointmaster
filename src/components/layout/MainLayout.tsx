@@ -1,9 +1,11 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 import { Screens } from '../../screen_manager/screens'
 import { theme } from '../../theme/theme'
 import BackgroundImage from '../../assets/tabletennisphoto.jpg'
 import { CommonStyles } from '../../styles/common/CommonStyles'
 import GameCard from '../cards/GameCard'
+import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
+import { GamePhase } from '../../utils/gamePhases'
 
 interface MainLayoutProps {
   currentScreen: Screens
@@ -16,13 +18,36 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   changeScreen,
   children
 }) => {
-  const sidebarItems = [
-    { screen: Screens.HOME, label: 'Home', icon: '🏠' },
-    { screen: Screens.EMAIL, label: 'Email', icon: '📧' },
-    { screen: Screens.TEAM_OVERVIEW, label: 'Team Overview', icon: '👥' },
-    { screen: Screens.PROFILE, label: 'Profile', icon: '👤' },
-    { screen: Screens.SETTINGS, label: 'Settings', icon: '⚙️' }
-  ]
+  const { season } = useSaveDataContext()
+
+  // Check if we're in a training phase
+  const isTrainingPhase =
+    season.phase === GamePhase.TRAINING || season.phase === GamePhase.TRAINING_2
+
+  // Build sidebar items conditionally
+  const sidebarItems = useMemo(() => {
+    const items = [
+      { screen: Screens.HOME, label: 'Home', icon: '🏠' },
+      { screen: Screens.EMAIL, label: 'Email', icon: '📧' },
+      { screen: Screens.TEAM_OVERVIEW, label: 'Team Overview', icon: '👥' }
+    ]
+
+    // Add Training item only during training phase
+    if (isTrainingPhase) {
+      items.push({
+        screen: Screens.TRAINING,
+        label: 'Training',
+        icon: '💪'
+      })
+    }
+
+    items.push(
+      { screen: Screens.PROFILE, label: 'Profile', icon: '👤' },
+      { screen: Screens.SETTINGS, label: 'Settings', icon: '⚙️' }
+    )
+
+    return items
+  }, [isTrainingPhase])
 
   return (
     <div

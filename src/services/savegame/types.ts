@@ -41,6 +41,7 @@ export type SaveData = {
   } // Current season data
   draftCompleted: boolean // Whether draft phase has been completed for this season
   emails: Email[] // In-game emails
+  trainingPlan: TrainingPlan | null // Current month's training plan, null if not set
 }
 
 /**
@@ -150,4 +151,43 @@ export type Player = {
   forehandBackhandTendency: FavourStyle
   playStyle: PlayStyle
   imagePath: string // Avatar image path
+}
+
+/**
+ * Training focus types
+ */
+export enum TrainingFocus {
+  FOREHAND = 'forehand',
+  BACKHAND = 'backhand',
+  FOOTWORK = 'footwork',
+  SERVE = 'serve',
+  RECEIVE = 'receive',
+  SPIN = 'spin',
+  PLACEMENT = 'placement',
+  CONSISTENCY = 'consistency',
+  MATCH_PLAY = 'match_play', // General match practice
+  FUNDAMENTALS = 'fundamentals', // Balanced, focuses on weaknesses
+  TOURNAMENT_PREP = 'tournament_prep' // Pre-tournament preparation
+}
+
+/**
+ * Individual training assignment for a player
+ */
+export type PlayerTraining = {
+  playerId: string
+  focus: TrainingFocus | null // null means following team training
+  intensity: 'light' | 'moderate' | 'intensive'
+  isIndividualCoaching: boolean // Uses coaching slot if true
+}
+
+/**
+ * Training plan for the current month
+ */
+export type TrainingPlan = {
+  month: number // 1-12
+  year: number
+  teamFocus: TrainingFocus | null // Team-wide focus, null if not set
+  playerAssignments: PlayerTraining[] // Individual assignments
+  coachingSlotsUsed: number // How many coaching slots are in use (max 5)
+  completed: boolean // Whether this month's training is complete
 }

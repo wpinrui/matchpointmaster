@@ -43,6 +43,14 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       }
     }
 
+    // During training phase, show training button
+    if (currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2) {
+      return {
+        text: 'Open Training',
+        action: () => changeScreen(Screens.TRAINING)
+      }
+    }
+
     // For other phases, progress to next month/phase
     const nextPhase = getNextPhase(currentPhase, season.month)
     return {

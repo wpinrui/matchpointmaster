@@ -7,6 +7,7 @@ import PlayersScreen from '../screens/PlayersScreen'
 import SaveManagerScreen from '../screens/SaveManagerScreen'
 import DraftScreen from '../screens/team/DraftScreen'
 import TeamOverviewScreen from '../screens/team/TeamOverviewScreen'
+import TrainingScreen from '../screens/TrainingScreen'
 import ProfileScreen from '../screens/ProfileScreen'
 import SettingsScreen from '../screens/SettingsScreen'
 import EmailScreen from '../screens/EmailScreen'
@@ -30,6 +31,7 @@ const ScreenManager: React.FC = () => {
     [Screens.SAVE_MANAGER]: SaveManagerScreen,
     [Screens.DRAFT]: DraftScreen,
     [Screens.TEAM_OVERVIEW]: TeamOverviewScreen,
+    [Screens.TRAINING]: TrainingScreen,
     [Screens.PROFILE]: ProfileScreen,
     [Screens.SETTINGS]: SettingsScreen,
     [Screens.EMAIL]: EmailScreen
@@ -41,6 +43,7 @@ const ScreenManager: React.FC = () => {
   const layoutScreens = [
     Screens.HOME,
     Screens.TEAM_OVERVIEW,
+    Screens.TRAINING,
     Screens.PROFILE,
     Screens.SETTINGS,
     Screens.DRAFT,
