@@ -118,7 +118,10 @@ export const PlayerInsightsCard: React.FC<PlayerInsightsCardProps> = ({
         style={{
           padding: theme.spacing.lg,
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          height: '100%',
+          maxHeight: '100%',
+          overflow: 'hidden'
         }}
       >
         <h2
@@ -151,7 +154,8 @@ export const PlayerInsightsCard: React.FC<PlayerInsightsCardProps> = ({
         padding: theme.spacing.lg,
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: '600px',
+        height: '100%',
+        maxHeight: '100%',
         overflow: 'hidden'
       }}
     >

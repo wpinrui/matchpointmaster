@@ -100,7 +100,10 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
         style={{
           padding: theme.spacing.lg,
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          height: '100%',
+          maxHeight: '100%',
+          overflow: 'hidden'
         }}
       >
         <h2
@@ -132,7 +135,10 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
       style={{
         padding: theme.spacing.lg,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        height: '100%',
+        maxHeight: '100%',
+        overflow: 'hidden'
       }}
     >
       <div
@@ -140,7 +146,8 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: theme.spacing.md
+          marginBottom: theme.spacing.md,
+          flexShrink: 0
         }}
       >
         <h2
@@ -216,225 +223,235 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
         </div>
       </div>
 
-      {/* Team Overall Improvement */}
       <div
         style={{
-          marginBottom: theme.spacing.md,
-          padding: theme.spacing.md,
-          background: theme.colors.primary.main + '20',
-          borderRadius: theme.borderRadius.sm,
-          border: `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
+          flex: 1,
+          overflow: 'auto',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
+        {/* Team Overall Improvement */}
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: theme.spacing.xs
+            marginBottom: theme.spacing.md,
+            padding: theme.spacing.md,
+            background: theme.colors.primary.main + '20',
+            borderRadius: theme.borderRadius.sm,
+            border: `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
           }}
         >
-          <span
-            style={{
-              fontSize: theme.typography.fontSize.base,
-              color: theme.colors.text.secondary
-            }}
-          >
-            Team Total Improvement:
-          </span>
-          <span
-            style={{
-              fontSize: theme.typography.fontSize.xl,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.success.main
-            }}
-          >
-            +{teamTotalImprovement}
-          </span>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: theme.spacing.xs
-          }}
-        >
-          <span
-            style={{
-              fontSize: theme.typography.fontSize.base,
-              color: theme.colors.text.secondary
-            }}
-          >
-            Average per Player:
-          </span>
-          <span
-            style={{
-              fontSize: theme.typography.fontSize.base,
-              fontWeight: theme.typography.fontWeight.medium,
-              color: theme.colors.text.primary
-            }}
-          >
-            +{teamAvgImprovement} per skill
-          </span>
-        </div>
-        {/* Training Feedback */}
-        {trainingPlan?.teamFocus && (
           <div
             style={{
-              marginTop: theme.spacing.sm,
-              paddingTop: theme.spacing.sm,
-              borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
-            }}
-          >
-            <div
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary,
-                marginBottom: theme.spacing.xs
-              }}
-            >
-              <strong style={{ color: theme.colors.text.primary }}>
-                Training Focus:
-              </strong>{' '}
-              {getTrainingFocusDisplayName(trainingPlan.teamFocus)}
-            </div>
-            {teamTotalImprovement > 50 ? (
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.success.main
-                }}
-              >
-                ✓ Excellent results! The training focus is working well.
-              </div>
-            ) : teamTotalImprovement > 30 ? (
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary
-                }}
-              >
-                ✓ Good progress. Consider adjusting focus if needed.
-              </div>
-            ) : (
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary
-                }}
-              >
-                ⚠ Lower than expected. Review training plan effectiveness.
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Top Improvers */}
-      {topImprovers.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.sm
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: theme.typography.fontFamily.heading,
-              fontSize: theme.typography.fontSize.base,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              margin: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               marginBottom: theme.spacing.xs
             }}
           >
-            Top Improvers:
-          </h3>
-          {topImprovers.map(({ player, totalImprovement }) => {
-            const oldSnapshot = oldSnapshots.find((s) => s.playerId === player.id)
-            const mostImproved =
-              oldSnapshot && getMostImprovedSkill(oldSnapshot.skills, player.skills)
-
-            return (
+            <span
+              style={{
+                fontSize: theme.typography.fontSize.base,
+                color: theme.colors.text.secondary
+              }}
+            >
+              Team Total Improvement:
+            </span>
+            <span
+              style={{
+                fontSize: theme.typography.fontSize.xl,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.success.main
+              }}
+            >
+              +{teamTotalImprovement}
+            </span>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: theme.spacing.xs
+            }}
+          >
+            <span
+              style={{
+                fontSize: theme.typography.fontSize.base,
+                color: theme.colors.text.secondary
+              }}
+            >
+              Average per Player:
+            </span>
+            <span
+              style={{
+                fontSize: theme.typography.fontSize.base,
+                fontWeight: theme.typography.fontWeight.medium,
+                color: theme.colors.text.primary
+              }}
+            >
+              +{teamAvgImprovement} per skill
+            </span>
+          </div>
+          {/* Training Feedback */}
+          {trainingPlan?.teamFocus && (
+            <div
+              style={{
+                marginTop: theme.spacing.sm,
+                paddingTop: theme.spacing.sm,
+                borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
+              }}
+            >
               <div
-                key={player.id}
                 style={{
-                  padding: theme.spacing.sm,
-                  background: theme.colors.border.default + '40',
-                  borderRadius: theme.borderRadius.sm,
-                  border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary,
+                  marginBottom: theme.spacing.xs
                 }}
               >
+                <strong style={{ color: theme.colors.text.primary }}>
+                  Training Focus:
+                </strong>{' '}
+                {getTrainingFocusDisplayName(trainingPlan.teamFocus)}
+              </div>
+              {teamTotalImprovement > 50 ? (
                 <div
                   style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: theme.spacing.xs
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.colors.success.main
                   }}
                 >
-                  <strong
-                    style={{
-                      color: theme.colors.text.primary,
-                      fontSize: theme.typography.fontSize.sm
-                    }}
-                  >
-                    {getPlayerFullName(player)}
-                  </strong>
-                  <span
-                    style={{
-                      fontSize: theme.typography.fontSize.sm,
-                      fontWeight: theme.typography.fontWeight.bold,
-                      color: theme.colors.success.main
-                    }}
-                  >
-                    +{totalImprovement} total
-                  </span>
+                  ✓ Excellent results! The training focus is working well.
                 </div>
-                {mostImproved && (
-                  <p
+              ) : teamTotalImprovement > 30 ? (
+                <div
+                  style={{
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.colors.text.secondary
+                  }}
+                >
+                  ✓ Good progress. Consider adjusting focus if needed.
+                </div>
+              ) : (
+                <div
+                  style={{
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.colors.text.secondary
+                  }}
+                >
+                  ⚠ Lower than expected. Review training plan effectiveness.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Top Improvers */}
+        {topImprovers.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: theme.spacing.sm
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: theme.typography.fontFamily.heading,
+                fontSize: theme.typography.fontSize.base,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                margin: 0,
+                marginBottom: theme.spacing.xs
+              }}
+            >
+              Top Improvers:
+            </h3>
+            {topImprovers.map(({ player, totalImprovement }) => {
+              const oldSnapshot = oldSnapshots.find((s) => s.playerId === player.id)
+              const mostImproved =
+                oldSnapshot && getMostImprovedSkill(oldSnapshot.skills, player.skills)
+
+              return (
+                <div
+                  key={player.id}
+                  style={{
+                    padding: theme.spacing.sm,
+                    background: theme.colors.border.default + '40',
+                    borderRadius: theme.borderRadius.sm,
+                    border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
+                  }}
+                >
+                  <div
                     style={{
-                      fontSize: theme.typography.fontSize.xs,
-                      color: theme.colors.text.secondary,
-                      margin: 0
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: theme.spacing.xs
                     }}
                   >
-                    Most improved: {mostImproved.label} (+{mostImproved.improvement})
-                  </p>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
+                    <strong
+                      style={{
+                        color: theme.colors.text.primary,
+                        fontSize: theme.typography.fontSize.sm
+                      }}
+                    >
+                      {getPlayerFullName(player)}
+                    </strong>
+                    <span
+                      style={{
+                        fontSize: theme.typography.fontSize.sm,
+                        fontWeight: theme.typography.fontWeight.bold,
+                        color: theme.colors.success.main
+                      }}
+                    >
+                      +{totalImprovement} total
+                    </span>
+                  </div>
+                  {mostImproved && (
+                    <p
+                      style={{
+                        fontSize: theme.typography.fontSize.xs,
+                        color: theme.colors.text.secondary,
+                        margin: 0
+                      }}
+                    >
+                      Most improved: {mostImproved.label} (+{mostImproved.improvement})
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
 
-      {topImprovers.length === 0 && (
-        <p
-          style={{
-            fontSize: theme.typography.fontSize.base,
-            color: theme.colors.text.secondary,
-            margin: 0
-          }}
-        >
-          No progress data available yet.
-        </p>
-      )}
+        {topImprovers.length === 0 && (
+          <p
+            style={{
+              fontSize: theme.typography.fontSize.base,
+              color: theme.colors.text.secondary,
+              margin: 0
+            }}
+          >
+            No progress data available yet.
+          </p>
+        )}
 
-      {/* Improvement Bar Chart */}
-      {chartData.length > 0 && (
-        <div
-          style={{
-            marginTop: theme.spacing.lg,
-            padding: theme.spacing.md,
-            background: theme.colors.border.default + '20',
-            borderRadius: theme.borderRadius.sm
-          }}
-        >
-          <ImprovementBarChart data={chartData} maxBars={10} />
-        </div>
-      )}
+        {/* Improvement Bar Chart */}
+        {chartData.length > 0 && (
+          <div
+            style={{
+              marginTop: theme.spacing.lg,
+              padding: theme.spacing.md,
+              background: theme.colors.border.default + '20',
+              borderRadius: theme.borderRadius.sm
+            }}
+          >
+            <ImprovementBarChart data={chartData} maxBars={10} />
+          </div>
+        )}
+      </div>
     </GameCard>
   )
 }

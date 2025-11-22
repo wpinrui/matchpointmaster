@@ -68,7 +68,10 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
         style={{
           padding: theme.spacing.lg,
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          height: '100%',
+          maxHeight: '100%',
+          overflow: 'hidden'
         }}
       >
         <h2
@@ -100,7 +103,10 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
       style={{
         padding: theme.spacing.lg,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        height: '100%',
+        maxHeight: '100%',
+        overflow: 'hidden'
       }}
     >
       <h2
@@ -110,52 +116,36 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
           fontWeight: theme.typography.fontWeight.bold,
           color: theme.colors.text.primary,
           marginBottom: theme.spacing.md,
-          marginTop: 0
+          marginTop: 0,
+          flexShrink: 0
         }}
       >
         Training Insights
       </h2>
 
-      {/* Team Overview */}
       <div
         style={{
-          marginBottom: theme.spacing.md,
-          paddingBottom: theme.spacing.md,
-          borderBottom: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
+          flex: 1,
+          overflow: 'auto',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
+        {/* Team Overview */}
         <div
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: theme.spacing.xs
+            marginBottom: theme.spacing.md,
+            paddingBottom: theme.spacing.md,
+            borderBottom: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
           }}
         >
-          <span
-            style={{
-              fontSize: theme.typography.fontSize.base,
-              color: theme.colors.text.secondary
-            }}
-          >
-            Team Average Skill:
-          </span>
-          <span
-            style={{
-              fontSize: theme.typography.fontSize.lg,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary
-            }}
-          >
-            {teamAverage}
-          </span>
-        </div>
-        {teamWeakest && (
           <div
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              marginBottom: theme.spacing.xs
             }}
           >
             <span
@@ -164,120 +154,147 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
                 color: theme.colors.text.secondary
               }}
             >
-              Weakest Area:
+              Team Average Skill:
             </span>
             <span
               style={{
-                fontSize: theme.typography.fontSize.base,
-                fontWeight: theme.typography.fontWeight.medium,
+                fontSize: theme.typography.fontSize.lg,
+                fontWeight: theme.typography.fontWeight.bold,
                 color: theme.colors.text.primary
               }}
             >
-              {teamWeakest.label} ({teamWeakest.average})
+              {teamAverage}
             </span>
           </div>
-        )}
-      </div>
-
-      {/* Recommendations */}
-      {recommendations.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.sm,
-            marginBottom: theme.spacing.md
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: theme.typography.fontFamily.heading,
-              fontSize: theme.typography.fontSize.base,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              margin: 0
-            }}
-          >
-            Recommendations:
-          </h3>
-          {recommendations.slice(0, 3).map((rec, index) => (
+          {teamWeakest && (
             <div
-              key={index}
               style={{
-                padding: theme.spacing.sm,
-                background:
-                  rec.priority === 'high'
-                    ? theme.colors.error.main + '20'
-                    : theme.colors.primary.main + '20',
-                borderRadius: theme.borderRadius.sm,
-                border: `${theme.borderWidth.default} solid ${
-                  rec.priority === 'high'
-                    ? theme.colors.error.main
-                    : theme.colors.primary.main
-                }`
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}
             >
-              <div
+              <span
                 style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: theme.spacing.xs
+                  fontSize: theme.typography.fontSize.base,
+                  color: theme.colors.text.secondary
                 }}
               >
-                <strong
-                  style={{
-                    color: theme.colors.text.primary,
-                    fontSize: theme.typography.fontSize.sm
-                  }}
-                >
-                  {getTrainingFocusDisplayName(rec.focus)}
-                </strong>
-                <span
-                  style={{
-                    fontSize: theme.typography.fontSize.xs,
-                    color: theme.colors.text.secondary,
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  {rec.priority}
-                </span>
-              </div>
-              <p
+                Weakest Area:
+              </span>
+              <span
                 style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.xs
+                  fontSize: theme.typography.fontSize.base,
+                  fontWeight: theme.typography.fontWeight.medium,
+                  color: theme.colors.text.primary
                 }}
               >
-                {rec.reason}
-              </p>
-              <GameButton
-                variant={rec.priority === 'high' ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => {
-                  changeScreen(Screens.TRAINING)
-                  // Store the recommended focus in sessionStorage so TrainingScreen can apply it
-                  sessionStorage.setItem('recommendedTrainingFocus', rec.focus)
-                }}
-                style={{ width: '100%', marginTop: theme.spacing.xs }}
-              >
-                Apply This Recommendation
-              </GameButton>
+                {teamWeakest.label} ({teamWeakest.average})
+              </span>
             </div>
-          ))}
+          )}
         </div>
-      )}
 
-      <GameButton
-        variant="primary"
-        size="sm"
-        onClick={() => changeScreen(Screens.TRAINING)}
-        style={{ width: '100%' }}
-      >
-        Open Training
-      </GameButton>
+        {/* Recommendations */}
+        {recommendations.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: theme.spacing.sm,
+              marginBottom: theme.spacing.md
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: theme.typography.fontFamily.heading,
+                fontSize: theme.typography.fontSize.base,
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                margin: 0
+              }}
+            >
+              Recommendations:
+            </h3>
+            {recommendations.slice(0, 3).map((rec, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: theme.spacing.sm,
+                  background:
+                    rec.priority === 'high'
+                      ? theme.colors.error.main + '20'
+                      : theme.colors.primary.main + '20',
+                  borderRadius: theme.borderRadius.sm,
+                  border: `${theme.borderWidth.default} solid ${
+                    rec.priority === 'high'
+                      ? theme.colors.error.main
+                      : theme.colors.primary.main
+                  }`
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: theme.spacing.xs
+                  }}
+                >
+                  <strong
+                    style={{
+                      color: theme.colors.text.primary,
+                      fontSize: theme.typography.fontSize.sm
+                    }}
+                  >
+                    {getTrainingFocusDisplayName(rec.focus)}
+                  </strong>
+                  <span
+                    style={{
+                      fontSize: theme.typography.fontSize.xs,
+                      color: theme.colors.text.secondary,
+                      textTransform: 'uppercase'
+                    }}
+                  >
+                    {rec.priority}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontSize: theme.typography.fontSize.sm,
+                    color: theme.colors.text.secondary,
+                    margin: 0,
+                    marginBottom: theme.spacing.xs
+                  }}
+                >
+                  {rec.reason}
+                </p>
+                <GameButton
+                  variant={rec.priority === 'high' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => {
+                    changeScreen(Screens.TRAINING)
+                    // Store the recommended focus in sessionStorage so TrainingScreen can apply it
+                    sessionStorage.setItem('recommendedTrainingFocus', rec.focus)
+                  }}
+                  style={{ width: '100%', marginTop: theme.spacing.xs }}
+                >
+                  Apply This Recommendation
+                </GameButton>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <GameButton
+          variant="primary"
+          size="sm"
+          onClick={() => changeScreen(Screens.TRAINING)}
+          style={{ width: '100%', flexShrink: 0 }}
+        >
+          Open Training
+        </GameButton>
+      </div>
     </GameCard>
   )
 }

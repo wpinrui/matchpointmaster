@@ -454,8 +454,9 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             display: 'flex',
             flexDirection: 'column',
             gap: theme.spacing.lg,
-            overflow: 'auto',
-            paddingLeft: theme.spacing.md
+            overflow: 'hidden',
+            paddingLeft: theme.spacing.md,
+            height: '100%'
           }}
         >
           {/* Three Card Layout - Responsive */}
@@ -467,7 +468,9 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                   ? 'repeat(auto-fit, minmax(280px, 1fr))'
                   : '1fr',
               gap: theme.spacing.lg,
-              alignItems: 'start'
+              alignItems: 'stretch',
+              height: '100%',
+              overflow: 'hidden'
             }}
           >
             {/* Draft Info Card - Only during draft phase */}
@@ -476,7 +479,10 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 style={{
                   padding: theme.spacing.lg,
                   display: 'flex',
-                  flexDirection: 'column'
+                  flexDirection: 'column',
+                  height: '100%',
+                  maxHeight: '100%',
+                  overflow: 'hidden'
                 }}
               >
                 <h2
@@ -544,7 +550,10 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 padding: theme.spacing.lg,
                 display: 'flex',
                 flexDirection: 'column',
-                maxWidth: isDraftPhase || isTrainingPhase ? 'none' : '400px'
+                maxWidth: isDraftPhase || isTrainingPhase ? 'none' : '400px',
+                height: '100%',
+                maxHeight: '100%',
+                overflow: 'hidden'
               }}
             >
               <h2
@@ -554,7 +563,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                   fontWeight: theme.typography.fontWeight.bold,
                   color: theme.colors.text.primary,
                   marginBottom: theme.spacing.md,
-                  marginTop: 0
+                  marginTop: 0,
+                  flexShrink: 0
                 }}
               >
                 Season Timeline
@@ -563,7 +573,10 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: theme.spacing.sm
+                  gap: theme.spacing.sm,
+                  flex: 1,
+                  overflow: 'auto',
+                  minHeight: 0
                 }}
               >
                 <TimelineItem
