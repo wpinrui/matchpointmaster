@@ -11,7 +11,7 @@ import {
   PlayStyle,
   TrainingFocus
 } from '../services/savegame/types'
-import { generatePlayer, IntakeQuality, calculateIntakeQuality } from './playerGeneration'
+import { generatePlayer, IntakeQuality } from './playerGeneration'
 import {
   calculateMaxTeamSize,
   attractivenessToIntakeQuality,
@@ -95,9 +95,17 @@ export function generateInitialAISchoolPlayers(
   const players: Player[] = []
   const maxTeamSize = calculateMaxTeamSize(school.funding, school.teamType)
 
-  // Calculate intake quality based on school reputation
+  // Calculate intake quality based on school attractiveness (same as DraftScreen)
   // For AI schools, we use a fixed manager reputation (50) to focus on school reputation
-  const intakeQuality = calculateIntakeQuality(50, school.reputation)
+  // School reputation and funding are rankings (lower is better), so we need to calculate attractiveness first
+  const schoolAttractiveness = calculateSchoolAttractiveness(
+    school.reputation, // ranking (lower is better)
+    school.funding, // ranking (lower is better)
+    50 // fixed manager reputation
+  )
+  const intakeInfo = attractivenessToIntakeQuality(schoolAttractiveness)
+  // The quality string matches the IntakeQuality enum values
+  const intakeQuality = intakeInfo.quality as IntakeQuality
 
   // Determine which genders to generate based on team type
   const gendersToGenerate: Gender[] = []
@@ -112,64 +120,155 @@ export function generateInitialAISchoolPlayers(
   // Calculate team structure:
   // Co-ed: 4 teams (C boys, C girls, B boys, B girls), minimum 7 per team = 28 total
   // Single gender: 2 teams (C and B), minimum 7 per team = 14 total
-  // B divs (Sec 3 and 4) should be filled to minimum capacity (7 per B team)
-  // Sec 2s should be half of B div capacity
+  // B divs (Sec 3 and 4) should be filled to half of max capacity
+  // C div (Sec 2) should be filled to 7 players (minimum for C div)
   // Rest for Sec 1s (to be drafted)
 
   const isCoEd = school.teamType === 'both'
   const minPlayersPerBTeam = 7
+  const minPlayersPerCTeam = 7
 
-  // B div capacity: each B team needs 7 players minimum
-  // Co-ed: 2 B teams (boys + girls) = 14 total
-  // Single gender: 1 B team = 7 total
-  const totalBDivCapacity = isCoEd ? 14 : 7
+  // B div capacity: half of max team size
+  // Co-ed: maxTeamSize = 28-56, so B div gets 14-28 (half)
+  // Single gender: maxTeamSize = 14-28, so B div gets 7-14 (half)
+  const totalBDivCapacity = Math.floor(maxTeamSize / 2)
 
-  // Sec 2s should be half of B div capacity
-  const sec2Capacity = Math.floor(totalBDivCapacity / 2) // Co-ed: 7, Single: 3
+  // C div capacity: minimum 7 players per C team
+  // Co-ed: 2 C teams = 14 total minimum
+  // Single gender: 1 C team = 7 total minimum
+  const totalCDivCapacity = isCoEd ? 14 : 7
 
   // Generate B div players (Sec 3 and 4) - fill to capacity
   // Distribute evenly between Sec 3 and Sec 4
   const sec3Players = Math.floor(totalBDivCapacity / 2)
   const sec4Players = Math.ceil(totalBDivCapacity / 2)
 
-  // Generate Sec 3 players
-  for (let i = 0; i < sec3Players; i++) {
-    const gender = gendersToGenerate[Math.floor(Math.random() * gendersToGenerate.length)]
-    const player = generatePlayer(intakeQuality, 3, gender)
-    // Sec 3 should be ~5 points higher than Sec 2 baseline
-    const skillBoost = 5 + (Math.random() - 0.5) * 5
-    Object.keys(player.skills).forEach((skillKey) => {
-      const skill = skillKey as keyof typeof player.skills
-      player.skills[skill] = Math.min(
-        100,
-        Math.max(0, Math.round(player.skills[skill] + skillBoost))
-      )
-    })
-    players.push(player)
-  }
+  // Generate Sec 2 players - fill C div capacity
+  const sec2Capacity = totalCDivCapacity
 
-  // Generate Sec 4 players
-  for (let i = 0; i < sec4Players; i++) {
-    const gender = gendersToGenerate[Math.floor(Math.random() * gendersToGenerate.length)]
-    const player = generatePlayer(intakeQuality, 4, gender)
-    // Sec 4 should be ~10 points higher than Sec 2 baseline
-    const skillBoost = 10 + (Math.random() - 0.5) * 5
-    Object.keys(player.skills).forEach((skillKey) => {
-      const skill = skillKey as keyof typeof player.skills
-      player.skills[skill] = Math.min(
-        100,
-        Math.max(0, Math.round(player.skills[skill] + skillBoost))
-      )
-    })
-    players.push(player)
-  }
+  // For co-ed schools, split evenly between boys and girls
+  // For single-gender schools, all players are the same gender
+  if (isCoEd) {
+    // B div: split evenly between boys and girls
+    const bDivBoys = Math.floor(totalBDivCapacity / 2)
+    const bDivGirls = Math.ceil(totalBDivCapacity / 2)
 
-  // Generate Sec 2 players - half of B div capacity
-  for (let i = 0; i < sec2Capacity; i++) {
-    const gender = gendersToGenerate[Math.floor(Math.random() * gendersToGenerate.length)]
-    const player = generatePlayer(intakeQuality, 2, gender)
-    // Sec 2 is baseline (no boost)
-    players.push(player)
+    // Sec 3: split evenly
+    const sec3Boys = Math.floor(sec3Players / 2)
+    const sec3Girls = Math.ceil(sec3Players / 2)
+
+    // Sec 4: split evenly
+    const sec4Boys = Math.floor(sec4Players / 2)
+    const sec4Girls = Math.ceil(sec4Players / 2)
+
+    // Generate Sec 3 boys
+    for (let i = 0; i < sec3Boys; i++) {
+      const player = generatePlayer(intakeQuality, 3, Gender.MALE)
+      const skillBoost = 5 + (Math.random() - 0.5) * 5
+      Object.keys(player.skills).forEach((skillKey) => {
+        const skill = skillKey as keyof typeof player.skills
+        player.skills[skill] = Math.min(
+          100,
+          Math.max(0, Math.round(player.skills[skill] + skillBoost))
+        )
+      })
+      players.push(player)
+    }
+
+    // Generate Sec 3 girls
+    for (let i = 0; i < sec3Girls; i++) {
+      const player = generatePlayer(intakeQuality, 3, Gender.FEMALE)
+      const skillBoost = 5 + (Math.random() - 0.5) * 5
+      Object.keys(player.skills).forEach((skillKey) => {
+        const skill = skillKey as keyof typeof player.skills
+        player.skills[skill] = Math.min(
+          100,
+          Math.max(0, Math.round(player.skills[skill] + skillBoost))
+        )
+      })
+      players.push(player)
+    }
+
+    // Generate Sec 4 boys
+    for (let i = 0; i < sec4Boys; i++) {
+      const player = generatePlayer(intakeQuality, 4, Gender.MALE)
+      const skillBoost = 10 + (Math.random() - 0.5) * 5
+      Object.keys(player.skills).forEach((skillKey) => {
+        const skill = skillKey as keyof typeof player.skills
+        player.skills[skill] = Math.min(
+          100,
+          Math.max(0, Math.round(player.skills[skill] + skillBoost))
+        )
+      })
+      players.push(player)
+    }
+
+    // Generate Sec 4 girls
+    for (let i = 0; i < sec4Girls; i++) {
+      const player = generatePlayer(intakeQuality, 4, Gender.FEMALE)
+      const skillBoost = 10 + (Math.random() - 0.5) * 5
+      Object.keys(player.skills).forEach((skillKey) => {
+        const skill = skillKey as keyof typeof player.skills
+        player.skills[skill] = Math.min(
+          100,
+          Math.max(0, Math.round(player.skills[skill] + skillBoost))
+        )
+      })
+      players.push(player)
+    }
+
+    // C div: split evenly between boys and girls (7 each)
+    const sec2Boys = Math.floor(sec2Capacity / 2)
+    const sec2Girls = Math.ceil(sec2Capacity / 2)
+
+    // Generate Sec 2 boys
+    for (let i = 0; i < sec2Boys; i++) {
+      const player = generatePlayer(intakeQuality, 2, Gender.MALE)
+      players.push(player)
+    }
+
+    // Generate Sec 2 girls
+    for (let i = 0; i < sec2Girls; i++) {
+      const player = generatePlayer(intakeQuality, 2, Gender.FEMALE)
+      players.push(player)
+    }
+  } else {
+    // Single-gender school: all players are the same gender
+    const gender = gendersToGenerate[0] // Only one gender in the array
+
+    // Generate Sec 3 players
+    for (let i = 0; i < sec3Players; i++) {
+      const player = generatePlayer(intakeQuality, 3, gender)
+      const skillBoost = 5 + (Math.random() - 0.5) * 5
+      Object.keys(player.skills).forEach((skillKey) => {
+        const skill = skillKey as keyof typeof player.skills
+        player.skills[skill] = Math.min(
+          100,
+          Math.max(0, Math.round(player.skills[skill] + skillBoost))
+        )
+      })
+      players.push(player)
+    }
+
+    // Generate Sec 4 players
+    for (let i = 0; i < sec4Players; i++) {
+      const player = generatePlayer(intakeQuality, 4, gender)
+      const skillBoost = 10 + (Math.random() - 0.5) * 5
+      Object.keys(player.skills).forEach((skillKey) => {
+        const skill = skillKey as keyof typeof player.skills
+        player.skills[skill] = Math.min(
+          100,
+          Math.max(0, Math.round(player.skills[skill] + skillBoost))
+        )
+      })
+      players.push(player)
+    }
+
+    // Generate Sec 2 players
+    for (let i = 0; i < sec2Capacity; i++) {
+      const player = generatePlayer(intakeQuality, 2, gender)
+      players.push(player)
+    }
   }
 
   // Set team roster to all generated players (B divs filled, Sec 2s half-filled, rest for Sec 1s)
@@ -182,7 +281,15 @@ export function generateInitialAISchoolPlayers(
  * Generate new players for AI school during draft phase
  */
 export function generateAISchoolDraftPlayers(school: AISchool, count: number): Player[] {
-  const intakeQuality = calculateIntakeQuality(50, school.reputation)
+  // Calculate intake quality based on school attractiveness (same as initial generation)
+  const schoolAttractiveness = calculateSchoolAttractiveness(
+    school.reputation, // ranking (lower is better)
+    school.funding, // ranking (lower is better)
+    50 // fixed manager reputation
+  )
+  const intakeInfo = attractivenessToIntakeQuality(schoolAttractiveness)
+  // The quality string matches the IntakeQuality enum values
+  const intakeQuality = intakeInfo.quality as IntakeQuality
   const gendersToGenerate: Gender[] = []
   if (school.teamType === 'boys') {
     gendersToGenerate.push(Gender.MALE)
