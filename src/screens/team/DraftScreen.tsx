@@ -50,6 +50,13 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   const handleConfirmLeave = () => {
+    // Check if team is empty
+    if (teamRoster.length === 0) {
+      alert('You cannot leave the draft with an empty team. Please add at least one player before leaving.')
+      setShowLeaveConfirm(false)
+      return
+    }
+
     const currentMonth = season.month
     const currentYear = season.year
     const currentPhase = GamePhase.DRAFT
@@ -85,6 +92,12 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   const handleEndDraft = () => {
+    // Check if team is empty
+    if (teamRoster.length === 0) {
+      alert('You cannot end the draft with an empty team. Please add at least one player before ending.')
+      return
+    }
+
     const currentMonth = season.month
     const currentYear = season.year
     const currentPhase = GamePhase.DRAFT

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import GameButton from '../components/buttons/GameButton'
 import GameCard from '../components/cards/GameCard'
+import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
 import { PlayerCard } from '../components/players/PlayerCard'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
@@ -46,6 +47,8 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     string | null
   >(null)
   const [showSetTeamFocus, setShowSetTeamFocus] = useState(false)
+  const [showAdvanceMonthDialog, setShowAdvanceMonthDialog] = useState(false)
+  const [pendingAdvanceAction, setPendingAdvanceAction] = useState<(() => void) | null>(null)
 
   // Initialize training plan if we're in training phase and don't have one yet
   useEffect(() => {
@@ -240,91 +243,97 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 const nextPhase = getNextPhase(currentPhase, currentMonth)
                 const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
 
-            // Process player progression before advancing phase
-            // Always process progression during training phase, regardless of completed flag
-            // This ensures players improve every month during training phase
-            if (
-              (currentPhase === GamePhase.TRAINING ||
-                currentPhase === GamePhase.TRAINING_2) &&
-              trainingPlan
-            ) {
-              // Create skill snapshots before progression (snapshot of current month before advancing)
-              const snapshots = createSkillSnapshots(
-                players,
-                teamRoster,
-                currentMonth,
-                currentYear
-              )
-              updateSkillSnapshots.addMany(snapshots)
+                // Store the progression action and show confirmation dialog
+                const advanceAction = () => {
+                  // Process player progression before advancing phase
+                  // Always process progression during training phase, regardless of completed flag
+                  // This ensures players improve every month during training phase
+                  if (
+                    (currentPhase === GamePhase.TRAINING ||
+                      currentPhase === GamePhase.TRAINING_2) &&
+                    trainingPlan
+                  ) {
+                    // Create skill snapshots before progression (snapshot of current month before advancing)
+                    const snapshots = createSkillSnapshots(
+                      players,
+                      teamRoster,
+                      currentMonth,
+                      currentYear
+                    )
+                    updateSkillSnapshots.addMany(snapshots)
 
-              // Process progression
-              const updatedPlayers = processPlayerProgression(
-                players,
-                teamRoster,
-                trainingPlan,
-                manager,
-                school,
-                season.phase,
-                currentMonth
-              )
-              updatePlayers.set(updatedPlayers)
+                    // Process progression
+                    const updatedPlayers = processPlayerProgression(
+                      players,
+                      teamRoster,
+                      trainingPlan,
+                      manager,
+                      school,
+                      season.phase,
+                      currentMonth
+                    )
+                    updatePlayers.set(updatedPlayers)
 
-              // Mark training plan as completed for this month
-              updateTrainingPlan.setCompleted(true)
-            }
+                    // Mark training plan as completed for this month
+                    updateTrainingPlan.setCompleted(true)
+                  }
 
-            // Update season to next month/phase
-            updateSeason.setMonth(nextPhase.month)
-            updateSeason.setPhase(nextPhase.phase)
+                  // Update season to next month/phase
+                  updateSeason.setMonth(nextPhase.month)
+                  updateSeason.setPhase(nextPhase.phase)
 
-            // If entering a new training month, reset completed flag and update month/year
-            if (
-              (nextPhase.phase === GamePhase.TRAINING ||
-                nextPhase.phase === GamePhase.TRAINING_2) &&
-              trainingPlan
-            ) {
-              // Check if training plan month/year doesn't match next month (new training month)
-              if (
-                trainingPlan.month !== nextPhase.month ||
-                trainingPlan.year !== newYear
-              ) {
-                // Update training plan to reflect new month/year and reset completed flag
-                updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
-                updateTrainingPlan.setCompleted(false)
-              }
-            }
+                  // If entering a new training month, reset completed flag and update month/year
+                  if (
+                    (nextPhase.phase === GamePhase.TRAINING ||
+                      nextPhase.phase === GamePhase.TRAINING_2) &&
+                    trainingPlan
+                  ) {
+                    // Check if training plan month/year doesn't match next month (new training month)
+                    if (
+                      trainingPlan.month !== nextPhase.month ||
+                      trainingPlan.year !== newYear
+                    ) {
+                      // Update training plan to reflect new month/year and reset completed flag
+                      updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
+                      updateTrainingPlan.setCompleted(false)
+                    }
+                  }
 
-            // Reset draft if it's a new year
-            if (nextPhase.month === 1) {
-              updateSeason.setDraftCompleted(false)
-              updateSeason.setYear(newYear)
-            }
+                  // Reset draft if it's a new year
+                  if (nextPhase.month === 1) {
+                    updateSeason.setDraftCompleted(false)
+                    updateSeason.setYear(newYear)
+                  }
 
-            // Generate and add phase progression email
-            // Get snapshots from the month we're leaving (currentMonth)
-            // These snapshots were just created before we advanced the month
-            // For training phase progressions, we want to compare against the month we completed
-            const previousMonthSnapshots = skillSnapshots.filter(
-              (s) => s.month === currentMonth && s.year === currentYear
-            )
+                  // Generate and add phase progression email
+                  // Get snapshots from the month we're leaving (currentMonth)
+                  // These snapshots were just created before we advanced the month
+                  // For training phase progressions, we want to compare against the month we completed
+                  const previousMonthSnapshots = skillSnapshots.filter(
+                    (s) => s.month === currentMonth && s.year === currentYear
+                  )
 
-            const phaseProgressionEmail = generatePhaseProgressionEmail(
-              manager.fullName || 'Coach',
-              school.name || 'the school',
-              players,
-              teamRoster,
-              currentMonth,
-              currentYear,
-              currentPhase,
-              nextPhase.month,
-              newYear,
-              nextPhase.phase as GamePhase,
-              previousMonthSnapshots.length > 0 ? previousMonthSnapshots : []
-            )
-            addEmail(phaseProgressionEmail)
+                  const phaseProgressionEmail = generatePhaseProgressionEmail(
+                    manager.fullName || 'Coach',
+                    school.name || 'the school',
+                    players,
+                    teamRoster,
+                    currentMonth,
+                    currentYear,
+                    currentPhase,
+                    nextPhase.month,
+                    newYear,
+                    nextPhase.phase as GamePhase,
+                    previousMonthSnapshots.length > 0 ? previousMonthSnapshots : []
+                  )
+                  addEmail(phaseProgressionEmail)
 
-                // Navigate back to home screen
-                changeScreen(Screens.HOME)
+                  // Navigate back to home screen
+                  changeScreen(Screens.HOME)
+                }
+                
+                setPendingAdvanceAction(advanceAction)
+                setShowAdvanceMonthDialog(true)
               }}
               type="button"
               size="lg"
@@ -618,6 +627,26 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           </div>
         )}
       </div>
+
+      {/* Advance Month Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showAdvanceMonthDialog}
+        title="Advance to Next Month"
+        message="Are you sure you want to advance to the next month? This will progress the game forward and cannot be undone."
+        confirmText="Continue"
+        cancelText="Cancel"
+        onConfirm={() => {
+          if (pendingAdvanceAction) {
+            pendingAdvanceAction()
+          }
+          setShowAdvanceMonthDialog(false)
+          setPendingAdvanceAction(null)
+        }}
+        onCancel={() => {
+          setShowAdvanceMonthDialog(false)
+          setPendingAdvanceAction(null)
+        }}
+      />
     </div>
   )
 }
@@ -785,6 +814,3 @@ const PlayerTrainingDialog: React.FC<PlayerTrainingDialogProps> = ({
       </div>
     </GameCard>
   )
-}
-
-export default TrainingScreen

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import GameButton from '../components/buttons/GameButton'
 import GameCard from '../components/cards/GameCard'
 import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
+import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
 import { EmailCard } from '../components/emails/EmailCard'
 import { PlayerInsightsCard } from '../components/home/PlayerInsightsCard'
 import { TimelineItem } from '../components/home/TimelineItem'
@@ -36,6 +37,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     addEmail
   } = useSaveDataContext()
   const [showDraftDialog, setShowDraftDialog] = useState(false)
+  const [showTimeProgressionDialog, setShowTimeProgressionDialog] = useState(false)
+  const [pendingTimeProgression, setPendingTimeProgression] = useState<(() => void) | null>(null)
 
   const phaseDisplayName = getPhaseDisplayName(season.phase as GamePhase, season.month)
 
@@ -95,99 +98,119 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       }
     }
 
+    // Check if current phase is implemented
+    const unimplementedPhases = [
+      GamePhase.INTRA_CLUB,
+      GamePhase.ZONAL,
+      GamePhase.NATIONAL,
+      GamePhase.SINGLES_SELECTION,
+      GamePhase.SINGLES_TOURNAMENT,
+      GamePhase.GRADUATION
+    ]
+    const isPhaseImplemented = !unimplementedPhases.includes(currentPhase)
+
     // For other phases, progress to next month/phase
     const nextPhase = getNextPhase(currentPhase, season.month)
 
     return {
       text: 'Continue',
+      disabled: !isPhaseImplemented,
       action: () => {
-        // Process player progression if leaving training phase
-        // Check the string phase to avoid type narrowing issues
-        // This handles cases where we're advancing from a training phase
-        // (though this path typically won't be hit since training phase shows "Open Training" button)
-        if (
-          currentPhaseString === GamePhase.TRAINING ||
-          currentPhaseString === GamePhase.TRAINING_2
-        ) {
-          // Always process progression during training phase, regardless of completed flag
-          // This ensures players improve every month during training phase
-          if (trainingPlan) {
-            // Create skill snapshots before progression (snapshot of current month before advancing)
-            const snapshots = createSkillSnapshots(
-              players,
-              teamRoster,
-              season.month,
-              season.year
-            )
-            updateSkillSnapshots.addMany(snapshots)
+        if (!isPhaseImplemented) return // Disabled phase
+        
+        // Store the progression action and show confirmation dialog
+        const progressionAction = () => {
+          // Process player progression if leaving training phase
+          // Check the string phase to avoid type narrowing issues
+          // This handles cases where we're advancing from a training phase
+          // (though this path typically won't be hit since training phase shows "Open Training" button)
+          if (
+            currentPhaseString === GamePhase.TRAINING ||
+            currentPhaseString === GamePhase.TRAINING_2
+          ) {
+            // Always process progression during training phase, regardless of completed flag
+            // This ensures players improve every month during training phase
+            if (trainingPlan) {
+              // Create skill snapshots before progression (snapshot of current month before advancing)
+              const snapshots = createSkillSnapshots(
+                players,
+                teamRoster,
+                season.month,
+                season.year
+              )
+              updateSkillSnapshots.addMany(snapshots)
 
-            // Process progression
-            const updatedPlayers = processPlayerProgression(
-              players,
-              teamRoster,
-              trainingPlan,
-              manager,
-              school,
-              season.phase,
-              season.month
-            )
-            updatePlayers.set(updatedPlayers)
-            // Mark training plan as completed for this month
-            updateTrainingPlan.setCompleted(true)
+              // Process progression
+              const updatedPlayers = processPlayerProgression(
+                players,
+                teamRoster,
+                trainingPlan,
+                manager,
+                school,
+                season.phase,
+                season.month
+              )
+              updatePlayers.set(updatedPlayers)
+              // Mark training plan as completed for this month
+              updateTrainingPlan.setCompleted(true)
+            }
           }
-        }
 
-        // Capture current values before advancing
-        const currentMonth = season.month
-        const currentYear = season.year
-        const currentPhase = currentPhaseString as GamePhase
-        const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
+          // Capture current values before advancing
+          const currentMonth = season.month
+          const currentYear = season.year
+          const currentPhase = currentPhaseString as GamePhase
+          const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
 
-        // Get snapshots from the month we're leaving (currentMonth)
-        // These snapshots were just created before we advanced the month (if in training phase)
-        // For training phase progressions, we want to compare against the month we completed
-        const previousMonthSnapshots = skillSnapshots.filter(
-          (s) => s.month === currentMonth && s.year === currentYear
-        )
+          // Get snapshots from the month we're leaving (currentMonth)
+          // These snapshots were just created before we advanced the month (if in training phase)
+          // For training phase progressions, we want to compare against the month we completed
+          const previousMonthSnapshots = skillSnapshots.filter(
+            (s) => s.month === currentMonth && s.year === currentYear
+          )
 
-        // Advance phase
-        updateSeason.setMonth(nextPhase.month)
-        updateSeason.setPhase(nextPhase.phase)
-        if (nextPhase.month === 1) {
-          // New year - reset draft
-          updateSeason.setDraftCompleted(false)
-          updateSeason.setYear(newYear)
-        }
-
-        // If entering a new training month, reset completed flag and update month/year
-        if (
-          (nextPhase.phase === GamePhase.TRAINING ||
-            nextPhase.phase === GamePhase.TRAINING_2) &&
-          trainingPlan
-        ) {
-          // Check if training plan month/year doesn't match next month (new training month)
-          if (trainingPlan.month !== nextPhase.month || trainingPlan.year !== newYear) {
-            // Update training plan to reflect new month/year and reset completed flag
-            updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
-            updateTrainingPlan.setCompleted(false)
+          // Advance phase
+          updateSeason.setMonth(nextPhase.month)
+          updateSeason.setPhase(nextPhase.phase)
+          if (nextPhase.month === 1) {
+            // New year - reset draft
+            updateSeason.setDraftCompleted(false)
+            updateSeason.setYear(newYear)
           }
-        }
 
-        // Generate and add phase progression email
-        const phaseProgressionEmail = generatePhaseProgressionEmail(
-          manager.fullName || 'Coach',
-          school.name || 'the school',
-          players,
-          teamRoster,
-          currentMonth,
-          currentYear,
-          currentPhase,
-          nextPhase.month,
-          newYear,
-          nextPhase.phase as GamePhase,
-          previousMonthSnapshots
-        )
-        addEmail(phaseProgressionEmail)
+          // If entering a new training month, reset completed flag and update month/year
+          if (
+            (nextPhase.phase === GamePhase.TRAINING ||
+              nextPhase.phase === GamePhase.TRAINING_2) &&
+            trainingPlan
+          ) {
+            // Check if training plan month/year doesn't match next month (new training month)
+            if (trainingPlan.month !== nextPhase.month || trainingPlan.year !== newYear) {
+              // Update training plan to reflect new month/year and reset completed flag
+              updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
+              updateTrainingPlan.setCompleted(false)
+            }
+          }
+
+          // Generate and add phase progression email
+          const phaseProgressionEmail = generatePhaseProgressionEmail(
+            manager.fullName || 'Coach',
+            school.name || 'the school',
+            players,
+            teamRoster,
+            currentMonth,
+            currentYear,
+            currentPhase,
+            nextPhase.month,
+            newYear,
+            nextPhase.phase as GamePhase,
+            previousMonthSnapshots
+          )
+          addEmail(phaseProgressionEmail)
+        }
+        
+        setPendingTimeProgression(progressionAction)
+        setShowTimeProgressionDialog(true)
       }
     }
   }
@@ -246,9 +269,11 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           type="button"
           size="lg"
           glow
+          disabled={actionButton.disabled}
           style={{ flexShrink: 0 }}
         >
           {actionButton.text}
+          {actionButton.disabled && ' (Not Yet Implemented)'}
         </GameButton>
       </div>
 
@@ -578,6 +603,26 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       <DraftInfoDialog
         isOpen={showDraftDialog}
         onClose={() => setShowDraftDialog(false)}
+      />
+
+      {/* Time Progression Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showTimeProgressionDialog}
+        title="Advance to Next Phase"
+        message={`Are you sure you want to advance to the next phase? This will progress the game forward and cannot be undone.`}
+        confirmText="Continue"
+        cancelText="Cancel"
+        onConfirm={() => {
+          if (pendingTimeProgression) {
+            pendingTimeProgression()
+          }
+          setShowTimeProgressionDialog(false)
+          setPendingTimeProgression(null)
+        }}
+        onCancel={() => {
+          setShowTimeProgressionDialog(false)
+          setPendingTimeProgression(null)
+        }}
       />
     </div>
   )
