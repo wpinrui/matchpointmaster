@@ -290,10 +290,10 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               <div>
                 <p
                   style={{
-                    fontSize: theme.typography.fontSize.base,
+                    fontSize: theme.typography.fontSize.xl,
                     color: theme.colors.text.secondary,
                     margin: 0,
-                    fontStyle: 'italic'
+                    fontWeight: theme.typography.fontWeight.bold
                   }}
                 >
                   {selectedSchool.name}
@@ -301,7 +301,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 {schoolRankings.has(selectedSchool.id) && (
                   <p
                     style={{
-                      fontSize: theme.typography.fontSize.sm,
+                      fontSize: theme.typography.fontSize.lg,
                       color: theme.colors.text.light,
                       margin: 0,
                       marginTop: theme.spacing.xs,
@@ -407,116 +407,93 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       {selectedSchool && (
         <GameCard
           style={{
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.xl
+            padding: theme.spacing.md,
+            marginBottom: theme.spacing.lg
           }}
         >
-          <h3
-            style={{
-              fontFamily: theme.typography.fontFamily.heading,
-              fontSize: theme.typography.fontSize.xl,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              marginBottom: theme.spacing.lg,
-              textAlign: 'left'
-            }}
-          >
-            Team Statistics
-          </h3>
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: theme.spacing.lg
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: theme.spacing.lg,
+              alignItems: 'center'
             }}
           >
-            <div style={{ textAlign: 'center' }}>
-              <p
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+              <span
                 style={{
                   fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.xs
+                  color: theme.colors.text.secondary
                 }}
               >
-                Team Size
-              </p>
-              <p
+                Team Size:
+              </span>
+              <span
                 style={{
-                  fontSize: theme.typography.fontSize['2xl'],
+                  fontSize: theme.typography.fontSize.lg,
                   fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.primary.main,
-                  margin: 0
+                  color: theme.colors.primary.main
                 }}
               >
                 {teamStats.totalPlayers} / {maxTeamSize}
-              </p>
+              </span>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <p
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+              <span
                 style={{
                   fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.xs
+                  color: theme.colors.text.secondary
                 }}
               >
-                Average Rating
-              </p>
-              <p
+                Avg Rating:
+              </span>
+              <span
                 style={{
-                  fontSize: theme.typography.fontSize['2xl'],
+                  fontSize: theme.typography.fontSize.lg,
                   fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.accent.light,
-                  margin: 0
+                  color: theme.colors.accent.light
                 }}
               >
                 {teamStats.averageRating || 'N/A'}
-              </p>
+              </span>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <p
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+              <span
                 style={{
                   fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.xs
+                  color: theme.colors.text.secondary
                 }}
               >
-                Lower Secondary
-              </p>
-              <p
+                Lower Sec:
+              </span>
+              <span
                 style={{
-                  fontSize: theme.typography.fontSize['2xl'],
+                  fontSize: theme.typography.fontSize.lg,
                   fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.secondary.light,
-                  margin: 0
+                  color: theme.colors.secondary.light
                 }}
               >
                 {teamStats.lowerSecondary}
-              </p>
+              </span>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <p
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+              <span
                 style={{
                   fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.xs
+                  color: theme.colors.text.secondary
                 }}
               >
-                Upper Secondary
-              </p>
-              <p
+                Upper Sec:
+              </span>
+              <span
                 style={{
-                  fontSize: theme.typography.fontSize['2xl'],
+                  fontSize: theme.typography.fontSize.lg,
                   fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.secondary.light,
-                  margin: 0
+                  color: theme.colors.secondary.light
                 }}
               >
                 {teamStats.upperSecondary}
-              </p>
+              </span>
             </div>
           </div>
         </GameCard>
