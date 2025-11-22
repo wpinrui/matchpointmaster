@@ -11,7 +11,9 @@ const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [showMessageDialog, setShowMessageDialog] = useState(false)
   const [messageDialogTitle, setMessageDialogTitle] = useState('')
   const [messageDialogMessage, setMessageDialogMessage] = useState('')
-  const [messageDialogVariant, setMessageDialogVariant] = useState<'primary' | 'danger'>('primary')
+  const [messageDialogVariant, setMessageDialogVariant] = useState<'primary' | 'danger'>(
+    'primary'
+  )
 
   const handleExport = () => {
     const result = exportToJson()

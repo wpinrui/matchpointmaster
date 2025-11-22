@@ -33,6 +33,7 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   } = useSaveDataContext()
 
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showEndDraftConfirm, setShowEndDraftConfirm] = useState(false)
   const [showEmptyTeamDialog, setShowEmptyTeamDialog] = useState(false)
   const hasGeneratedInitialPoolRef = useRef<boolean>(false)
 
@@ -93,8 +94,14 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   const handleEndDraft = () => {
+    // Show confirmation dialog first
+    setShowEndDraftConfirm(true)
+  }
+
+  const handleConfirmEndDraft = () => {
     // Check if team is empty
     if (teamRoster.length === 0) {
+      setShowEndDraftConfirm(false)
       setShowEmptyTeamDialog(true)
       return
     }
@@ -128,7 +135,12 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     addEmail(phaseProgressionEmail)
 
     // Navigate to home
+    setShowEndDraftConfirm(false)
     changeScreen(Screens.HOME)
+  }
+
+  const handleCancelEndDraft = () => {
+    setShowEndDraftConfirm(false)
   }
 
   const handleCancelLeave = () => {
@@ -442,6 +454,17 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         cancelText="Continue Drafting"
         onConfirm={handleConfirmLeave}
         onCancel={handleCancelLeave}
+        variant="primary"
+      />
+
+      <ConfirmDialog
+        isOpen={showEndDraftConfirm}
+        title="End Draft?"
+        message="Are you sure you want to end the draft? You will not be able to add more players for the rest of the season. This will progress the game to the training phase."
+        confirmText="End Draft"
+        cancelText="Continue Drafting"
+        onConfirm={handleConfirmEndDraft}
+        onCancel={handleCancelEndDraft}
         variant="primary"
       />
 
