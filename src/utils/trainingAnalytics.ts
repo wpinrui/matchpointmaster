@@ -135,11 +135,17 @@ function analyzeImprovementReason(
   if (isMax && improvement > 3) {
     // High improvement reasons
     if (styleSynergy >= 1.2) {
-      reasons.push(`Excellent style synergy with coach (${(styleSynergy * 100).toFixed(0)}%)`)
+      reasons.push(
+        `Excellent style synergy with coach (${(styleSynergy * 100).toFixed(0)}%)`
+      )
     }
     if (traitMultiplier >= 1.2) {
       const goodTraits = player.traits.filter((t) =>
-        [PlayerTrait.HARD_WORKER, PlayerTrait.QUICK_LEARNER, PlayerTrait.PRODIGY].includes(t)
+        [
+          PlayerTrait.HARD_WORKER,
+          PlayerTrait.QUICK_LEARNER,
+          PlayerTrait.PRODIGY
+        ].includes(t)
       )
       if (goodTraits.length > 0) {
         reasons.push(
@@ -207,7 +213,7 @@ function analyzeImprovementReason(
         }
         return skillMap[focus] || []
       }
-      
+
       const targetedSkills = getSkillsForFocus(trainingFocus)
       if (targetedSkills.includes(skill)) {
         reasons.push(`Focused training matched this skill area`)
@@ -217,7 +223,9 @@ function analyzeImprovementReason(
     // Low improvement reasons
     if (styleSynergy <= 0.9) {
       if (styleSynergy <= 0.8) {
-        reasons.push(`Poor style compatibility with coach (${(styleSynergy * 100).toFixed(0)}%)`)
+        reasons.push(
+          `Poor style compatibility with coach (${(styleSynergy * 100).toFixed(0)}%)`
+        )
       } else {
         reasons.push(`Moderate style mismatch limited improvement`)
       }
@@ -225,7 +233,9 @@ function analyzeImprovementReason(
     if (traitMultiplier <= 0.9) {
       const badTraits = player.traits.filter((t) => [PlayerTrait.LAZY].includes(t))
       if (badTraits.length > 0) {
-        reasons.push(`Struggled due to trait: ${badTraits.map((t) => t.replace('_', ' ')).join(', ')}`)
+        reasons.push(
+          `Struggled due to trait: ${badTraits.map((t) => t.replace('_', ' ')).join(', ')}`
+        )
       }
     }
     if (!isIndividualCoaching) {
@@ -285,7 +295,7 @@ function analyzeImprovementReason(
         }
         return skillMap[focus] || []
       }
-      
+
       const targetedSkills = getSkillsForFocus(trainingFocus)
       if (!targetedSkills.includes(skill)) {
         reasons.push(`Training focused on different skills`)
@@ -304,7 +314,11 @@ function analyzeImprovementReason(
 
   // Calculate effective multiplier (excluding random variance)
   const effectiveMultiplier =
-    styleSynergy * traitMultiplier * peerInfluence * facilitiesMultiplier * coachingMultiplier
+    styleSynergy *
+    traitMultiplier *
+    peerInfluence *
+    facilitiesMultiplier *
+    coachingMultiplier
 
   return {
     player,
@@ -328,7 +342,11 @@ export function getImprovementInsights(
   coachingEffectiveness: number,
   schoolFunding: number,
   trainingFocus: TrainingFocus | null,
-  playerTrainings: Array<{ playerId: string; focus: TrainingFocus | null; isIndividualCoaching: boolean }>,
+  playerTrainings: Array<{
+    playerId: string
+    focus: TrainingFocus | null
+    isIndividualCoaching: boolean
+  }>,
   maxInsights: number = 8
 ): ImprovementInsight[] {
   const insights: ImprovementInsight[] = []
@@ -444,7 +462,10 @@ export function getImprovementChartData(
         }
       })
 
-      const totalImprovement = improvementList.reduce((sum, item) => sum + item.improvement, 0)
+      const totalImprovement = improvementList.reduce(
+        (sum, item) => sum + item.improvement,
+        0
+      )
 
       return {
         playerName: `${player.firstName} ${player.lastName}`,
@@ -456,4 +477,3 @@ export function getImprovementChartData(
     .filter((item): item is NonNullable<typeof item> => item !== null)
     .sort((a, b) => b.totalImprovement - a.totalImprovement)
 }
-

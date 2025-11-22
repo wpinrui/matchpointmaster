@@ -55,9 +55,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
     // Get snapshots from the previous month within the same training phase
     const prevMonth = season.month - 1
-    return skillSnapshots.filter(
-      (s) => s.month === prevMonth && s.year === season.year
-    )
+    return skillSnapshots.filter((s) => s.month === prevMonth && s.year === season.year)
   }, [skillSnapshots, season.month, season.year, isTrainingPhase])
 
   const unreadEmails = useMemo(() => {
@@ -281,19 +279,19 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             {isDraftPhase && <TopProspectsCard />}
 
             {/* Training Insights Card - February (first training month) */}
-            {isFirstTrainingMonth && (
-              <TrainingInsightsCard changeScreen={changeScreen} />
-            )}
+            {isFirstTrainingMonth && <TrainingInsightsCard changeScreen={changeScreen} />}
 
             {/* Training Progress Card - Training months after February */}
-            {isTrainingPhase && !isFirstTrainingMonth && previousMonthSnapshots.length > 0 && (
-              <TrainingProgressCard
-                oldSnapshots={previousMonthSnapshots}
-                allSnapshots={skillSnapshots}
-                currentYear={season.year}
-                currentMonth={season.month}
-              />
-            )}
+            {isTrainingPhase &&
+              !isFirstTrainingMonth &&
+              previousMonthSnapshots.length > 0 && (
+                <TrainingProgressCard
+                  oldSnapshots={previousMonthSnapshots}
+                  allSnapshots={skillSnapshots}
+                  currentYear={season.year}
+                  currentMonth={season.month}
+                />
+              )}
 
             {/* Season Timeline Card - Always visible, narrower */}
             <GameCard

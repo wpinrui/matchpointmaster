@@ -50,7 +50,10 @@ export const ImprovementBarChart: React.FC<ImprovementBarChartProps> = ({
 
   // Calculate chart dimensions
   const chartHeight = 300
-  const barHeight = Math.max(20, (chartHeight - sortedData.length * 10) / sortedData.length)
+  const barHeight = Math.max(
+    20,
+    (chartHeight - sortedData.length * 10) / sortedData.length
+  )
   const maxBarWidth = 100 // Percentage
 
   return (
@@ -143,7 +146,7 @@ export const ImprovementBarChart: React.FC<ImprovementBarChartProps> = ({
                         width: `${Math.abs(barWidth)}%`,
                         height: '70%',
                         backgroundColor: theme.colors.error.main,
-                        borderRadius: theme.borderRadius.xs,
+                        borderRadius: theme.borderRadius.sm,
                         border: `${theme.borderWidth.default} solid ${theme.colors.error.main}`
                       }}
                     />
@@ -168,11 +171,14 @@ export const ImprovementBarChart: React.FC<ImprovementBarChartProps> = ({
                     <div
                       style={{
                         position: 'absolute',
-                        left: minImprovement < 0 ? `${((0 - minImprovement) / (maxImprovement - minImprovement)) * 100}%` : 0,
+                        left:
+                          minImprovement < 0
+                            ? `${((0 - minImprovement) / (maxImprovement - minImprovement)) * 100}%`
+                            : 0,
                         width: `${barWidth}%`,
                         height: '70%',
                         backgroundColor: theme.colors.success.main,
-                        borderRadius: theme.borderRadius.xs,
+                        borderRadius: theme.borderRadius.sm,
                         border: `${theme.borderWidth.default} solid ${theme.colors.success.main}`,
                         display: 'flex',
                         alignItems: 'center',
@@ -184,7 +190,7 @@ export const ImprovementBarChart: React.FC<ImprovementBarChartProps> = ({
                       <span
                         style={{
                           fontSize: theme.typography.fontSize.xs,
-                          color: theme.colors.background.main,
+                          color: theme.colors.background.primary,
                           fontWeight: theme.typography.fontWeight.bold
                         }}
                       >
@@ -254,4 +260,3 @@ export const ImprovementBarChart: React.FC<ImprovementBarChartProps> = ({
     </div>
   )
 }
-

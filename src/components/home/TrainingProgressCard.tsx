@@ -53,10 +53,13 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
       // Find earliest snapshot for each player
       const earliestSnapshots: SkillSnapshot[] = []
       teamPlayers.forEach((player) => {
-        const playerSnapshots = yearToDateSnapshots.filter((s) => s.playerId === player.id)
+        const playerSnapshots = yearToDateSnapshots.filter(
+          (s) => s.playerId === player.id
+        )
         if (playerSnapshots.length > 0) {
           const earliest = playerSnapshots.reduce((earliest, current) =>
-            current.month < earliest.month || (current.month === earliest.month && current.year < earliest.year)
+            current.month < earliest.month ||
+            (current.month === earliest.month && current.year < earliest.year)
               ? current
               : earliest
           )
@@ -93,7 +96,7 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
   // Get improvement insights
   const insights = useMemo(() => {
     if (!trainingPlan) return []
-    
+
     const playerTrainings = trainingPlan.playerAssignments.map((assignment) => ({
       playerId: assignment.playerId,
       focus: assignment.focus,
@@ -200,13 +203,14 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
                 viewMode === 'month'
                   ? theme.colors.primary.main
                   : theme.colors.text.secondary,
-              background: viewMode === 'month' ? theme.colors.background.main : 'transparent',
+              background:
+                viewMode === 'month' ? theme.colors.background.primary : 'transparent',
               border: `1px solid ${
                 viewMode === 'month'
                   ? theme.colors.primary.main
                   : theme.colors.border.default
               }`,
-              borderRadius: theme.borderRadius.xs,
+              borderRadius: theme.borderRadius.sm,
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
@@ -223,13 +227,14 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
                 viewMode === 'year'
                   ? theme.colors.primary.main
                   : theme.colors.text.secondary,
-              background: viewMode === 'year' ? theme.colors.background.main : 'transparent',
+              background:
+                viewMode === 'year' ? theme.colors.background.primary : 'transparent',
               border: `1px solid ${
                 viewMode === 'year'
                   ? theme.colors.primary.main
                   : theme.colors.border.default
               }`,
-              borderRadius: theme.borderRadius.xs,
+              borderRadius: theme.borderRadius.sm,
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
@@ -326,8 +331,7 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
           {topImprovers.map(({ player, totalImprovement }) => {
             const oldSnapshot = oldSnapshots.find((s) => s.playerId === player.id)
             const mostImproved =
-              oldSnapshot &&
-              getMostImprovedSkill(oldSnapshot.skills, player.skills)
+              oldSnapshot && getMostImprovedSkill(oldSnapshot.skills, player.skills)
 
             return (
               <div
@@ -521,4 +525,3 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
     </GameCard>
   )
 }
-

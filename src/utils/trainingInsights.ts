@@ -405,4 +405,3 @@ export function calculateTeamAverageImprovement(
   // Average per player across all 8 skills
   return Math.floor(totalImprovement / newPlayers.length / 8)
 }
-

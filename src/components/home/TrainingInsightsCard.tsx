@@ -44,7 +44,7 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
   // Calculate overall team average
   const teamAverage = useMemo(() => {
     if (teamPlayers.length === 0) return 0
-    const skillKeys: Array<keyof typeof teamPlayers[0]['skills']> = [
+    const skillKeys: Array<keyof (typeof teamPlayers)[0]['skills']> = [
       'forehand',
       'backhand',
       'footwork',
@@ -55,7 +55,8 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
       'consistency'
     ]
     const totalAvg = skillKeys.reduce((sum, key) => {
-      const avg = teamPlayers.reduce((acc, p) => acc + p.skills[key], 0) / teamPlayers.length
+      const avg =
+        teamPlayers.reduce((acc, p) => acc + p.skills[key], 0) / teamPlayers.length
       return sum + avg
     }, 0)
     return Math.floor(totalAvg / skillKeys.length)
@@ -267,4 +268,3 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
     </GameCard>
   )
 }
-
