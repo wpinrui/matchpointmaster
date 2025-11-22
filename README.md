@@ -79,9 +79,9 @@ The MVP aims to establish the core mechanics of *Matchpoint Master* by allowing 
 ## Core Gameplay Mechanics
 - [x] Random Player Generation (create random player attributes like ELO, skill set, gender, etc.).
 - [x] Player Card Component (display player stats and attributes).
-- [ ] Manager Stat System (initialize manager’s reputation and coaching effectiveness).
-- [ ] Implement Training System (set weekly training plans for players).
-- [ ] Individual Coaching System (assign individual coaching to players based on their needs).
+- [x] Manager Stat System (initialize manager's reputation and coaching effectiveness).
+- [x] Implement Training System (set weekly training plans for players).
+- [x] Individual Coaching System (assign individual coaching to players based on their needs).
 - [ ] Player Intake System (manage student auditions in January).
 - [ ] Implement Intra-club Round-Robin (determine player rankings).
 - [ ] Zonal School Tournament System (group stages and knockout rounds).
@@ -92,13 +92,13 @@ The MVP aims to establish the core mechanics of *Matchpoint Master* by allowing 
 - [ ] Referee System (implement yellow and red card mechanics).
 
 ## Player Development Loop
-- [ ] Implement Training Impact (improve player skills based on training focus).
+- [x] Implement Training Impact (improve player skills based on training focus).
 - [ ] Implement Psychology Simulation (track player mindsets and how they affect performance).
-- [ ] Trait System (allow players to earn or lose traits over time).
+- [x] Trait System (allow players to earn or lose traits over time).
 
 ## Events & Tournaments
-- [ ] Implement Seasonal Schedule (January intake, training phases, tournaments).
-- [ ] Notification System (alert players about national singles selections).
+- [x] Implement Seasonal Schedule (January intake, training phases, tournaments) - Phase progression implemented, tournaments pending.
+- [x] Notification System (alert players about national singles selections) - Email system implemented.
 
 ---
 
@@ -131,5 +131,17 @@ Email system built with browsing, viewing, dynamic text, and markdown.
 Home screen redesigned with timeline and email previews.  
 Code refactored and game phases now progress automatically.
 
+### 22 November 2025 (Later)
+Manager stat system implemented with reputation and coaching effectiveness tracking.  
+Training system fully implemented with team focus, individual coaching slots, and training previews.  
+Player progression system added with skill improvements based on training, traits, coaching effectiveness, and style synergy.  
+Trait system implemented - players can have traits (HARD_WORKER, LAZY, QUICK_LEARNER, etc.) that affect training effectiveness.  
+AI schools system expanded with 99 schools, player generation, and training simulation.  
+Dark theme implemented across the application.  
+FIFA-style player cards with tier system replacing ELO display.  
+Training insights and analytics added with actionable recommendations.  
+Phase progression system enhanced with confirmation dialogs and proper email notifications.  
+Singapore-based name generation for AI schools with Chinese name ordering.  
+Player face generation enhanced with hair color based on racial categories.
 
-**Next Steps**: Implement training system and player development mechanics.
+**Next Steps**: Implement tournament systems (Intra-club Round-Robin, Zonal, National), match simulation, and psychology system.
