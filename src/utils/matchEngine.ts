@@ -46,17 +46,6 @@ export enum VerticalPosition {
 }
 
 /**
- * Ball properties
- */
-export type Ball = {
-  position: BallPosition
-  depth: BallDepth
-  spin: BallSpin
-  speed: number // 0-100, relative speed
-  power: number // 0-100, how hard the ball is hit
-}
-
-/**
  * Player positioning state
  */
 export type PlayerPosition = {
@@ -98,83 +87,95 @@ export type MatchState = {
 }
 
 /**
- * Equipment modifiers
+ * Shot types
  */
-interface EquipmentModifiers {
-  spinApplicationPenalty: number // 0-1, multiplier
-  spinReceiveBonus: number // 0-1, multiplier
-  speedModifier: number // -1 to 1, additive
-  unpredictability: number // 0-1, chance of unexpected behavior
-  attackingStability: number // 0-1, affects power shot consistency
-  spinReversal: number // 0-1, for long pimples
-  spinNeutralization: number // 0-1, for anti-spin
+enum ShotType {
+  AGGRESSIVE_ATTACK = 'aggressive_attack',
+  COUNTER_ATTACK = 'counter_attack',
+  DEFENSIVE_PUSH = 'defensive_push',
+  PLACEMENT_SHOT = 'placement_shot',
+  SPIN_VARIATION = 'spin_variation'
 }
 
 /**
- * Get equipment modifiers based on rubber type
+ * Shot type weights (weights sum to 1.0)
  */
-function getEquipmentModifiers(rubber: RubberType): EquipmentModifiers {
+type ShotWeights = {
+  forehand?: number
+  backhand?: number
+  footwork?: number
+  serve?: number
+  receive?: number
+  spin?: number
+  placement?: number
+  consistency?: number
+}
+
+const SHOT_TYPE_WEIGHTS: Record<ShotType, ShotWeights> = {
+  [ShotType.AGGRESSIVE_ATTACK]: {
+    forehand: 0.35, // Reduced from 0.4 - was too strong
+    backhand: 0.35, // Reduced from 0.4
+    spin: 0.2,
+    placement: 0.15,
+    consistency: 0.3 // Increased to compensate
+  },
+  [ShotType.COUNTER_ATTACK]: {
+    forehand: 0.25, // Will use forehand OR backhand based on side
+    backhand: 0.25, // Same weight as forehand
+    receive: 0.4,
+    footwork: 0.3, // Increased from 0.25 - buff footwork more
+    consistency: 0.05 // Reduced to sum to 1.0
+  },
+  [ShotType.DEFENSIVE_PUSH]: {
+    receive: 0.4,
+    consistency: 0.3,
+    footwork: 0.25, // Increased from 0.2 - buff footwork
+    spin: 0.05 // Reduced to sum to 1.0
+  },
+  [ShotType.PLACEMENT_SHOT]: {
+    placement: 0.55, // Increased from 0.5 - buff placement
+    forehand: 0.2, // Will use forehand OR backhand based on side
+    backhand: 0.2,
+    consistency: 0.25
+  },
+  [ShotType.SPIN_VARIATION]: {
+    spin: 0.4, // Further reduced from 0.45 - nerf spin
+    forehand: 0.25, // Will use forehand OR backhand based on side
+    backhand: 0.25,
+    consistency: 0.35 // Increased to compensate
+  }
+}
+
+/**
+ * Serve weights (serve + forehand + spin)
+ */
+const SERVE_WEIGHTS: ShotWeights = {
+  serve: 0.35, // Reduced from 0.4 - was too strong at 73%
+  forehand: 0.3, // Reduced from 0.35 - forehand too strong at 75%
+  spin: 0.35 // Increased to compensate
+}
+
+/**
+ * Get equipment modifiers for stats
+ */
+function getEquipmentModifiers(rubber: RubberType): {
+  spinMultiplier: number
+  receiveMultiplier: number
+  consistencyMultiplier: number
+} {
   switch (rubber) {
     case RubberType.SPIN_RUBBER:
-      return {
-        spinApplicationPenalty: 0,
-        spinReceiveBonus: 0,
-        speedModifier: 0,
-        unpredictability: 0,
-        attackingStability: 1.0,
-        spinReversal: 0,
-        spinNeutralization: 0
-      }
+      return { spinMultiplier: 1.0, receiveMultiplier: 1.0, consistencyMultiplier: 1.0 }
     case RubberType.SHORT_PIMPLE:
-      return {
-        spinApplicationPenalty: 0.15, // slight
-        spinReceiveBonus: 0.1, // slight
-        speedModifier: 0.1, // bonus
-        unpredictability: 0.1, // slight
-        attackingStability: 0.9,
-        spinReversal: 0,
-        spinNeutralization: 0
-      }
+      return { spinMultiplier: 0.85, receiveMultiplier: 1.1, consistencyMultiplier: 0.9 }
     case RubberType.MEDIUM_PIMPLE:
-      return {
-        spinApplicationPenalty: 0.3, // medium
-        spinReceiveBonus: 0.2, // medium
-        speedModifier: -0.05, // slight penalty
-        unpredictability: 0.25, // noticeable
-        attackingStability: 0.7,
-        spinReversal: 0,
-        spinNeutralization: 0
-      }
+      return { spinMultiplier: 0.7, receiveMultiplier: 1.2, consistencyMultiplier: 0.7 }
     case RubberType.LONG_PIMPLE:
-      return {
-        spinApplicationPenalty: 0.7, // massive
-        spinReceiveBonus: 0.5, // massive
-        speedModifier: -0.1, // slight penalty
-        unpredictability: 0.3,
-        attackingStability: 0.2, // very low
-        spinReversal: 0.6, // strong
-        spinNeutralization: 0
-      }
+      return { spinMultiplier: 0.3, receiveMultiplier: 1.5, consistencyMultiplier: 0.2 }
     case RubberType.ANTISPIN_RUBBER:
-      return {
-        spinApplicationPenalty: 0.7, // massive
-        spinReceiveBonus: 0.5, // massive
-        speedModifier: Math.random() > 0.5 ? -0.05 : 0.05, // variable
-        unpredictability: 0.2,
-        attackingStability: 0.2, // very low
-        spinReversal: 0,
-        spinNeutralization: 0.7 // strong
-      }
+      return { spinMultiplier: 0.3, receiveMultiplier: 1.5, consistencyMultiplier: 0.2 }
     case RubberType.WOOD:
-      return {
-        spinApplicationPenalty: 0.9, // enormous
-        spinReceiveBonus: 0.8, // enormous
-        speedModifier: -0.3, // massive penalty
-        unpredictability: 0.1,
-        attackingStability: 0.1,
-        spinReversal: 0,
-        spinNeutralization: 0
-      }
+      return { spinMultiplier: 0.1, receiveMultiplier: 1.8, consistencyMultiplier: 0.1 }
   }
 }
 
@@ -185,7 +186,6 @@ function getPositioningBias(
   tendency: FavourStyle,
   playStyle: PlayStyle
 ): { horizontal: HorizontalPosition; vertical: VerticalPosition } {
-  // Horizontal positioning based on tendency
   let horizontal: HorizontalPosition = HorizontalPosition.NEUTRAL
   if (
     tendency === FavourStyle.HEAVILY_FOREHAND ||
@@ -199,7 +199,6 @@ function getPositioningBias(
     horizontal = HorizontalPosition.BACKHAND_BIAS
   }
 
-  // Vertical positioning based on play style
   let vertical: VerticalPosition = VerticalPosition.NEUTRAL
   if (playStyle === PlayStyle.NET_PLAYER) {
     vertical = VerticalPosition.FORWARD
@@ -211,479 +210,252 @@ function getPositioningBias(
 }
 
 /**
- * Calculate how well a player can handle a ball based on positioning
+ * Determine shot type based on player tendencies and variance
  */
-function calculatePositioningMatch(
-  ballPosition: BallPosition,
-  ballDepth: BallDepth,
-  playerPosition: PlayerPosition,
-  footwork: number
-): number {
-  // Base positioning match (0-1)
-  let match = 0.5
+function determineShotType(player: Player, variance: number): ShotType {
+  const playStyle = player.playStyle
+  const rand = Math.random()
 
-  // Horizontal match
-  if (ballPosition === BallPosition.FOREHAND) {
-    if (playerPosition.horizontal === HorizontalPosition.FOREHAND_BIAS) {
-      match += 0.3
-    } else if (playerPosition.horizontal === HorizontalPosition.BACKHAND_BIAS) {
-      match -= 0.3
-    }
-  } else if (ballPosition === BallPosition.BACKHAND) {
-    if (playerPosition.horizontal === HorizontalPosition.BACKHAND_BIAS) {
-      match += 0.3
-    } else if (playerPosition.horizontal === HorizontalPosition.FOREHAND_BIAS) {
-      match -= 0.3
-    }
-  } else {
-    // Middle - neutral is best
-    if (playerPosition.horizontal === HorizontalPosition.NEUTRAL) {
-      match += 0.2
+  // Low variance = player's preferred style, high variance = more variety
+  if (variance < 0.3) {
+    // Strong tendency toward preferred style
+    switch (playStyle) {
+      case PlayStyle.FOREHAND_ATTACKER:
+      case PlayStyle.BACKHAND_SMASHER:
+      case PlayStyle.AGGRESSIVE_PUSHER:
+        return ShotType.AGGRESSIVE_ATTACK
+      case PlayStyle.CHOPPER:
+      case PlayStyle.DEFENSIVE_SPECIALIST:
+      case PlayStyle.LOBBER:
+        return ShotType.DEFENSIVE_PUSH
+      case PlayStyle.PLACEMENT_STRATEGIST:
+        return ShotType.PLACEMENT_SHOT
+      case PlayStyle.SPIN_MANIPULATOR:
+        return ShotType.SPIN_VARIATION
+      case PlayStyle.COUNTER_DRIVER:
+        return ShotType.COUNTER_ATTACK
+      default:
+        // ALL_ROUNDER, VARIED_PLAYER - use random
+        break
     }
   }
 
-  // Depth match
+  // Higher variance or no strong preference - weighted random
+  const availableTypes = [
+    ShotType.AGGRESSIVE_ATTACK,
+    ShotType.COUNTER_ATTACK,
+    ShotType.DEFENSIVE_PUSH,
+    ShotType.PLACEMENT_SHOT,
+    ShotType.SPIN_VARIATION
+  ]
+
+  // Weight based on play style
+  const weights = [0.2, 0.2, 0.2, 0.2, 0.2] // Default equal weights
   if (
-    ballDepth === BallDepth.SHORT &&
-    playerPosition.vertical === VerticalPosition.FORWARD
+    playStyle === PlayStyle.FOREHAND_ATTACKER ||
+    playStyle === PlayStyle.BACKHAND_SMASHER
   ) {
-    match += 0.2
+    weights[0] = 0.5 // Aggressive attack
   } else if (
-    ballDepth === BallDepth.LONG &&
-    playerPosition.vertical === VerticalPosition.BACKWARDS
+    playStyle === PlayStyle.CHOPPER ||
+    playStyle === PlayStyle.DEFENSIVE_SPECIALIST
   ) {
-    match += 0.2
-  } else if (
-    ballDepth === BallDepth.MID &&
-    playerPosition.vertical === VerticalPosition.NEUTRAL
-  ) {
-    match += 0.1
+    weights[2] = 0.5 // Defensive push
+  } else if (playStyle === PlayStyle.PLACEMENT_STRATEGIST) {
+    weights[3] = 0.5 // Placement shot
+  } else if (playStyle === PlayStyle.SPIN_MANIPULATOR) {
+    weights[4] = 0.5 // Spin variation
+  } else if (playStyle === PlayStyle.COUNTER_DRIVER) {
+    weights[1] = 0.5 // Counter attack
   }
 
-  // Footwork reduces positioning penalties
-  const footworkBonus = (footwork / 100) * 0.2
-  match = Math.max(0, Math.min(1, match + footworkBonus))
+  // Select based on weights
+  let cumulative = 0
+  const roll = Math.random()
+  for (let i = 0; i < availableTypes.length; i++) {
+    cumulative += weights[i]
+    if (roll < cumulative) {
+      return availableTypes[i]
+    }
+  }
 
-  return match
+  return ShotType.COUNTER_ATTACK // Fallback
 }
 
 /**
- * Calculate spin reading ability
- */
-function calculateSpinReading(
-  playerSpin: number,
-  equipmentModifiers: EquipmentModifiers,
-  incomingSpin: BallSpin
-): number {
-  let reading = playerSpin / 100
-  reading += equipmentModifiers.spinReceiveBonus
-
-  // Long pimples and anti-spin have special effects
-  if (equipmentModifiers.spinReversal > 0 && incomingSpin !== BallSpin.NO_SPIN) {
-    // Spin reversal can help or hurt depending on situation
-    reading += equipmentModifiers.spinReversal * 0.3
-  }
-
-  if (equipmentModifiers.spinNeutralization > 0) {
-    // Anti-spin neutralizes spin
-    reading += equipmentModifiers.spinNeutralization * 0.4
-  }
-
-  return Math.max(0, Math.min(1, reading))
-}
-
-/**
- * Calculate shot quality based on player stats and conditions
+ * Calculate shot quality (0-100) using weighted stats
  */
 function calculateShotQuality(
   player: Player,
-  ball: Ball,
-  playerPosition: PlayerPosition,
-  opponentPosition: PlayerPosition,
+  shotType: ShotType,
   isForehand: boolean,
-  equipmentModifiers: EquipmentModifiers
-): {
-  quality: number // 0-1, how good the shot is
-  intendedPosition: BallPosition
-  intendedDepth: BallDepth
-  intendedSpin: BallSpin
-  power: number
-  error: number // 0-1, deviation from intended
-} {
+  equipmentModifiers: {
+    spinMultiplier: number
+    receiveMultiplier: number
+    consistencyMultiplier: number
+  }
+): number {
+  const weights = SHOT_TYPE_WEIGHTS[shotType]
   const skills = player.skills
-  const footwork = skills.footwork
 
-  // Calculate positioning match
-  const positioningMatch = calculatePositioningMatch(
-    ball.position,
-    ball.depth,
-    playerPosition,
-    footwork
-  )
+  let quality = 0
 
-  // Determine which side to use
-  const useForehand =
-    isForehand ||
-    ball.position === BallPosition.FOREHAND ||
-    (ball.position === BallPosition.MIDDLE &&
-      player.forehandBackhandTendency !== FavourStyle.HEAVILY_BACKHAND &&
-      player.forehandBackhandTendency !== FavourStyle.SLIGHTLY_BACKHAND)
-
-  const sideSkill = useForehand ? skills.forehand : skills.backhand
-
-  // Calculate spin reading
-  const spinReading = calculateSpinReading(skills.spin, equipmentModifiers, ball.spin)
-
-  // Determine if player wants to attack
-  const wantsToAttack = shouldAttack(
-    player,
-    ball,
-    positioningMatch,
-    sideSkill,
-    spinReading
-  )
-
-  // Calculate intended shot
-  let intendedPosition: BallPosition
-  let intendedDepth: BallDepth
-  let intendedSpin: BallSpin
-  let power = 0
-
-  if (wantsToAttack) {
-    // Ideal attacking shot - away from opponent, fast, topspin
-    intendedPosition = getIdealAttackPosition(opponentPosition)
-    intendedDepth = BallDepth.LONG
-    // 80% topspin, 15% backspin (for variation), 5% no-spin
-    const spinRand = Math.random()
-    if (spinRand < 0.8) {
-      intendedSpin = BallSpin.TOPSPIN
-    } else if (spinRand < 0.95) {
-      intendedSpin = BallSpin.BACKSPIN
+  // Apply weights to relevant stats
+  // For shot types with both forehand and backhand weights, use the appropriate one
+  if (weights.forehand && weights.backhand) {
+    // Both weights exist - use the appropriate side
+    if (isForehand) {
+      quality += skills.forehand * weights.forehand
     } else {
-      intendedSpin = BallSpin.NO_SPIN
+      quality += skills.backhand * weights.backhand
     }
-    power = Math.min(100, sideSkill * 0.7 + skills.placement * 0.3)
   } else {
-    // Defensive shot - safe, consistent
-    // More variety in defensive shots
-    const defensiveRand = Math.random()
-    if (defensiveRand < 0.4) {
-      intendedPosition = BallPosition.MIDDLE
-    } else if (defensiveRand < 0.7) {
-      intendedPosition = ball.position // Return to same side
-    } else {
-      intendedPosition =
-        ball.position === BallPosition.FOREHAND
-          ? BallPosition.BACKHAND
-          : BallPosition.FOREHAND
+    // Only one weight exists, or neither
+    if (weights.forehand && isForehand) {
+      quality += skills.forehand * weights.forehand
     }
-
-    // Depth based on ball depth - defensive players often return similar depth
-    if (ball.depth === BallDepth.SHORT) {
-      intendedDepth = Math.random() > 0.3 ? BallDepth.SHORT : BallDepth.MID
-    } else {
-      intendedDepth = Math.random() > 0.4 ? BallDepth.MID : BallDepth.LONG
+    if (weights.backhand && !isForehand) {
+      quality += skills.backhand * weights.backhand
     }
-
-    // Defensive shots: 40% backspin, 35% no-spin, 25% light topspin
-    const spinRand = Math.random()
-    if (spinRand < 0.4) {
-      intendedSpin = BallSpin.BACKSPIN
-    } else if (spinRand < 0.75) {
-      intendedSpin = BallSpin.NO_SPIN
-    } else {
-      intendedSpin = BallSpin.TOPSPIN // Light topspin
-    }
-    // Defensive shots need minimum power to ensure ball reaches table
-    power = Math.max(15, sideSkill * 0.3 + skills.consistency * 0.2)
+  }
+  if (weights.footwork) {
+    quality += skills.footwork * weights.footwork
+  }
+  if (weights.serve) {
+    quality += skills.serve * weights.serve
+  }
+  if (weights.receive) {
+    quality += skills.receive * weights.receive * equipmentModifiers.receiveMultiplier
+  }
+  if (weights.spin) {
+    quality += skills.spin * weights.spin * equipmentModifiers.spinMultiplier
+  }
+  if (weights.placement) {
+    quality += skills.placement * weights.placement
+  }
+  if (weights.consistency) {
+    quality +=
+      skills.consistency * weights.consistency * equipmentModifiers.consistencyMultiplier
   }
 
-  // Apply equipment speed modifier
-  power = Math.max(0, Math.min(100, power + equipmentModifiers.speedModifier * 100))
-
-  // Ensure minimum power for any shot (even defensive shots need some speed)
-  power = Math.max(10, power)
-
-  // Calculate error based on deviation from ideal conditions
-  const idealConditions = {
-    positioning: positioningMatch,
-    sideSkill: sideSkill / 100,
-    spinReading: spinReading,
-    pressure: 0.5 // Will be calculated based on match situation
-  }
-
-  const error = calculateError(idealConditions, skills.consistency, equipmentModifiers)
-
-  // Calculate actual shot quality
-  const baseQuality = (sideSkill / 100) * positioningMatch * spinReading
-  const quality = Math.max(0, Math.min(1, baseQuality * (1 - error)))
-
-  return {
-    quality,
-    intendedPosition,
-    intendedDepth,
-    intendedSpin,
-    power,
-    error
-  }
+  // Clamp to 0-100
+  return Math.max(0, Math.min(100, quality))
 }
 
 /**
- * Determine if player should attack based on style and conditions
+ * Calculate serve quality (0-100)
  */
-function shouldAttack(
+function calculateServeQuality(
   player: Player,
-  ball: Ball,
-  positioningMatch: number,
-  sideSkill: number,
-  spinReading: number
-): boolean {
-  // Defensive players only attack safest balls
-  if (
-    player.playStyle === PlayStyle.CHOPPER ||
-    player.playStyle === PlayStyle.DEFENSIVE_SPECIALIST
-  ) {
-    return positioningMatch > 0.85 && sideSkill > 75 && spinReading > 0.75
+  equipmentModifiers: {
+    spinMultiplier: number
+    receiveMultiplier: number
+    consistencyMultiplier: number
   }
-
-  // Aggressive players attack more often
-  if (
-    player.playStyle === PlayStyle.FOREHAND_ATTACKER ||
-    player.playStyle === PlayStyle.BACKHAND_SMASHER ||
-    player.playStyle === PlayStyle.AGGRESSIVE_PUSHER
-  ) {
-    return positioningMatch > 0.45 && sideSkill > 45
-  }
-
-  // Default: attack if conditions are good
-  return positioningMatch > 0.55 && sideSkill > 55 && spinReading > 0.55
-}
-
-/**
- * Get ideal attack position (away from opponent)
- */
-function getIdealAttackPosition(opponentPosition: PlayerPosition): BallPosition {
-  // Attack to opposite side of opponent's bias
-  if (opponentPosition.horizontal === HorizontalPosition.FOREHAND_BIAS) {
-    return BallPosition.BACKHAND
-  } else if (opponentPosition.horizontal === HorizontalPosition.BACKHAND_BIAS) {
-    return BallPosition.FOREHAND
-  }
-  return BallPosition.MIDDLE
-}
-
-/**
- * Calculate error based on deviation from ideal conditions
- */
-function calculateError(
-  idealConditions: {
-    positioning: number
-    sideSkill: number
-    spinReading: number
-    pressure: number
-  },
-  consistency: number,
-  equipmentModifiers: EquipmentModifiers
 ): number {
-  // Error increases as conditions deviate from ideal
-  const positioningError = 1 - idealConditions.positioning
-  const skillError = 1 - idealConditions.sideSkill
-  const spinError = 1 - idealConditions.spinReading
-  const pressureError = Math.abs(0.5 - idealConditions.pressure) * 2
+  const skills = player.skills
+  let quality = 0
 
-  // Consistency reduces error - make this much more impactful
-  // Low consistency = massive error, high consistency = minimal error
-  const consistencyFactor = Math.pow(1 - consistency / 100, 0.5) // Square root for steeper curve
+  quality += skills.serve * SERVE_WEIGHTS.serve!
+  quality += skills.forehand * SERVE_WEIGHTS.forehand!
+  quality += skills.spin * SERVE_WEIGHTS.spin! * equipmentModifiers.spinMultiplier
 
-  // Equipment unpredictability adds error
-  const equipmentError = equipmentModifiers.unpredictability
-
-  // Combine errors - make skill errors much more impactful for low stat players
-  const totalError =
-    (positioningError * 0.25 +
-      skillError * 0.4 + // Increased weight for skill errors
-      spinError * 0.2 +
-      pressureError * 0.1 +
-      equipmentError * 0.05) *
-    consistencyFactor
-
-  // For very low skill players, ensure high error rates
-  // For very high skill players, ensure low error rates
-  return Math.max(0, Math.min(0.95, totalError)) // Cap at 95% error max
+  return Math.max(0, Math.min(100, quality))
 }
 
 /**
- * Calculate chance of winning the rally
+ * Calculate incoming ball difficulty (0-1) from shot quality
  */
-function calculateRallyWinChance(
-  shotQuality: number,
-  opponentPositioning: PlayerPosition,
-  opponentFootwork: number,
-  intendedPosition: BallPosition,
-  intendedDepth: BallDepth,
-  power: number
+function calculateDifficulty(incomingQuality: number): number {
+  // Higher quality = higher difficulty
+  return incomingQuality / 100
+}
+
+/**
+ * Apply difficulty penalty to return quality
+ */
+function applyDifficultyPenalty(
+  baseQuality: number,
+  difficulty: number,
+  footwork: number
 ): number {
-  // Base chance based on shot quality - use exponential scaling to amplify differences
-  // This makes stat advantages much more impactful
-  // Quality of 0.5 -> ~0.35 base, Quality of 1.0 -> ~0.75 base
-  let winChance = Math.pow(shotQuality, 0.7) * 0.85 // Exponential scaling amplifies quality differences
+  // Footwork reduces difficulty penalty - increased impact
+  const footworkReduction = (footwork / 100) * 0.5 // Up to 50% reduction (increased from 30%)
+  const adjustedDifficulty = difficulty * (1 - footworkReduction)
 
-  // Position advantage - hitting away from opponent
-  const opponentMatch = calculatePositioningMatch(
-    intendedPosition,
-    intendedDepth,
-    opponentPositioning,
-    opponentFootwork
-  )
-  const positionAdvantage = 1 - opponentMatch
-  winChance += positionAdvantage * 0.3 // Increased from 0.25
-
-  // Power advantage - but diminishing returns
-  const powerBonus = Math.min(0.18, (power / 100) * 0.25) // Increased
-  winChance += powerBonus
-
-  // Depth matters - long attacking shots are more likely to win
-  if (intendedDepth === BallDepth.LONG && power > 50) {
-    winChance += 0.06 // Increased
-  }
-
-  // Lucky bounce chance (net or corner) - already factored in separately
-  // Don't double-count here
-
-  return Math.max(0.05, Math.min(0.95, winChance)) // Increased max cap to 95%
+  // Apply penalty: harder balls reduce return quality more
+  const penalty = adjustedDifficulty * 0.4 // Max 40% penalty
+  return baseQuality * (1 - penalty)
 }
 
 /**
- * Calculate chance of lucky bounce (net or corner)
+ * Calculate momentum multiplier based on recent shot qualities
  */
-function calculateLuckyBounceChance(
-  shotQuality: number,
-  opponentFootwork: number
-): number {
-  // Better shots have higher lucky bounce chance, but opponent footwork reduces it
-  const baseChance = shotQuality * 0.15
-  const footworkReduction = (opponentFootwork / 100) * 0.1
-  return Math.max(0, baseChance - footworkReduction)
+function calculateMomentum(recentQualities: number[]): number {
+  if (recentQualities.length === 0) return 1.0
+
+  // Average of last 3 shots (or all if less than 3)
+  const recent = recentQualities.slice(-3)
+  const avg = recent.reduce((a, b) => a + b, 0) / recent.length
+
+  // Momentum: if recent shots are good, get a boost
+  // Momentum multiplier: 0.9 to 1.1 (10% boost or penalty)
+  const momentum = 0.9 + (avg / 100) * 0.2
+  return Math.max(0.9, Math.min(1.1, momentum))
 }
 
 /**
- * Check if lucky bounce occurs and if it can be saved
+ * Check for lucky bounce
  */
-function checkLuckyBounce(
-  luckyBounceChance: number,
-  opponentFootwork: number
-): { occurred: boolean; saved: boolean; type: 'net' | 'corner' | null } {
-  if (Math.random() > luckyBounceChance) {
-    return { occurred: false, saved: false, type: null }
+function checkLuckyBounce(shotQuality: number): {
+  occurred: boolean
+  type: 'net' | 'edge' | null
+  boost: number
+} {
+  // Better shots have slightly higher chance of lucky bounce
+  const baseChance = 0.05 + (shotQuality / 100) * 0.05 // 5-10% chance
+  const roll = Math.random()
+
+  if (roll < baseChance) {
+    // 70% net, 30% edge
+    if (Math.random() < 0.7) {
+      return { occurred: true, type: 'net', boost: 10 }
+    } else {
+      return { occurred: true, type: 'edge', boost: 30 }
+    }
   }
 
-  const bounceType = Math.random() > 0.5 ? 'net' : 'corner'
-  const saveChance = bounceType === 'net' ? 0.3 : 0.1 // Net easier to save than corner
-  const footworkBonus = (opponentFootwork / 100) * 0.2
-  const saved = Math.random() > saveChance - footworkBonus
-
-  return { occurred: true, saved, type: bounceType as 'net' | 'corner' }
+  return { occurred: false, type: null, boost: 0 }
 }
 
 /**
- * Apply statistical variance to a value
+ * Check win conditions
  */
-function applyVariance(value: number, variance: number): number {
-  const deviation = (Math.random() - 0.5) * 2 * variance
-  return Math.max(0, Math.min(100, value + deviation * 100))
-}
+function checkWinCondition(
+  returnQuality: number,
+  incomingQuality: number,
+  rallyLength: number
+): { won: boolean; winner: 'returner' | 'hitter' | null } {
+  const qualityDiff = returnQuality - incomingQuality
 
-/**
- * Calculate difficulty of receiving a ball
- */
-function calculateDifficulty(
-  ball: Ball,
-  receiverPosition: PlayerPosition,
-  receiverFootwork: number
-): 'easy' | 'medium' | 'hard' {
-  const positioningMatch = calculatePositioningMatch(
-    ball.position,
-    ball.depth,
-    receiverPosition,
-    receiverFootwork
-  )
-
-  // Factor in spin and speed - more nuanced
-  let spinDifficulty = 0
-  if (ball.spin === BallSpin.NO_SPIN) {
-    spinDifficulty = 0.05 // Easiest to handle
-  } else if (ball.spin === BallSpin.BACKSPIN) {
-    spinDifficulty = ball.depth === BallDepth.SHORT ? 0.15 : 0.2 // Short backspin is tricky
-  } else {
-    // Topspin
-    spinDifficulty = ball.speed > 60 ? 0.3 : 0.15 // Fast topspin is hard
+  // Immediate win conditions
+  if (qualityDiff > 20) {
+    return { won: true, winner: 'returner' }
+  }
+  if (qualityDiff < -25) {
+    return { won: true, winner: 'hitter' }
   }
 
-  // Speed difficulty - more gradual
-  // Very slow balls (speed < 10) should always be easy, regardless of other factors
-  let speedDifficulty = 0
-  if (ball.speed > 80) {
-    speedDifficulty = 0.25
-  } else if (ball.speed > 50) {
-    speedDifficulty = 0.15
-  } else if (ball.speed > 25) {
-    speedDifficulty = 0.05
-  } else if (ball.speed < 10) {
-    speedDifficulty = -0.2 // Very slow balls are MUCH easier - negative to offset other difficulties
-  } else {
-    speedDifficulty = 0 // Slow balls are easy
+  // Probability-based win (quality difference affects win chance)
+  const winChance = 0.3 + (qualityDiff / 100) * 0.4 // 10-70% chance based on quality diff
+  const rallyPenalty = Math.min(0.1, rallyLength * 0.01) // Slight penalty for long rallies
+  const adjustedChance = winChance - rallyPenalty
+
+  if (Math.random() < adjustedChance) {
+    return { won: true, winner: 'returner' }
   }
 
-  // Depth affects difficulty
-  let depthDifficulty = 0
-  if (
-    ball.depth === BallDepth.SHORT &&
-    receiverPosition.vertical === VerticalPosition.BACKWARDS
-  ) {
-    depthDifficulty = 0.15 // Short ball when far back is hard
-  } else if (
-    ball.depth === BallDepth.LONG &&
-    receiverPosition.vertical === VerticalPosition.FORWARD
-  ) {
-    depthDifficulty = 0.1 // Long ball when close is harder
-  }
-
-  const totalDifficulty =
-    (1 - positioningMatch) * 0.5 + spinDifficulty + speedDifficulty + depthDifficulty
-
-  // Adjusted thresholds for better distribution
-  // More granular: easy < 0.3, medium < 0.65, hard >= 0.65
-  if (totalDifficulty < 0.3) return 'easy'
-  if (totalDifficulty < 0.65) return 'medium'
-  return 'hard'
-}
-
-/**
- * Format ball details for logging
- */
-function formatBallDetails(ball: Ball, playerPosition: PlayerPosition): string {
-  const speedDesc = ball.speed > 70 ? 'very fast' : ball.speed > 40 ? 'fast' : 'slow'
-  const spinDesc =
-    ball.spin === BallSpin.TOPSPIN
-      ? 'heavy topspin'
-      : ball.spin === BallSpin.BACKSPIN
-        ? 'backspin'
-        : 'no spin'
-  const positionDesc =
-    ball.position === BallPosition.FOREHAND
-      ? 'forehand'
-      : ball.position === BallPosition.BACKHAND
-        ? 'backhand'
-        : 'middle'
-  const depthDesc =
-    ball.depth === BallDepth.LONG
-      ? 'long'
-      : ball.depth === BallDepth.SHORT
-        ? 'short'
-        : 'mid'
-  const playerPosDesc = `${playerPosition.horizontal.replace('_', ' ')}, ${playerPosition.vertical}`
-
-  return `${positionDesc} ${depthDesc}, ${speedDesc} (${Math.round(ball.speed)}), ${spinDesc}. Player at: ${playerPosDesc}`
+  return { won: false, winner: null }
 }
 
 /**
@@ -701,277 +473,134 @@ export function simulateRally(
   newPositions: [PlayerPosition, PlayerPosition]
 } {
   const events: RallyEvent[] = []
-  let currentPlayer = servingPlayer
-  let ball: Ball | null = null
   const positions: [PlayerPosition, PlayerPosition] = [...playerPositions]
+  let currentPlayer = servingPlayer
+  let incomingQuality = 0
+  let rallyLength = 0
+  const recentQualities: number[] = [] // Track for momentum
 
-  // ALWAYS start with a serve for every point
-  // Every point begins with a serve, regardless of isServe flag
-  // (isServe is just for tracking, but we always need a ball to start the rally)
-  {
-    const server = currentPlayer === 0 ? player1 : player2
-    const receiver = currentPlayer === 0 ? player2 : player1
-    const serverPosition = positions[currentPlayer]
-    const receiverPosition = positions[1 - currentPlayer]
-    const equipmentModifiers = getEquipmentModifiers(
-      server.forehandRubber // Serve typically uses forehand rubber
-    )
+  // Serve
+  const server = currentPlayer === 0 ? player1 : player2
+  const receiver = currentPlayer === 0 ? player2 : player1
+  const serverModifiers = getEquipmentModifiers(server.forehandRubber)
 
-    // Serve quality based on serve stat
-    const serveQuality = applyVariance(server.skills.serve / 100, 0.1)
-    const servePower = server.skills.serve * 0.7
+  let serveQuality = calculateServeQuality(server, serverModifiers)
 
-    // Determine serve characteristics - better serve stat = better placement and spin control
-    // Higher serve stat = more likely to serve to opponent's weaker side
-    const servePositionRand = Math.random()
-    let servePosition: BallPosition
-    if (serveQuality > 0.6) {
-      // High serve quality - can target better (slightly favor backhand as it's often weaker)
-      servePosition =
-        servePositionRand < 0.45
-          ? BallPosition.BACKHAND
-          : servePositionRand < 0.9
-            ? BallPosition.FOREHAND
-            : BallPosition.MIDDLE
-    } else {
-      // Lower serve quality - more random
-      servePosition =
-        servePositionRand < 0.5 ? BallPosition.FOREHAND : BallPosition.BACKHAND
-    }
+  // Check for serve error (consistency check)
+  // Make serve errors rarer - serves are more controlled
+  const serveConsistencyRatio = server.skills.consistency / 100
+  const serveErrorChance = Math.pow(1 - serveConsistencyRatio, 2) * 0.1 // Max 10% error chance
+  const serveQualityPenalty = (1 - serveQuality / 100) * 0.05 // Up to 5% additional
+  const totalServeErrorChance = Math.min(0.15, serveErrorChance + serveQualityPenalty)
 
-    // Serves: Better serve stat = more likely to serve short (safer, more controlled)
-    // 60% short, 30% mid, 10% long (long serves are risky)
-    const serveDepthRand = Math.random()
-    let serveDepth: BallDepth
-    if (serveQuality > 0.7) {
-      // High serve quality - more likely to serve short (better control)
-      serveDepth =
-        serveDepthRand < 0.7
-          ? BallDepth.SHORT
-          : serveDepthRand < 0.95
-            ? BallDepth.MID
-            : BallDepth.LONG
-    } else {
-      // Lower serve quality - more variety but riskier
-      serveDepth =
-        serveDepthRand < 0.6
-          ? BallDepth.SHORT
-          : serveDepthRand < 0.9
-            ? BallDepth.MID
-            : BallDepth.LONG
-    }
-
-    // Serve spin: Better serve stat = more spin variety and control
-    const serveSpinRand = Math.random()
-    let serveSpin: BallSpin
-    if (serveQuality > 0.65) {
-      // High serve quality - can vary spin more effectively
-      serveSpin =
-        serveSpinRand < 0.35
-          ? BallSpin.TOPSPIN
-          : serveSpinRand < 0.8
-            ? BallSpin.BACKSPIN
-            : BallSpin.NO_SPIN
-    } else {
-      // Lower serve quality - more predictable
-      serveSpin =
-        serveSpinRand < 0.4
-          ? BallSpin.TOPSPIN
-          : serveSpinRand < 0.85
-            ? BallSpin.BACKSPIN
-            : BallSpin.NO_SPIN
-    }
-
-    ball = {
-      position: servePosition,
-      depth: serveDepth,
-      spin: serveSpin,
-      speed: servePower,
-      power: servePower
-    }
-
-    // Calculate base difficulty
-    let difficulty = calculateDifficulty(ball, receiverPosition, receiver.skills.footwork)
-
-    // Better serve quality makes the serve harder to return
-    // Adjust difficulty based on serve quality (more granular and impactful)
-    if (serveQuality > 0.65) {
-      // High serve quality - upgrade difficulty
-      if (difficulty === 'easy') {
-        difficulty = Math.random() < 0.7 ? 'medium' : 'easy'
-      } else if (difficulty === 'medium') {
-        difficulty = Math.random() < 0.5 ? 'hard' : 'medium'
-      }
-      // 'hard' stays 'hard'
-    } else if (serveQuality > 0.55) {
-      // Medium-high serve quality - slight upgrade
-      if (difficulty === 'easy' && Math.random() < 0.4) {
-        difficulty = 'medium'
-      }
-    } else if (serveQuality < 0.45) {
-      // Low serve quality - downgrade difficulty
-      if (difficulty === 'hard') {
-        difficulty = Math.random() < 0.6 ? 'medium' : 'hard'
-      } else if (difficulty === 'medium') {
-        difficulty = Math.random() < 0.4 ? 'easy' : 'medium'
-      }
-      // 'easy' stays 'easy'
-    }
-
+  if (Math.random() < totalServeErrorChance) {
     events.push({
-      type: 'ball',
+      type: 'error',
       player: currentPlayer,
-      description: `${server.shortName || server.firstName} serves: ${formatBallDetails(ball, serverPosition)}. Difficulty for receiver: ${difficulty}`,
-      timestamp: Date.now(),
-      ballDetails: {
-        position: ball.position,
-        depth: ball.depth,
-        spin: ball.spin,
-        speed: ball.speed,
-        playerPosition: serverPosition,
-        difficulty
-      }
+      description: `${server.shortName || server.firstName} serves out`,
+      timestamp: Date.now()
     })
-
-    // Serve can win the point directly (ace or unreturnable serve)
-    // Higher serve stat = higher chance of winning serve
-    // Use exponential scaling - 0 serve stat = near 0% chance, 100 serve stat = much higher chance
-    // Difficulty bonus should only apply if serve stat is already decent
-    const baseServeWinChance = Math.pow(serveQuality, 0.5) * 0.25 // Exponential: 0 quality = 0%, 1.0 quality = 25%
-    const difficultyBonus =
-      serveQuality > 0.3
-        ? difficulty === 'hard'
-          ? 0.1
-          : difficulty === 'medium'
-            ? 0.05
-            : 0.02
-        : 0
-    const serveWinChance = baseServeWinChance + difficultyBonus
-    // Cap at reasonable max, but ensure 0 serve stat = 0% chance
-    if (Math.random() < Math.min(0.4, serveWinChance)) {
-      events.push({
-        type: 'point',
-        player: currentPlayer,
-        description: `${server.shortName || server.firstName} wins the point with an unreturnable serve`,
-        timestamp: Date.now()
-      })
-      return {
-        winner: currentPlayer,
-        events,
-        newPositions: positions
-      }
+    events.push({
+      type: 'point',
+      player: 1 - currentPlayer,
+      description: `${receiver.shortName || receiver.firstName} wins the point (serve error)`,
+      timestamp: Date.now()
+    })
+    return {
+      winner: 1 - currentPlayer,
+      events,
+      newPositions: positions
     }
-
-    currentPlayer = 1 - currentPlayer // Switch to receiver
   }
 
-  // Rally continues until point is won
-  let rallyLength = 0
-  const maxRallies = 200 // Prevent infinite loops (increased to allow longer rallies with full logging)
+  // Check for lucky bounce on serve
+  const serveLucky = checkLuckyBounce(serveQuality)
+  if (serveLucky.occurred) {
+    serveQuality += serveLucky.boost
+    events.push({
+      type: 'lucky_bounce',
+      player: currentPlayer,
+      description: `${server.shortName || server.firstName} gets a lucky ${serveLucky.type} bounce on serve!`,
+      timestamp: Date.now()
+    })
+  }
 
-  while (rallyLength < maxRallies && ball) {
+  incomingQuality = serveQuality
+  recentQualities.push(serveQuality)
+
+  events.push({
+    type: 'serve',
+    player: currentPlayer,
+    description: `${server.shortName || server.firstName} serves (quality: ${Math.round(serveQuality)})`,
+    timestamp: Date.now()
+  })
+
+  currentPlayer = 1 - currentPlayer
+  rallyLength++
+
+  // Rally loop
+  let pointWon = false
+  while (!pointWon) {
     const hitter = currentPlayer === 0 ? player1 : player2
     const opponent = currentPlayer === 0 ? player2 : player1
-    const hitterPosition = positions[currentPlayer]
-    const opponentPosition = positions[1 - currentPlayer]
 
-    // Log incoming ball
-    const incomingDifficulty = calculateDifficulty(
-      ball,
-      hitterPosition,
-      hitter.skills.footwork
-    )
-    events.push({
-      type: 'ball',
-      player: currentPlayer,
-      description: `${hitter.shortName || hitter.firstName} receives: ${formatBallDetails(ball, hitterPosition)}. Difficulty: ${incomingDifficulty}`,
-      timestamp: Date.now(),
-      ballDetails: {
-        position: ball.position,
-        depth: ball.depth,
-        spin: ball.spin,
-        speed: ball.speed,
-        playerPosition: hitterPosition,
-        difficulty: incomingDifficulty
-      }
-    })
+    // Determine forehand/backhand based on tendency
+    // Slightly favor backhand more to balance forehand dominance from serves
+    let isForehand = true
+    const tendency = hitter.forehandBackhandTendency
+    const rand = Math.random()
+    if (tendency === FavourStyle.HEAVILY_BACKHAND) {
+      isForehand = rand < 0.15 // 15% forehand
+    } else if (tendency === FavourStyle.SLIGHTLY_BACKHAND) {
+      isForehand = rand < 0.35 // 35% forehand
+    } else if (tendency === FavourStyle.BALANCED) {
+      isForehand = rand < 0.5 // 50% forehand - truly balanced
+    } else if (tendency === FavourStyle.SLIGHTLY_FOREHAND) {
+      isForehand = rand < 0.6 // 60% forehand
+    } else {
+      // HEAVILY_FOREHAND
+      isForehand = rand < 0.75 // 75% forehand (reduced from 80%)
+    }
 
-    // Determine which rubber to use
-    const isForehand =
-      ball.position === BallPosition.FOREHAND ||
-      (ball.position === BallPosition.MIDDLE &&
-        hitter.forehandBackhandTendency !== FavourStyle.HEAVILY_BACKHAND)
-
-    const equipmentModifiers = getEquipmentModifiers(
+    const hitterModifiers = getEquipmentModifiers(
       isForehand ? hitter.forehandRubber : hitter.backhandRubber
     )
 
-    // Calculate shot
-    const shot = calculateShotQuality(
+    // Determine shot type
+    const variance = Math.random()
+    const shotType = determineShotType(hitter, variance)
+
+    // Calculate base return quality
+    let returnQuality = calculateShotQuality(
       hitter,
-      ball,
-      hitterPosition,
-      opponentPosition,
+      shotType,
       isForehand,
-      equipmentModifiers
+      hitterModifiers
     )
 
-    // Apply variance to shot execution - variance should respect base quality
-    // If quality is 0, variance shouldn't help. If quality is 1, variance should be minimal
-    const baseVariance = 0.05 // Further reduced variance
-    // Variance scales with quality - perfect shots have minimal variance, terrible shots stay terrible
-    const skillBasedVariance = baseVariance * (1 - shot.quality * 0.98) // Even stronger scaling - 98% reduction for perfect shots
-    // For 0 quality shots, variance should be near zero - they can't get lucky
-    // For very low quality (< 0.1), severely limit variance
-    const varianceBoost = shot.quality < 0.1 ? shot.quality * 0.1 : skillBasedVariance // 0 quality = 0 variance, 0.1 quality = 0.01 variance
-    const actualQuality = Math.min(
-      1.0,
-      Math.max(shot.quality * 0.5, applyVariance(shot.quality, varianceBoost))
-    )
-    // Ensure 0 quality stays 0 (or very close to 0)
-    const finalQuality =
-      shot.quality < 0.01 ? Math.min(0.02, actualQuality) : actualQuality
-
-    // Check for errors (ball out) - make error rates much more extreme for stat differences
-    // Base error chance scales with error value and consistency
-    // Low consistency players make many more errors, high consistency players make very few
-    const errorConsistencyFactor = Math.pow(1 - hitter.skills.consistency / 100, 0.5) // Steeper curve
-    const baseErrorChance = shot.error * errorConsistencyFactor
-
-    // Adjust based on shot difficulty and rally length
-    // Longer rallies increase error chance slightly
-    const rallyLengthPenalty = Math.min(0.08, rallyLength * 0.004)
-
-    // Defensive players have lower error rates on defensive shots
-    const isDefensiveShot = !shouldAttack(
-      hitter,
-      ball,
-      calculatePositioningMatch(
-        ball.position,
-        ball.depth,
-        hitterPosition,
-        hitter.skills.footwork
-      ),
-      isForehand ? hitter.skills.forehand : hitter.skills.backhand,
-      calculateSpinReading(hitter.skills.spin, equipmentModifiers, ball.spin)
-    )
-    const defensiveBonus =
-      isDefensiveShot &&
-      (hitter.playStyle === PlayStyle.CHOPPER ||
-        hitter.playStyle === PlayStyle.DEFENSIVE_SPECIALIST)
-        ? 0.4
-        : 1.0
-
-    // Make error chance much more impactful - low stat players should error frequently
-    // High stat players should error rarely
-    const errorMultiplier = 0.12 // Increased from 0.08
-    const finalErrorChance = Math.min(
-      0.95,
-      baseErrorChance * errorMultiplier * defensiveBonus + rallyLengthPenalty
+    // Apply difficulty penalty from incoming ball
+    const difficulty = calculateDifficulty(incomingQuality)
+    returnQuality = applyDifficultyPenalty(
+      returnQuality,
+      difficulty,
+      hitter.skills.footwork
     )
 
-    if (Math.random() < finalErrorChance) {
-      // Ball goes out
+    // Apply momentum
+    const momentum = calculateMomentum(recentQualities)
+    returnQuality *= momentum
+    returnQuality = Math.max(0, Math.min(100, returnQuality))
+
+    // Check for error (consistency check)
+    // Make errors much rarer - only on very low consistency or very low quality shots
+    // Base error chance scales with (1 - consistency/100)^2 to make it much rarer
+    const consistencyRatio = hitter.skills.consistency / 100
+    const baseErrorChance = Math.pow(1 - consistencyRatio, 2) * 0.15 // Max 15% error chance at 0 consistency
+    // Lower quality shots have higher error chance
+    const qualityPenalty = (1 - returnQuality / 100) * 0.1 // Up to 10% additional error chance
+    const totalErrorChance = Math.min(0.25, baseErrorChance + qualityPenalty) // Cap at 25%
+
+    if (Math.random() < totalErrorChance) {
       events.push({
         type: 'error',
         player: currentPlayer,
@@ -984,6 +613,7 @@ export function simulateRally(
         description: `${opponent.shortName || opponent.firstName} wins the point (error)`,
         timestamp: Date.now()
       })
+      pointWon = true
       return {
         winner: 1 - currentPlayer,
         events,
@@ -991,461 +621,55 @@ export function simulateRally(
       }
     }
 
-    // Calculate rally win chance
-    // More balanced win chance calculation
-    const baseWinChance = calculateRallyWinChance(
-      finalQuality,
-      opponentPosition,
-      opponent.skills.footwork,
-      shot.intendedPosition,
-      shot.intendedDepth,
-      shot.power
-    )
-
-    // Rally length factor - reduced penalty to allow stat advantages to show through
-    // Average rally length in table tennis is 3-5 exchanges, so we want most points to end naturally
-    const rallyLengthFactor = Math.min(1.3, 1 + rallyLength * 0.01) // Reduced from 1.4 and 0.012
-
-    // Also factor in consistency - high consistency players extend rallies, but reduce penalty
-    const consistencyFactor =
-      (hitter.skills.consistency + opponent.skills.consistency) / 200
-    const extendedRallyPenalty = consistencyFactor > 0.7 ? 0.92 : 1.0 // Reduced from 0.85 to 0.92
-
-    // Allow higher max for stat advantages - don't cap too aggressively
-    const winChance = Math.min(
-      0.97, // Increased from 0.95 to allow even larger stat advantages
-      baseWinChance * rallyLengthFactor * extendedRallyPenalty
-    )
-
-    // Create the return ball first
-    // Return quality is based on the hitter's receive stat (they're the one returning the ball)
-    // Higher receive stat = better return quality, especially on difficult balls
-    // Incoming ball difficulty affects return quality, but high receive stat reduces the penalty
-    const baseDifficultyPenalty =
-      incomingDifficulty === 'hard' ? 0.35 : incomingDifficulty === 'medium' ? 0.18 : 0
-    const receiveSkill = hitter.skills.receive / 100
-    // Higher receive stat reduces difficulty penalty more effectively (better players handle difficult balls much better)
-    const difficultyPenalty = baseDifficultyPenalty * (1 - receiveSkill * 0.7) // High receive (1.0) reduces penalty by 70%
-    // Base return quality should scale better - higher receive stat = significantly better returns
-    const baseReturnQuality = 0.5 + receiveSkill * 0.5 // Scales from 0.5 to 1.0 based on receive stat
-    const returnQuality = applyVariance(
-      Math.max(0.25, baseReturnQuality - difficultyPenalty),
-      0.08 // Reduced variance for better returns
-    )
-
-    // Update positions based on shot and ball location (more dynamic)
-    // Players move toward where they hit the ball, but also anticipate return
-    const hitPosition = shot.intendedPosition
-    const hitDepth = shot.intendedDepth
-
-    // Horizontal: Move toward where you hit, but also consider opponent's likely return
-    let newHorizontal: HorizontalPosition = HorizontalPosition.NEUTRAL
-    if (hitPosition === BallPosition.FOREHAND) {
-      // Hit to forehand - might move that way, but also consider recovery
-      newHorizontal =
-        Math.random() > 0.3
-          ? HorizontalPosition.FOREHAND_BIAS
-          : HorizontalPosition.NEUTRAL
-    } else if (hitPosition === BallPosition.BACKHAND) {
-      newHorizontal =
-        Math.random() > 0.3
-          ? HorizontalPosition.BACKHAND_BIAS
-          : HorizontalPosition.NEUTRAL
-    } else {
-      // Middle shot - usually return to neutral
-      newHorizontal =
-        Math.random() > 0.5
-          ? HorizontalPosition.NEUTRAL
-          : Math.random() > 0.5
-            ? HorizontalPosition.FOREHAND_BIAS
-            : HorizontalPosition.BACKHAND_BIAS
-    }
-
-    // Vertical: Adjust based on shot depth and opponent's likely return
-    let newVertical: VerticalPosition = VerticalPosition.NEUTRAL
-    if (hitDepth === BallDepth.SHORT) {
-      // Short shot - move forward
-      newVertical =
-        Math.random() > 0.2 ? VerticalPosition.FORWARD : VerticalPosition.NEUTRAL
-    } else if (hitDepth === BallDepth.LONG) {
-      // Long shot - might move back
-      newVertical =
-        Math.random() > 0.6 ? VerticalPosition.BACKWARDS : VerticalPosition.NEUTRAL
-    } else {
-      // Mid depth - usually neutral
-      newVertical =
-        Math.random() > 0.3
-          ? VerticalPosition.NEUTRAL
-          : Math.random() > 0.5
-            ? VerticalPosition.FORWARD
-            : VerticalPosition.BACKWARDS
-    }
-
-    positions[currentPlayer] = {
-      horizontal: newHorizontal,
-      vertical: newVertical
-    }
-
-    // Opponent also adjusts position based on incoming ball
-    const opponentAdjustment = Math.random()
-    if (opponentAdjustment > 0.4) {
-      // Opponent moves toward where ball is coming
-      if (hitPosition === BallPosition.FOREHAND) {
-        positions[1 - currentPlayer].horizontal =
-          Math.random() > 0.5
-            ? HorizontalPosition.FOREHAND_BIAS
-            : positions[1 - currentPlayer].horizontal
-      } else if (hitPosition === BallPosition.BACKHAND) {
-        positions[1 - currentPlayer].horizontal =
-          Math.random() > 0.5
-            ? HorizontalPosition.BACKHAND_BIAS
-            : positions[1 - currentPlayer].horizontal
-      }
-
-      if (hitDepth === BallDepth.SHORT) {
-        positions[1 - currentPlayer].vertical =
-          Math.random() > 0.3
-            ? VerticalPosition.FORWARD
-            : positions[1 - currentPlayer].vertical
-      } else if (hitDepth === BallDepth.LONG) {
-        positions[1 - currentPlayer].vertical =
-          Math.random() > 0.4
-            ? VerticalPosition.BACKWARDS
-            : positions[1 - currentPlayer].vertical
-      }
-    }
-
-    // Create return ball with variance - more realistic placement
-    // Position based on placement skill and opponent's position (target away from opponent)
-    // Better placement = can target away from opponent better
-    let returnPosition: BallPosition = BallPosition.MIDDLE
-    const placementSkill = hitter.skills.placement / 100
-    const rand = Math.random()
-
-    // Determine ideal target position (away from opponent)
-    const idealTarget = getIdealAttackPosition(opponentPosition)
-
-    // High placement skill = better targeting (away from opponent, less middle shots)
-    if (placementSkill > 0.7) {
-      // High placement - can target away from opponent very well
-      if (idealTarget === BallPosition.FOREHAND) {
-        returnPosition =
-          rand < 0.8
-            ? BallPosition.FOREHAND
-            : rand < 0.95
-              ? BallPosition.BACKHAND
-              : BallPosition.MIDDLE
-      } else if (idealTarget === BallPosition.BACKHAND) {
-        returnPosition =
-          rand < 0.8
-            ? BallPosition.BACKHAND
-            : rand < 0.95
-              ? BallPosition.FOREHAND
-              : BallPosition.MIDDLE
-      } else {
-        // Opponent is neutral - target corners
-        returnPosition =
-          rand < 0.45
-            ? BallPosition.FOREHAND
-            : rand < 0.9
-              ? BallPosition.BACKHAND
-              : BallPosition.MIDDLE
-      }
-    } else if (placementSkill > 0.5) {
-      // Medium placement - moderate targeting
-      if (idealTarget === BallPosition.FOREHAND) {
-        returnPosition =
-          rand < 0.6
-            ? BallPosition.FOREHAND
-            : rand < 0.85
-              ? BallPosition.BACKHAND
-              : BallPosition.MIDDLE
-      } else if (idealTarget === BallPosition.BACKHAND) {
-        returnPosition =
-          rand < 0.6
-            ? BallPosition.BACKHAND
-            : rand < 0.85
-              ? BallPosition.FOREHAND
-              : BallPosition.MIDDLE
-      } else {
-        returnPosition =
-          rand < 0.4
-            ? BallPosition.FOREHAND
-            : rand < 0.8
-              ? BallPosition.BACKHAND
-              : BallPosition.MIDDLE
-      }
-    } else {
-      // Lower placement - more random, less accurate targeting
-      if (idealTarget === BallPosition.FOREHAND) {
-        returnPosition =
-          rand < 0.4
-            ? BallPosition.FOREHAND
-            : rand < 0.75
-              ? BallPosition.BACKHAND
-              : BallPosition.MIDDLE
-      } else if (idealTarget === BallPosition.BACKHAND) {
-        returnPosition =
-          rand < 0.4
-            ? BallPosition.BACKHAND
-            : rand < 0.75
-              ? BallPosition.FOREHAND
-              : BallPosition.MIDDLE
-      } else {
-        returnPosition =
-          rand < 0.35
-            ? BallPosition.FOREHAND
-            : rand < 0.7
-              ? BallPosition.BACKHAND
-              : BallPosition.MIDDLE
-      }
-    }
-
-    // Depth based on shot quality and player style
-    let returnDepth: BallDepth = BallDepth.MID
-    if (returnQuality > 0.75) {
-      returnDepth = Math.random() > 0.3 ? BallDepth.LONG : BallDepth.MID
-    } else if (returnQuality > 0.5) {
-      returnDepth = Math.random() > 0.5 ? BallDepth.MID : BallDepth.LONG
-    } else {
-      // Lower quality - more likely mid or short
-      returnDepth = Math.random() > 0.4 ? BallDepth.MID : BallDepth.SHORT
-    }
-
-    // Defensive players tend to return shorter (hitter's play style, not opponent's)
-    if (
-      hitter.playStyle === PlayStyle.CHOPPER ||
-      hitter.playStyle === PlayStyle.DEFENSIVE_SPECIALIST
-    ) {
-      if (returnDepth === BallDepth.LONG && Math.random() > 0.4) {
-        returnDepth = BallDepth.MID
-      }
-    }
-
-    // Spin - more realistic counter-spin logic
-    let returnSpin: BallSpin = BallSpin.TOPSPIN
-    const spinRand = Math.random()
-
-    // Determine which side opponent will use for return
-    const opponentIsForehand =
-      returnPosition === BallPosition.FOREHAND ||
-      (returnPosition === BallPosition.MIDDLE &&
-        opponent.forehandBackhandTendency !== FavourStyle.HEAVILY_BACKHAND)
-
-    // Opponent's spin reading affects their ability to counter
-    const spinReading = calculateSpinReading(
-      opponent.skills.spin,
-      getEquipmentModifiers(
-        opponentIsForehand ? opponent.forehandRubber : opponent.backhandRubber
-      ),
-      shot.intendedSpin
-    )
-
-    if (shot.intendedSpin === BallSpin.TOPSPIN) {
-      // Receiving topspin
-      if (spinReading > 0.7) {
-        // Good spin reading - can counter with backspin or no-spin
-        if (spinRand < 0.5) {
-          returnSpin = BallSpin.BACKSPIN
-        } else if (spinRand < 0.8) {
-          returnSpin = BallSpin.NO_SPIN
-        } else {
-          returnSpin = BallSpin.TOPSPIN // Loop it back
-        }
-      } else {
-        // Lower spin reading - more likely to loop back or use no-spin
-        if (spinRand < 0.4) {
-          returnSpin = BallSpin.TOPSPIN
-        } else if (spinRand < 0.7) {
-          returnSpin = BallSpin.NO_SPIN
-        } else {
-          returnSpin = BallSpin.BACKSPIN
-        }
-      }
-    } else if (shot.intendedSpin === BallSpin.BACKSPIN) {
-      // Receiving backspin
-      if (spinReading > 0.7) {
-        // Good spin reading - can lift/loop with topspin
-        if (spinRand < 0.6) {
-          returnSpin = BallSpin.TOPSPIN
-        } else if (spinRand < 0.85) {
-          returnSpin = BallSpin.NO_SPIN
-        } else {
-          returnSpin = BallSpin.BACKSPIN // Push back
-        }
-      } else {
-        // Lower spin reading - more likely to push back or use no-spin
-        if (spinRand < 0.5) {
-          returnSpin = BallSpin.BACKSPIN
-        } else if (spinRand < 0.8) {
-          returnSpin = BallSpin.NO_SPIN
-        } else {
-          returnSpin = BallSpin.TOPSPIN
-        }
-      }
-    } else {
-      // Receiving no-spin
-      // Can do anything, but topspin is common
-      if (spinRand < 0.5) {
-        returnSpin = BallSpin.TOPSPIN
-      } else if (spinRand < 0.8) {
-        returnSpin = BallSpin.NO_SPIN
-      } else {
-        returnSpin = BallSpin.BACKSPIN
-      }
-    }
-
-    // Speed - more realistic distribution based on shot type and quality
-    // Attacking shots (high power) vs defensive shots (low power) have different speed ranges
-    const isAttackingShot = shot.power > 50
-
-    let normalizedSpeed: number
-    if (isAttackingShot) {
-      // Attacking shots: 35-85 range, with most in 45-75
-      // Use a smoother curve to avoid clustering at extremes
-      const powerRatio = Math.min(1, shot.power / 100) // Normalize power to 0-1
-      const attackBase = 35 + powerRatio * 40 // 35-75 base range
-      const qualityBonus = returnQuality * 15 // Quality adds up to 15 speed
-      const variance = (Math.random() - 0.5) * 15 // ±7.5 variance
-      normalizedSpeed = attackBase + qualityBonus + variance
-      // Soft cap - use a curve instead of hard cap to avoid clustering
-      if (normalizedSpeed > 85) {
-        normalizedSpeed = 85 + (normalizedSpeed - 85) * 0.3 // Diminishing returns above 85
-      }
-      normalizedSpeed = Math.min(90, Math.max(35, normalizedSpeed))
-    } else {
-      // Defensive shots: 15-45 range, with most in 20-35
-      // Lower power shots should have slower, more controlled speeds
-      const powerRatio = Math.min(1, shot.power / 50) // Normalize power to 0-1 for defensive range
-      const defensiveBase = 15 + powerRatio * 20 // 15-35 base range
-      const qualityBonus = returnQuality * 10 // Quality adds up to 10 speed
-      const variance = (Math.random() - 0.5) * 8 // ±4 variance for defensive shots
-      normalizedSpeed = defensiveBase + qualityBonus + variance
-      // Soft cap for defensive shots too
-      if (normalizedSpeed > 45) {
-        normalizedSpeed = 45 + (normalizedSpeed - 45) * 0.4
-      }
-      normalizedSpeed = Math.min(50, Math.max(15, normalizedSpeed))
-    }
-
-    // Round to integer for cleaner display
-    normalizedSpeed = Math.round(normalizedSpeed)
-
-    const returnBall: Ball = {
-      position: returnPosition,
-      depth: returnDepth,
-      spin: returnSpin,
-      speed: normalizedSpeed,
-      power: normalizedSpeed
-    }
-
     // Check for lucky bounce
-    const luckyBounce = checkLuckyBounce(
-      calculateLuckyBounceChance(finalQuality, opponent.skills.footwork),
-      opponent.skills.footwork
-    )
-
-    if (luckyBounce.occurred && !luckyBounce.saved) {
+    const lucky = checkLuckyBounce(returnQuality)
+    if (lucky.occurred) {
+      returnQuality += lucky.boost
+      returnQuality = Math.max(0, Math.min(100, returnQuality))
       events.push({
         type: 'lucky_bounce',
         player: currentPlayer,
-        description: `${hitter.shortName || hitter.firstName} gets a lucky ${luckyBounce.type} bounce!`,
+        description: `${hitter.shortName || hitter.firstName} gets a lucky ${lucky.type} bounce!`,
         timestamp: Date.now()
       })
-      events.push({
-        type: 'point',
-        player: currentPlayer,
-        description: `${hitter.shortName || hitter.firstName} wins the point (lucky bounce)`,
-        timestamp: Date.now()
-      })
-      return {
-        winner: currentPlayer,
-        events,
-        newPositions: positions
-      }
     }
 
-    // Check if rally is won (before logging the return)
-    if (Math.random() < winChance) {
-      // Log the winning shot
-      const winningDifficulty = calculateDifficulty(
-        returnBall,
-        opponentPosition,
-        opponent.skills.footwork
-      )
-      events.push({
-        type: 'ball',
-        player: currentPlayer,
-        description: `${hitter.shortName || hitter.firstName} hits: ${formatBallDetails(returnBall, positions[currentPlayer])}. Difficulty for opponent: ${winningDifficulty}`,
-        timestamp: Date.now(),
-        ballDetails: {
-          position: returnBall.position,
-          depth: returnBall.depth,
-          spin: returnBall.spin,
-          speed: returnBall.speed,
-          playerPosition: positions[currentPlayer],
-          difficulty: winningDifficulty
-        }
-      })
-      events.push({
-        type: 'point',
-        player: currentPlayer,
-        description: `${hitter.shortName || hitter.firstName} wins the point`,
-        timestamp: Date.now()
-      })
-      return {
-        winner: currentPlayer,
-        events,
-        newPositions: positions
-      }
-    }
+    recentQualities.push(returnQuality)
 
-    // Log the return ball
-    const returnDifficulty = calculateDifficulty(
-      returnBall,
-      opponentPosition,
-      opponent.skills.footwork
-    )
     events.push({
-      type: 'ball',
+      type: 'return',
       player: currentPlayer,
-      description: `${hitter.shortName || hitter.firstName} returns: ${formatBallDetails(returnBall, positions[currentPlayer])}. Difficulty for opponent: ${returnDifficulty}`,
-      timestamp: Date.now(),
-      ballDetails: {
-        position: returnBall.position,
-        depth: returnBall.depth,
-        spin: returnBall.spin,
-        speed: returnBall.speed,
-        playerPosition: positions[currentPlayer],
-        difficulty: returnDifficulty
-      }
+      description: `${hitter.shortName || hitter.firstName} returns (quality: ${Math.round(returnQuality)})`,
+      timestamp: Date.now()
     })
 
-    // Set ball for next iteration
-    ball = returnBall
+    // Check win condition
+    const winCheck = checkWinCondition(returnQuality, incomingQuality, rallyLength)
+    if (winCheck.won) {
+      const winner = winCheck.winner === 'returner' ? currentPlayer : 1 - currentPlayer
+      events.push({
+        type: 'point',
+        player: winner,
+        description: `${winner === 0 ? player1.shortName || player1.firstName : player2.shortName || player2.firstName} wins the point`,
+        timestamp: Date.now()
+      })
+      pointWon = true
+      return {
+        winner,
+        events,
+        newPositions: positions
+      }
+    }
+
+    // Continue rally
+    incomingQuality = returnQuality
     currentPlayer = 1 - currentPlayer
     rallyLength++
   }
 
-  // If we hit max rallies, determine winner by quality
-  // All balls should have been logged during the loop, but log final state if needed
-  const finalQuality1 = (player1.skills.consistency + player1.skills.footwork) / 2
-  const finalQuality2 = (player2.skills.consistency + player2.skills.footwork) / 2
-  const winner = finalQuality1 > finalQuality2 ? 0 : 1
-
-  // Only add point event if we haven't already added one (shouldn't happen, but safety check)
-  const hasPointEvent = events.some((e) => e.type === 'point')
-  if (!hasPointEvent) {
-    events.push({
-      type: 'point',
-      player: winner,
-      description: `${winner === 0 ? player1.shortName || player1.firstName : player2.shortName || player2.firstName} wins the point${rallyLength >= maxRallies ? ` (long rally - ${rallyLength} exchanges)` : ''}`,
-      timestamp: Date.now()
-    })
-  }
-
+  // Fallback (should never reach here, but TypeScript requires it)
   return {
-    winner,
+    winner: 0,
     events,
     newPositions: positions
   }
