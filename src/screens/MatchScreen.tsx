@@ -11,6 +11,7 @@ import {
   type MatchState,
   type RallyEvent
 } from '../utils/matchEngine'
+import { runStatAdvantageExperiments } from '../utils/matchExperiments'
 import {
   Player,
   Gender,
@@ -46,6 +47,8 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [speed, setSpeed] = useState(1) // 1x, 2x, 4x, etc.
   const [matchState, setMatchState] = useState<MatchState | null>(null)
   const [logEvents, setLogEvents] = useState<RallyEvent[]>([])
+  const [totalPoints, setTotalPoints] = useState<[number, number]>([0, 0]) // Track total points won for debugging
+  const [isRunningExperiments, setIsRunningExperiments] = useState(false)
   const simulationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const logEndRef = useRef<HTMLDivElement | null>(null)
 
@@ -100,6 +103,7 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       const initialState = initializeMatch(player1, player2)
       setMatchState(initialState)
       setLogEvents([])
+      setTotalPoints([0, 0]) // Reset total points
     }
   }, [matchPlayers, matchState])
 
@@ -133,6 +137,13 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         // Update game score
         const newGameScore = [...currentState.currentGameScore]
         newGameScore[rally.winner]++
+
+        // Update total points won for debugging
+        setTotalPoints((prev) => {
+          const newTotal = [...prev]
+          newTotal[rally.winner]++
+          return newTotal as [number, number]
+        })
 
         // Check if game is won (first to 11, win by 2, or first to 15 in case of 14-14)
         let gameWon = false
@@ -225,6 +236,7 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     const targetSet = matchState.currentSet
     let state = { ...matchState }
     const newLogEvents: RallyEvent[] = []
+    const newTotalPoints: [number, number] = [...totalPoints] as [number, number]
 
     // Simulate until set is complete
     while (!state.isComplete && state.currentSet === targetSet) {
@@ -242,6 +254,9 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       // Update state
       const newGameScore = [...state.currentGameScore]
       newGameScore[rally.winner]++
+
+      // Update total points won
+      newTotalPoints[rally.winner]++
 
       let gameWon = false
       let gameWinner: number | null = null
@@ -306,6 +321,7 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
     setLogEvents((prev) => [...prev, ...newLogEvents])
     setMatchState(state)
+    setTotalPoints(newTotalPoints)
   }
 
   const handleSimulatePoint = () => {
@@ -330,6 +346,13 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     // Update game score
     const newGameScore = [...matchState.currentGameScore]
     newGameScore[rally.winner]++
+
+    // Update total points won for debugging
+    setTotalPoints((prev) => {
+      const newTotal = [...prev]
+      newTotal[rally.winner]++
+      return newTotal as [number, number]
+    })
 
     // Check if game is won (first to 11, win by 2, or first to 15 in case of 14-14)
     let gameWon = false
@@ -517,6 +540,7 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     const newLogEvents: RallyEvent[] = []
     let pointsSimulated = 0
     const targetPoints = 200
+    const newTotalPoints: [number, number] = [...totalPoints] as [number, number]
 
     // Simulate 200 points without ending the match
     while (pointsSimulated < targetPoints) {
@@ -533,6 +557,9 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
       const newGameScore = [...state.currentGameScore]
       newGameScore[rally.winner]++
+
+      // Update total points won
+      newTotalPoints[rally.winner]++
 
       let gameWon = false
       let gameWinner: number | null = null
@@ -601,6 +628,34 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
     setLogEvents((prev) => [...prev, ...newLogEvents])
     setMatchState(state)
+    setTotalPoints(newTotalPoints)
+  }
+
+  const handleRunExperiments = () => {
+    setIsRunningExperiments(true)
+
+    // Run experiments in a timeout to allow UI to update first
+    setTimeout(() => {
+      try {
+        // Run experiments (this may take a while)
+        const results = runStatAdvantageExperiments(5000)
+
+        // Convert to JSON and download
+        const jsonString = JSON.stringify(results, null, 2)
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+        const filename = `stat-advantage-experiments-${timestamp}.json`
+        downloadTextFile(jsonString, filename)
+
+        // Also log to console for easy viewing
+        console.log('Experiment Results:', results)
+        alert(`Experiments complete! Results saved to ${filename}`)
+      } catch (error) {
+        console.error('Error running experiments:', error)
+        alert('Error running experiments. Check console for details.')
+      } finally {
+        setIsRunningExperiments(false)
+      }
+    }, 100)
   }
 
   const handleSkipToEndOfMatch = () => {
@@ -610,6 +665,7 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     const [player1, player2] = matchPlayers
     let state = { ...matchState }
     const newLogEvents: RallyEvent[] = []
+    const newTotalPoints: [number, number] = [...totalPoints] as [number, number]
 
     // Fast-forward to end of match
     while (!state.isComplete) {
@@ -626,6 +682,9 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
       const newGameScore = [...state.currentGameScore]
       newGameScore[rally.winner]++
+
+      // Update total points won
+      newTotalPoints[rally.winner]++
 
       let gameWon = false
       let gameWinner: number | null = null
@@ -668,8 +727,8 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         newGameScore[1] = 0
         newServingPlayer = 1 - newServingPlayer
       } else {
-        const totalPoints = newGameScore[0] + newGameScore[1]
-        if (totalPoints > 0 && totalPoints % 2 === 0) {
+        const totalPointsInGame = newGameScore[0] + newGameScore[1]
+        if (totalPointsInGame > 0 && totalPointsInGame % 2 === 0) {
           newServingPlayer = 1 - newServingPlayer
         }
       }
@@ -690,6 +749,7 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
     setLogEvents((prev) => [...prev, ...newLogEvents])
     setMatchState(state)
+    setTotalPoints(newTotalPoints)
   }
 
   if (!matchPlayers) {
@@ -827,221 +887,60 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: theme.spacing.lg
             }}
           >
-            {/* Match Score (Sets) */}
+            {/* Total Points Scoreboard (Debug Mode) */}
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                width: '100%',
-                alignItems: 'center',
-                marginBottom: theme.spacing.md
-              }}
-            >
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize['2xl'],
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.text.primary,
-                  textAlign: 'center',
-                  flex: 1
-                }}
-              >
-                {matchState.sets[0]}
-              </div>
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize.lg,
-                  color: theme.colors.text.secondary,
-                  textAlign: 'center',
-                  flex: 1
-                }}
-              >
-                Sets
-              </div>
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize['2xl'],
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.text.primary,
-                  textAlign: 'center',
-                  flex: 1
-                }}
-              >
-                {matchState.sets[1]}
-              </div>
-            </div>
-
-            {/* Table Tennis Table Visual */}
-            <div
-              style={{
-                width: '100%',
-                height: '200px',
-                background: theme.gradients.secondary,
-                borderRadius: theme.borderRadius.lg,
-                border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center',
-                margin: `${theme.spacing.lg} 0`
-              }}
-            >
-              {/* Net */}
-              <div
-                style={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '4px',
-                  background: theme.colors.neutral.white,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  boxShadow: `0 0 10px ${theme.colors.neutral.white}`
-                }}
-              />
-              {/* Center line */}
-              <div
-                style={{
-                  position: 'absolute',
-                  width: '2px',
-                  height: '100%',
-                  background: theme.colors.border.default,
-                  left: '50%',
-                  transform: 'translateX(-50%)'
-                }}
-              />
-            </div>
-
-            {/* Current Set Score */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                width: '100%',
                 alignItems: 'center',
-                marginTop: theme.spacing.md
+                width: '100%',
+                gap: theme.spacing.xl
               }}
             >
               <div
                 style={{
-                  fontSize: theme.typography.fontSize['4xl'],
+                  fontSize: theme.typography.fontSize['5xl'],
                   fontWeight: theme.typography.fontWeight.extrabold,
                   color: theme.colors.primary.main,
-                  textAlign: 'center',
-                  flex: 1
+                  textAlign: 'center'
                 }}
               >
-                {matchState.currentGameScore[0]}
+                {totalPoints[0]}
               </div>
               <div
                 style={{
-                  fontSize: theme.typography.fontSize.lg,
+                  fontSize: theme.typography.fontSize['5xl'],
+                  fontWeight: theme.typography.fontWeight.extrabold,
                   color: theme.colors.text.secondary,
-                  textAlign: 'center',
-                  flex: 1
+                  textAlign: 'center'
                 }}
               >
-                Set {matchState.currentSet + 1} / 5
-                {matchState.servingPlayer === 0 && (
-                  <span
-                    style={{
-                      marginLeft: theme.spacing.xs,
-                      color: theme.colors.accent.main
-                    }}
-                  >
-                    •
-                  </span>
-                )}
-                {matchState.servingPlayer === 1 && (
-                  <span
-                    style={{
-                      marginLeft: theme.spacing.xs,
-                      color: theme.colors.accent.main
-                    }}
-                  >
-                    •{' '}
-                  </span>
-                )}
+                :
               </div>
               <div
                 style={{
-                  fontSize: theme.typography.fontSize['4xl'],
+                  fontSize: theme.typography.fontSize['5xl'],
                   fontWeight: theme.typography.fontWeight.extrabold,
                   color: theme.colors.secondary.main,
-                  textAlign: 'center',
-                  flex: 1
+                  textAlign: 'center'
                 }}
               >
-                {matchState.currentGameScore[1]}
+                {totalPoints[1]}
               </div>
             </div>
-
-            {/* Set History */}
-            {matchState.setScores.length > 0 && (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: theme.spacing.xs,
-                  width: '100%',
-                  marginTop: theme.spacing.md
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.secondary,
-                    textAlign: 'center',
-                    marginBottom: theme.spacing.xs
-                  }}
-                >
-                  Set Scores
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    gap: theme.spacing.sm
-                  }}
-                >
-                  {matchState.setScores.map((score, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: 'flex',
-                        gap: theme.spacing.xs,
-                        fontSize: theme.typography.fontSize.base,
-                        color: theme.colors.text.primary
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontWeight:
-                            score[0] > score[1]
-                              ? theme.typography.fontWeight.bold
-                              : theme.typography.fontWeight.normal
-                        }}
-                      >
-                        {score[0]}
-                      </span>
-                      <span style={{ color: theme.colors.text.secondary }}>-</span>
-                      <span
-                        style={{
-                          fontWeight:
-                            score[1] > score[0]
-                              ? theme.typography.fontWeight.bold
-                              : theme.typography.fontWeight.normal
-                        }}
-                      >
-                        {score[1]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div
+              style={{
+                fontSize: theme.typography.fontSize.sm,
+                color: theme.colors.text.light,
+                fontStyle: 'italic'
+              }}
+            >
+              Total Points Won
+            </div>
           </GameCard>
 
           {/* Control Buttons */}
@@ -1108,6 +1007,16 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               disabled={matchState.isComplete}
             >
               ⏩⏩ Skip to End of Match
+            </GameButton>
+            <GameButton
+              variant="success"
+              onClick={handleRunExperiments}
+              size="md"
+              disabled={isRunningExperiments}
+            >
+              {isRunningExperiments
+                ? '⏳ Running Experiments...'
+                : '🔬 Run Stat Experiments'}
             </GameButton>
           </div>
         </div>

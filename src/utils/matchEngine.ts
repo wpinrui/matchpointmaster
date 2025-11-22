@@ -299,6 +299,7 @@ function calculateShotQuality(
   player: Player,
   ball: Ball,
   playerPosition: PlayerPosition,
+  opponentPosition: PlayerPosition,
   isForehand: boolean,
   equipmentModifiers: EquipmentModifiers
 ): {
@@ -350,7 +351,7 @@ function calculateShotQuality(
 
   if (wantsToAttack) {
     // Ideal attacking shot - away from opponent, fast, topspin
-    intendedPosition = getIdealAttackPosition(playerPosition)
+    intendedPosition = getIdealAttackPosition(opponentPosition)
     intendedDepth = BallDepth.LONG
     // 80% topspin, 15% backspin (for variation), 5% no-spin
     const spinRand = Math.random()
@@ -461,11 +462,11 @@ function shouldAttack(
 /**
  * Get ideal attack position (away from opponent)
  */
-function getIdealAttackPosition(playerPosition: PlayerPosition): BallPosition {
+function getIdealAttackPosition(opponentPosition: PlayerPosition): BallPosition {
   // Attack to opposite side of opponent's bias
-  if (playerPosition.horizontal === HorizontalPosition.FOREHAND_BIAS) {
+  if (opponentPosition.horizontal === HorizontalPosition.FOREHAND_BIAS) {
     return BallPosition.BACKHAND
-  } else if (playerPosition.horizontal === HorizontalPosition.BACKHAND_BIAS) {
+  } else if (opponentPosition.horizontal === HorizontalPosition.BACKHAND_BIAS) {
     return BallPosition.FOREHAND
   }
   return BallPosition.MIDDLE
@@ -712,26 +713,45 @@ export function simulateRally(
     const serveQuality = applyVariance(server.skills.serve / 100, 0.1)
     const servePower = server.skills.serve * 0.7
 
-    // Determine serve characteristics - more variety
-    const servePosition =
-      Math.random() > 0.5 ? BallPosition.FOREHAND : BallPosition.BACKHAND
-    // Serves: 60% short, 30% mid, 10% long (long serves are risky)
-    const serveDepthRand = Math.random()
-    const serveDepth =
-      serveDepthRand < 0.6
-        ? BallDepth.SHORT
-        : serveDepthRand < 0.9
-          ? BallDepth.MID
-          : BallDepth.LONG
+    // Determine serve characteristics - better serve stat = better placement and spin control
+    // Higher serve stat = more likely to serve to opponent's weaker side
+    const servePositionRand = Math.random()
+    let servePosition: BallPosition
+    if (serveQuality > 0.6) {
+      // High serve quality - can target better (slightly favor backhand as it's often weaker)
+      servePosition = servePositionRand < 0.45 ? BallPosition.BACKHAND :
+        servePositionRand < 0.9 ? BallPosition.FOREHAND : BallPosition.MIDDLE
+    } else {
+      // Lower serve quality - more random
+      servePosition = servePositionRand < 0.5 ? BallPosition.FOREHAND : BallPosition.BACKHAND
+    }
 
-    // Serve spin: 40% topspin, 45% backspin, 15% no-spin (more realistic)
+    // Serves: Better serve stat = more likely to serve short (safer, more controlled)
+    // 60% short, 30% mid, 10% long (long serves are risky)
+    const serveDepthRand = Math.random()
+    let serveDepth: BallDepth
+    if (serveQuality > 0.7) {
+      // High serve quality - more likely to serve short (better control)
+      serveDepth = serveDepthRand < 0.7 ? BallDepth.SHORT :
+        serveDepthRand < 0.95 ? BallDepth.MID : BallDepth.LONG
+    } else {
+      // Lower serve quality - more variety but riskier
+      serveDepth = serveDepthRand < 0.6 ? BallDepth.SHORT :
+        serveDepthRand < 0.9 ? BallDepth.MID : BallDepth.LONG
+    }
+
+    // Serve spin: Better serve stat = more spin variety and control
     const serveSpinRand = Math.random()
-    const serveSpin =
-      serveSpinRand < 0.4
-        ? BallSpin.TOPSPIN
-        : serveSpinRand < 0.85
-          ? BallSpin.BACKSPIN
-          : BallSpin.NO_SPIN
+    let serveSpin: BallSpin
+    if (serveQuality > 0.65) {
+      // High serve quality - can vary spin more effectively
+      serveSpin = serveSpinRand < 0.35 ? BallSpin.TOPSPIN :
+        serveSpinRand < 0.8 ? BallSpin.BACKSPIN : BallSpin.NO_SPIN
+    } else {
+      // Lower serve quality - more predictable
+      serveSpin = serveSpinRand < 0.4 ? BallSpin.TOPSPIN :
+        serveSpinRand < 0.85 ? BallSpin.BACKSPIN : BallSpin.NO_SPIN
+    }
 
     ball = {
       position: servePosition,
@@ -741,11 +761,37 @@ export function simulateRally(
       power: servePower
     }
 
-    const difficulty = calculateDifficulty(
+    // Calculate base difficulty
+    let difficulty = calculateDifficulty(
       ball,
       receiverPosition,
       receiver.skills.footwork
     )
+
+    // Better serve quality makes the serve harder to return
+    // Adjust difficulty based on serve quality (more granular and impactful)
+    if (serveQuality > 0.65) {
+      // High serve quality - upgrade difficulty
+      if (difficulty === 'easy') {
+        difficulty = Math.random() < 0.7 ? 'medium' : 'easy'
+      } else if (difficulty === 'medium') {
+        difficulty = Math.random() < 0.5 ? 'hard' : 'medium'
+      }
+      // 'hard' stays 'hard'
+    } else if (serveQuality > 0.55) {
+      // Medium-high serve quality - slight upgrade
+      if (difficulty === 'easy' && Math.random() < 0.4) {
+        difficulty = 'medium'
+      }
+    } else if (serveQuality < 0.45) {
+      // Low serve quality - downgrade difficulty
+      if (difficulty === 'hard') {
+        difficulty = Math.random() < 0.6 ? 'medium' : 'hard'
+      } else if (difficulty === 'medium') {
+        difficulty = Math.random() < 0.4 ? 'easy' : 'medium'
+      }
+      // 'easy' stays 'easy'
+    }
 
     events.push({
       type: 'ball',
@@ -811,6 +857,7 @@ export function simulateRally(
       hitter,
       ball,
       hitterPosition,
+      opponentPosition,
       isForehand,
       equipmentModifiers
     )
@@ -897,8 +944,16 @@ export function simulateRally(
     )
 
     // Create the return ball first
+    // Return quality is based on the hitter's receive stat (they're the one returning the ball)
+    // Higher receive stat = better return quality, especially on difficult balls
+    // Incoming ball difficulty affects return quality, but high receive stat reduces the penalty
+    const baseDifficultyPenalty = incomingDifficulty === 'hard' ? 0.3 : incomingDifficulty === 'medium' ? 0.15 : 0
+    const receiveSkill = hitter.skills.receive / 100
+    // Higher receive stat reduces difficulty penalty (better players handle difficult balls better)
+    const difficultyPenalty = baseDifficultyPenalty * (1 - receiveSkill * 0.5) // High receive (1.0) reduces penalty by 50%
+    const baseReturnQuality = receiveSkill
     const returnQuality = applyVariance(
-      (opponent.skills.receive / 100) * (1 - winChance),
+      Math.max(0.2, baseReturnQuality - difficultyPenalty),
       0.1
     )
 
@@ -985,29 +1040,43 @@ export function simulateRally(
     }
 
     // Create return ball with variance - more realistic placement
-    // Position based on shot quality and placement skill
+    // Position based on placement skill and opponent's position (target away from opponent)
+    // Better placement = can target away from opponent better
     let returnPosition: BallPosition = BallPosition.MIDDLE
-    const placementSkill = opponent.skills.placement / 100
+    const placementSkill = hitter.skills.placement / 100
     const rand = Math.random()
 
-    // Better placement = more control over where ball goes
+    // Determine ideal target position (away from opponent)
+    const idealTarget = getIdealAttackPosition(opponentPosition)
+    
+    // High placement skill = better targeting (away from opponent, less middle shots)
     if (placementSkill > 0.7) {
-      // High placement - can target better
-      if (rand < 0.35) {
-        returnPosition = BallPosition.FOREHAND
-      } else if (rand < 0.7) {
-        returnPosition = BallPosition.BACKHAND
+      // High placement - can target away from opponent very well
+      if (idealTarget === BallPosition.FOREHAND) {
+        returnPosition = rand < 0.8 ? BallPosition.FOREHAND : rand < 0.95 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+      } else if (idealTarget === BallPosition.BACKHAND) {
+        returnPosition = rand < 0.8 ? BallPosition.BACKHAND : rand < 0.95 ? BallPosition.FOREHAND : BallPosition.MIDDLE
       } else {
-        returnPosition = BallPosition.MIDDLE
+        // Opponent is neutral - target corners
+        returnPosition = rand < 0.45 ? BallPosition.FOREHAND : rand < 0.9 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+      }
+    } else if (placementSkill > 0.5) {
+      // Medium placement - moderate targeting
+      if (idealTarget === BallPosition.FOREHAND) {
+        returnPosition = rand < 0.6 ? BallPosition.FOREHAND : rand < 0.85 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+      } else if (idealTarget === BallPosition.BACKHAND) {
+        returnPosition = rand < 0.6 ? BallPosition.BACKHAND : rand < 0.85 ? BallPosition.FOREHAND : BallPosition.MIDDLE
+      } else {
+        returnPosition = rand < 0.4 ? BallPosition.FOREHAND : rand < 0.8 ? BallPosition.BACKHAND : BallPosition.MIDDLE
       }
     } else {
-      // Lower placement - more random
-      if (rand < 0.4) {
-        returnPosition = BallPosition.FOREHAND
-      } else if (rand < 0.8) {
-        returnPosition = BallPosition.BACKHAND
+      // Lower placement - more random, less accurate targeting
+      if (idealTarget === BallPosition.FOREHAND) {
+        returnPosition = rand < 0.4 ? BallPosition.FOREHAND : rand < 0.75 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+      } else if (idealTarget === BallPosition.BACKHAND) {
+        returnPosition = rand < 0.4 ? BallPosition.BACKHAND : rand < 0.75 ? BallPosition.FOREHAND : BallPosition.MIDDLE
       } else {
-        returnPosition = BallPosition.MIDDLE
+        returnPosition = rand < 0.35 ? BallPosition.FOREHAND : rand < 0.7 ? BallPosition.BACKHAND : BallPosition.MIDDLE
       }
     }
 
@@ -1022,10 +1091,10 @@ export function simulateRally(
       returnDepth = Math.random() > 0.4 ? BallDepth.MID : BallDepth.SHORT
     }
 
-    // Defensive players tend to return shorter
+    // Defensive players tend to return shorter (hitter's play style, not opponent's)
     if (
-      opponent.playStyle === PlayStyle.CHOPPER ||
-      opponent.playStyle === PlayStyle.DEFENSIVE_SPECIALIST
+      hitter.playStyle === PlayStyle.CHOPPER ||
+      hitter.playStyle === PlayStyle.DEFENSIVE_SPECIALIST
     ) {
       if (returnDepth === BallDepth.LONG && Math.random() > 0.4) {
         returnDepth = BallDepth.MID
