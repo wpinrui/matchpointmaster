@@ -3,6 +3,7 @@ import { Player, Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import GameCard from '../cards/GameCard'
 import { getPlayerFullName } from '../../utils/playerGeneration'
+import { getStatColor } from '../../utils/managerStats'
 
 interface PlayerCardProps {
   player: Player
@@ -196,14 +197,8 @@ interface SkillBarProps {
 
 const SkillBar: React.FC<SkillBarProps> = ({ label, value }) => {
   const percentage = Math.min(100, Math.max(0, value))
-  const color =
-    percentage >= 80
-      ? theme.colors.success.main
-      : percentage >= 60
-        ? theme.colors.primary.main
-        : percentage >= 40
-          ? theme.colors.warning.main
-          : theme.colors.error.main
+  // Use linear gradient color formula from dark red to dark green
+  const color = getStatColor(percentage)
 
   return (
     <div
