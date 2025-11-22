@@ -116,8 +116,8 @@ export const DraftInfoDialog: React.FC<DraftInfoDialogProps> = ({ isOpen, onClos
             }}
           >
             <p style={{ margin: 0, fontSize: theme.typography.fontSize.sm }}>
-              <strong>Tip:</strong> Review each player&apos;s skills, ELO rating, and play
-              style before making your selections. A well-balanced team with diverse
+              <strong>Tip:</strong> Review each player&apos;s skills, overall rating, and
+              play style before making your selections. A well-balanced team with diverse
               strengths often performs better than a team focused on a single play style.
             </p>
           </div>

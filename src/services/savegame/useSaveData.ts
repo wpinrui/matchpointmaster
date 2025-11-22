@@ -7,7 +7,11 @@ import {
   Handedness,
   PlayStyle,
   RubberType,
-  SaveData
+  SaveData,
+  TrainingFocus,
+  PlayerTraining,
+  TrainingGoal,
+  Player
 } from './types'
 import {
   getCurrentSaveData,
@@ -158,24 +162,36 @@ export const useSaveData = () => {
 
   /**
    * Export current save to JSON file (manual download)
+   * Returns { success: boolean, message: string } to allow components to show dialogs
    */
-  const exportToJson = () => {
+  const exportToJson = (): { success: boolean; message: string } => {
     try {
       if (!currentSaveId) {
-        alert('No active save to export. Please create or load a save first.')
-        return
+        return {
+          success: false,
+          message: 'No active save to export. Please create or load a save first.'
+        }
       }
       const slot = getSaveSlot(currentSaveId)
       if (!slot) {
-        alert('Save slot not found. Please try again.')
-        return
+        return {
+          success: false,
+          message: 'Save slot not found. Please try again.'
+        }
       }
       const json = exportSaveSlotToJson(slot)
       const filename = `${sanitizeFilename(slot.name)}_${slot.id.slice(0, 8)}.json`
       downloadJsonFile(json, filename)
+      return {
+        success: true,
+        message: 'Save exported successfully!'
+      }
     } catch (error) {
       console.error('Error exporting save file:', error)
-      alert('Failed to export save file. Please try again.')
+      return {
+        success: false,
+        message: 'Failed to export save file. Please try again.'
+      }
     }
   }
 
@@ -268,6 +284,165 @@ export const useSaveData = () => {
     }))
   }
 
+  const updateSkillSnapshots = {
+    add: (snapshot: SaveData['skillSnapshots'][0]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        skillSnapshots: [...prevData.skillSnapshots, snapshot]
+      }))
+    },
+    addMany: (snapshots: SaveData['skillSnapshots']) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        skillSnapshots: [...prevData.skillSnapshots, ...snapshots]
+      }))
+    },
+    clear: () => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        skillSnapshots: []
+      }))
+    }
+  }
+
+  const updateTrainingPlan = {
+    set: (plan: SaveData['trainingPlan']) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingPlan: plan
+      }))
+    },
+    setTeamFocus: (focus: TrainingFocus | null) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingPlan: prevData.trainingPlan
+          ? { ...prevData.trainingPlan, teamFocus: focus }
+          : null
+      }))
+    },
+    addPlayerAssignment: (assignment: PlayerTraining) => {
+      setSaveData((prevData) => {
+        if (!prevData.trainingPlan) return prevData
+        const existingIndex = prevData.trainingPlan.playerAssignments.findIndex(
+          (a) => a.playerId === assignment.playerId
+        )
+        const newAssignments =
+          existingIndex >= 0
+            ? prevData.trainingPlan.playerAssignments.map((a, i) =>
+                i === existingIndex ? assignment : a
+              )
+            : [...prevData.trainingPlan.playerAssignments, assignment]
+
+        const slotsUsed = newAssignments.filter((a) => a.isIndividualCoaching).length
+
+        return {
+          ...prevData,
+          trainingPlan: {
+            ...prevData.trainingPlan,
+            playerAssignments: newAssignments,
+            coachingSlotsUsed: slotsUsed
+          }
+        }
+      })
+    },
+    removePlayerAssignment: (playerId: string) => {
+      setSaveData((prevData) => {
+        if (!prevData.trainingPlan) return prevData
+        const newAssignments = prevData.trainingPlan.playerAssignments.filter(
+          (a) => a.playerId !== playerId
+        )
+        const slotsUsed = newAssignments.filter((a) => a.isIndividualCoaching).length
+
+        return {
+          ...prevData,
+          trainingPlan: {
+            ...prevData.trainingPlan,
+            playerAssignments: newAssignments,
+            coachingSlotsUsed: slotsUsed
+          }
+        }
+      })
+    },
+    setCompleted: (completed: boolean) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingPlan: prevData.trainingPlan
+          ? { ...prevData.trainingPlan, completed }
+          : null
+      }))
+    },
+    setMonthAndYear: (month: number, year: number) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingPlan: prevData.trainingPlan
+          ? { ...prevData.trainingPlan, month, year }
+          : null
+      }))
+    }
+  }
+
+  const updateTrainingGoals = {
+    add: (goal: SaveData['trainingGoals'][0]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingGoals: [...prevData.trainingGoals, goal]
+      }))
+    },
+    remove: (goalId: string) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingGoals: prevData.trainingGoals.filter((g) => g.id !== goalId)
+      }))
+    },
+    update: (goalId: string, updates: Partial<SaveData['trainingGoals'][0]>) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingGoals: prevData.trainingGoals.map((g) =>
+          g.id === goalId ? { ...g, ...updates } : g
+        )
+      }))
+    },
+    set: (goals: SaveData['trainingGoals']) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        trainingGoals: goals
+      }))
+    }
+  }
+
+  const updateAISchools = {
+    set: (schools: SaveData['aiSchools']) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        aiSchools: schools
+      }))
+    },
+    update: (schoolId: number, updates: Partial<SaveData['aiSchools'][0]>) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        aiSchools: prevData.aiSchools.map((school) =>
+          school.id === schoolId ? { ...school, ...updates } : school
+        )
+      }))
+    },
+    updateSchoolPlayers: (schoolId: number, players: Player[]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        aiSchools: prevData.aiSchools.map((school) =>
+          school.id === schoolId ? { ...school, players } : school
+        )
+      }))
+    },
+    updateSchoolRoster: (schoolId: number, roster: string[]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        aiSchools: prevData.aiSchools.map((school) =>
+          school.id === schoolId ? { ...school, teamRoster: roster } : school
+        )
+      }))
+    }
+  }
+
   return {
     saveData,
     manager: saveData.manager,
@@ -277,12 +452,20 @@ export const useSaveData = () => {
     season: saveData.season,
     draftCompleted: saveData.draftCompleted,
     emails: saveData.emails,
+    trainingPlan: saveData.trainingPlan,
+    skillSnapshots: saveData.skillSnapshots,
+    trainingGoals: saveData.trainingGoals,
+    aiSchools: saveData.aiSchools,
     currentSaveId,
     updateManager,
     updateSchool,
     updatePlayers,
     updateTeamRoster,
     updateSeason,
+    updateTrainingPlan,
+    updateSkillSnapshots,
+    updateTrainingGoals,
+    updateAISchools,
     markEmailAsRead,
     addEmail,
     exportToJson,

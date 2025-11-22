@@ -19,7 +19,19 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }, [emails])
 
   // Initialize with first unread email, or first email if all are read
+  // Also check if an email ID was passed from navigation (e.g., clicking email card on home screen)
   const getInitialEmailId = () => {
+    // Check if an email ID was passed from navigation
+    const passedEmailId = sessionStorage.getItem('selectedEmailId')
+    if (passedEmailId) {
+      sessionStorage.removeItem('selectedEmailId') // Clear it after reading
+      const emailExists = emails.find((e) => e.id === passedEmailId)
+      if (emailExists) {
+        return passedEmailId
+      }
+    }
+
+    // Otherwise, default to first unread email, or first email if all are read
     const unread = emails.filter((e) => !e.read).sort((a, b) => b.timestamp - a.timestamp)
     if (unread.length > 0) {
       return unread[0].id
@@ -30,6 +42,16 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(getInitialEmailId)
 
+  // Mark initial email as read when component mounts if it was passed from navigation
+  React.useEffect(() => {
+    if (selectedEmailId) {
+      const email = emails.find((e) => e.id === selectedEmailId)
+      if (email && !email.read) {
+        markEmailAsRead(selectedEmailId)
+      }
+    }
+  }, [selectedEmailId, emails, markEmailAsRead])
+
   const selectedEmail = useMemo(() => {
     return emails.find((e) => e.id === selectedEmailId) || null
   }, [emails, selectedEmailId])
@@ -38,6 +60,32 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     setSelectedEmailId(email.id)
     if (!email.read) {
       markEmailAsRead(email.id)
+    }
+  }
+
+  // Find next unread email - any other unread email besides the current one
+  const nextUnreadEmail = useMemo(() => {
+    if (!selectedEmailId) return null
+
+    // Get all emails that are unread and not the currently selected one
+    // We check emails directly instead of unreadEmails to handle cases where
+    // the current email was just marked as read but unreadEmails hasn't updated yet
+    const otherUnreadEmails = emails
+      .filter((e) => !e.read && e.id !== selectedEmailId)
+      .sort((a, b) => b.timestamp - a.timestamp)
+
+    // If there are other unread emails, return the first one (most recent)
+    return otherUnreadEmails.length > 0 ? otherUnreadEmails[0] : null
+  }, [emails, selectedEmailId])
+
+  const handleNextUnread = () => {
+    if (nextUnreadEmail) {
+      setSelectedEmailId(nextUnreadEmail.id)
+      if (!nextUnreadEmail.read) {
+        markEmailAsRead(nextUnreadEmail.id)
+      }
+    } else {
+      changeScreen(Screens.HOME)
     }
   }
 
@@ -84,12 +132,8 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             </span>
           )}
         </h1>
-        <GameButton
-          variant="secondary"
-          onClick={() => changeScreen(Screens.HOME)}
-          type="button"
-        >
-          Back to Home
+        <GameButton variant="secondary" onClick={handleNextUnread} type="button">
+          {nextUnreadEmail ? 'Next Unread' : 'Back to Home'}
         </GameButton>
       </div>
 

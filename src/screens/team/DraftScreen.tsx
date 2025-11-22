@@ -7,7 +7,9 @@ import { ScreenProps, Screens } from '../../screen_manager/screens'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
-import { GamePhase, getNextPhase } from '../../utils/gamePhases'
+import { GamePhase } from '../../utils/gamePhases'
+import { completeDraftAndProgress } from '../../utils/phaseProgression'
+import { validateTeamBeforeDraft } from '../../utils/draftHelpers'
 import { generatePlayer, IntakeQuality } from '../../utils/playerGeneration'
 import {
   attractivenessToIntakeQuality,
@@ -27,10 +29,15 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     updatePlayers,
     season,
     draftCompleted,
-    updateSeason
+    updateSeason,
+    addEmail,
+    aiSchools,
+    updateAISchools
   } = useSaveDataContext()
 
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [showEndDraftConfirm, setShowEndDraftConfirm] = useState(false)
+  const [showEmptyTeamDialog, setShowEmptyTeamDialog] = useState(false)
   const hasGeneratedInitialPoolRef = useRef<boolean>(false)
 
   // Helper to pick a random element from an array
@@ -48,22 +55,85 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   const handleConfirmLeave = () => {
-    updateSeason.setDraftCompleted(true)
+    // Check if team is empty
+    const validation = validateTeamBeforeDraft(teamRoster)
+    if (!validation.isValid) {
+      setShowLeaveConfirm(false)
+      setShowEmptyTeamDialog(true)
+      return
+    }
+
+    // Progress to February training phase (if still in January/DRAFT)
+    if (season.phase === 'draft' && season.month === 1) {
+      completeDraftAndProgress(
+        {
+          currentMonth: season.month,
+          currentYear: season.year,
+          players,
+          teamRoster,
+          manager,
+          school,
+          aiSchools
+        },
+        {
+          updateSeason: {
+            setDraftCompleted: updateSeason.setDraftCompleted,
+            setMonth: updateSeason.setMonth,
+            setPhase: updateSeason.setPhase
+          },
+          addEmail,
+          updatePlayers,
+          updateAISchools
+        }
+      )
+    }
+
     setShowLeaveConfirm(false)
     changeScreen(Screens.HOME)
   }
 
   const handleEndDraft = () => {
-    // Mark draft as completed
-    updateSeason.setDraftCompleted(true)
+    // Check if team is empty BEFORE showing confirmation
+    const validation = validateTeamBeforeDraft(teamRoster)
+    if (!validation.isValid) {
+      setShowEmptyTeamDialog(true)
+      return
+    }
 
-    // Progress to February training phase
-    const nextPhase = getNextPhase(GamePhase.DRAFT, season.month)
-    updateSeason.setMonth(nextPhase.month)
-    updateSeason.setPhase(nextPhase.phase)
+    // Show confirmation dialog only if team is not empty
+    setShowEndDraftConfirm(true)
+  }
+
+  const handleConfirmEndDraft = () => {
+    completeDraftAndProgress(
+      {
+        currentMonth: season.month,
+        currentYear: season.year,
+        players,
+        teamRoster,
+        manager,
+        school,
+        aiSchools
+      },
+      {
+        updateSeason: {
+          setDraftCompleted: updateSeason.setDraftCompleted,
+          setMonth: updateSeason.setMonth,
+          setPhase: updateSeason.setPhase
+        },
+        addEmail,
+        updatePlayers,
+        updateAISchools
+      }
+    )
 
     // Navigate to home
+    setShowEndDraftConfirm(false)
     changeScreen(Screens.HOME)
+  }
+
+  const handleCancelEndDraft = () => {
+    setShowEndDraftConfirm(false)
   }
 
   const handleCancelLeave = () => {
@@ -107,8 +177,8 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   // Calculate max team size based on funding
   const maxTeamSize = useMemo(() => {
-    return calculateMaxTeamSize(school.funding)
-  }, [school.funding])
+    return calculateMaxTeamSize(school.funding, school.teamType)
+  }, [school.funding, school.teamType])
 
   // Generate initial player pool ONCE when draft screen first loads
   // Only if there are no players yet and we haven't already generated
@@ -378,6 +448,28 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         onConfirm={handleConfirmLeave}
         onCancel={handleCancelLeave}
         variant="primary"
+      />
+
+      <ConfirmDialog
+        isOpen={showEndDraftConfirm}
+        title="End Draft?"
+        message="Are you sure you want to end the draft? You will not be able to add more players for the rest of the season. This will progress the game to the training phase."
+        confirmText="End Draft"
+        cancelText="Continue Drafting"
+        onConfirm={handleConfirmEndDraft}
+        onCancel={handleCancelEndDraft}
+        variant="primary"
+      />
+
+      <ConfirmDialog
+        isOpen={showEmptyTeamDialog}
+        title="Empty Team"
+        message="You cannot leave the draft with an empty team. Please add at least one player before leaving."
+        confirmText="OK"
+        cancelText={null}
+        onConfirm={() => setShowEmptyTeamDialog(false)}
+        onCancel={() => setShowEmptyTeamDialog(false)}
+        variant="danger"
       />
     </div>
   )

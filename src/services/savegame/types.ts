@@ -41,6 +41,40 @@ export type SaveData = {
   } // Current season data
   draftCompleted: boolean // Whether draft phase has been completed for this season
   emails: Email[] // In-game emails
+  trainingPlan: TrainingPlan | null // Current month's training plan, null if not set
+  skillSnapshots: SkillSnapshot[] // Historical skill snapshots for progress tracking
+  trainingGoals: TrainingGoal[] // Active training goals across all periods
+  aiSchools: AISchool[] // AI competitor schools (99 schools)
+}
+
+/**
+ * AI School data structure
+ */
+export type AISchool = {
+  id: number // School ID from schools_data.json
+  name: string
+  primaryColor: string
+  secondaryColor: string
+  accentColor: string
+  reputation: number // Current reputation rank (lower is better)
+  funding: number // Current funding rank (lower is better)
+  teamType: 'boys' | 'girls' | 'both'
+  crestPath: string
+  players: Player[] // All players in this school
+  teamRoster: string[] // Array of player IDs on the team
+  trainingPlan: TrainingPlan | null // Current month's training plan
+  managerStats: ManagerStats // AI manager stats (randomized)
+  managerPlayStyle: PlayStyle // AI manager play style (randomized)
+}
+
+/**
+ * Skill snapshot for tracking player progress over time
+ */
+export type SkillSnapshot = {
+  playerId: string
+  skills: PlayerSkills
+  month: number
+  year: number
 }
 
 /**
@@ -132,12 +166,30 @@ export type PlayerSkills = {
 }
 
 /**
+ * Player traits that affect development and performance
+ * Flexible system - can add more traits in the future
+ */
+export enum PlayerTrait {
+  HARD_WORKER = 'hard_worker', // +training effectiveness
+  NATURAL_TALENT = 'natural_talent', // +potential, may be less consistent
+  INJURY_PRONE = 'injury_prone', // Random missed training
+  QUICK_LEARNER = 'quick_learner', // Faster improvement
+  LAZY = 'lazy', // -training effectiveness
+  UNDERDOG = 'underdog', // Overperforms when expectations are low, struggles when expectations rise
+  PRODIGY = 'prodigy', // Exceptional talent, very fast improvement
+  RESILIENT = 'resilient', // Maintains performance regardless of circumstances
+  VULNERABLE = 'vulnerable' // Struggles after early success/setbacks
+}
+
+/**
  * Player attributes and stats
  */
 export type Player = {
   id: string // Unique identifier
   firstName: string
   lastName: string
+  shortName: string // Short name (typically first name)
+  isChinese: boolean // Whether player has Chinese name (affects display order)
   gender: Gender
   age: number // Age in years
   year: number // Year in school (1-4, max 4 years)
@@ -150,4 +202,59 @@ export type Player = {
   forehandBackhandTendency: FavourStyle
   playStyle: PlayStyle
   imagePath: string // Avatar image path
+  traits: PlayerTrait[] // Player traits (can earn/lose over time)
+}
+
+/**
+ * Training focus types
+ */
+export enum TrainingFocus {
+  FOREHAND = 'forehand',
+  BACKHAND = 'backhand',
+  FOOTWORK = 'footwork',
+  SERVE = 'serve',
+  RECEIVE = 'receive',
+  SPIN = 'spin',
+  PLACEMENT = 'placement',
+  CONSISTENCY = 'consistency',
+  MATCH_PLAY = 'match_play', // General match practice
+  FUNDAMENTALS = 'fundamentals', // Balanced, focuses on weaknesses
+  TOURNAMENT_PREP = 'tournament_prep' // Pre-tournament preparation
+}
+
+/**
+ * Individual training assignment for a player
+ */
+export type PlayerTraining = {
+  playerId: string
+  focus: TrainingFocus | null // null means following team training
+  isIndividualCoaching: boolean // Uses coaching slot if true
+}
+
+/**
+ * Training goal for tracking objectives
+ */
+export type TrainingGoal = {
+  id: string // Unique identifier
+  type: 'team_average' | 'player_skill' | 'team_improvement' | 'player_improvement'
+  target: number // Target value
+  current: number // Current value
+  playerId?: string // For player-specific goals
+  skill?: keyof PlayerSkills // For skill-specific goals
+  month: number // Target month
+  year: number // Target year
+  completed: boolean // Whether goal is achieved
+}
+
+/**
+ * Training plan for the current month
+ */
+export type TrainingPlan = {
+  month: number // 1-12
+  year: number
+  teamFocus: TrainingFocus | null // Team-wide focus, null if not set
+  playerAssignments: PlayerTraining[] // Individual assignments
+  coachingSlotsUsed: number // How many coaching slots are in use (max 5)
+  completed: boolean // Whether this month's training is complete
+  goals: TrainingGoal[] // Training goals for this period
 }

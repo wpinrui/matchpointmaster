@@ -29,13 +29,54 @@ export const getCoachingLevel = (effectiveness: number): string => {
 }
 
 /**
+ * Interpolate between two RGB colors based on a normalized value (0-1)
+ * Returns a hex color string
+ */
+function interpolateColor(
+  t: number,
+  startColor: [number, number, number],
+  endColor: [number, number, number]
+): string {
+  // Clamp t between 0 and 1
+  const normalizedT = Math.max(0, Math.min(1, t))
+
+  // Interpolate each RGB component
+  const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * normalizedT)
+  const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * normalizedT)
+  const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * normalizedT)
+
+  // Convert to hex string
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+}
+
+/**
  * Get color for stat value (for UI display)
+ * Linear gradient from bright red (piss poor) to bright green (superb)
+ * Values < 25 = worst red, values > 90 = best green
  */
 export const getStatColor = (value: number): string => {
-  if (value >= 75) return '#48BB78' // Green (success)
-  if (value >= 50) return '#FFD23F' // Yellow (accent)
-  if (value >= 25) return '#ED8936' // Orange (warning)
-  return '#F56565' // Red (error)
+  // Bright red (piss poor) - RGB(255, 80, 80) - lighter for dark theme contrast
+  const worstRed: [number, number, number] = [255, 80, 80]
+  // Bright green (superb) - RGB(80, 255, 80) - lighter for dark theme contrast
+  const bestGreen: [number, number, number] = [80, 255, 80]
+
+  // Clamp values: < 25 = worst red, > 90 = best green
+  if (value < 25) {
+    // Return worst red directly
+    const [r, g, b] = worstRed
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+  }
+  if (value > 90) {
+    // Return best green directly
+    const [r, g, b] = bestGreen
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+  }
+
+  // Gradient only applies between 25-90
+  // Map 25-90 to 0-1 for interpolation
+  const normalizedValue = (value - 25) / (90 - 25)
+
+  return interpolateColor(normalizedValue, worstRed, bestGreen)
 }
 
 /**

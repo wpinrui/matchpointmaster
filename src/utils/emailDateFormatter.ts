@@ -55,6 +55,15 @@ export function formatEmailDateShort(
   const diffMs = currentDate.getTime() - emailDate.getTime()
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
+  // Handle negative differences (email in future) - show as "Today" or "Recently"
+  if (diffDays < 0) {
+    // Email is in the future relative to current date - this shouldn't happen but handle gracefully
+    if (emailYear === currentSeasonYear && emailMonth === currentSeasonMonth) {
+      return 'Today'
+    }
+    return `${getMonthName(emailMonth)} ${emailDay}`
+  }
+
   if (diffDays === 0) {
     return 'Today'
   } else if (diffDays === 1) {

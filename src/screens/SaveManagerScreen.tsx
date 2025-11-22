@@ -22,6 +22,12 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const { loadSaveSlot, currentSaveId } = useSaveDataContext()
   const [saveSlots, setSaveSlots] = useState<SaveSlot[]>([])
   const [deleteConfirmSlot, setDeleteConfirmSlot] = useState<string | null>(null)
+  const [showMessageDialog, setShowMessageDialog] = useState(false)
+  const [messageDialogTitle, setMessageDialogTitle] = useState('')
+  const [messageDialogMessage, setMessageDialogMessage] = useState('')
+  const [messageDialogVariant, setMessageDialogVariant] = useState<'primary' | 'danger'>(
+    'primary'
+  )
 
   useEffect(() => {
     refreshSaveSlots()
@@ -70,13 +76,22 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         // Save all slots
         saveAllSaveSlots(allSlots)
         refreshSaveSlots()
-        alert('Save imported successfully!')
+        setMessageDialogTitle('Success')
+        setMessageDialogMessage('Save imported successfully!')
+        setMessageDialogVariant('primary')
+        setShowMessageDialog(true)
       } else {
-        alert('Invalid save file format.')
+        setMessageDialogTitle('Invalid File')
+        setMessageDialogMessage('Invalid save file format.')
+        setMessageDialogVariant('danger')
+        setShowMessageDialog(true)
       }
     } catch (error) {
       console.error('Error importing save:', error)
-      alert('Failed to import save file. Please check the file format.')
+      setMessageDialogTitle('Import Failed')
+      setMessageDialogMessage('Failed to import save file. Please check the file format.')
+      setMessageDialogVariant('danger')
+      setShowMessageDialog(true)
     }
   }
 
@@ -84,7 +99,10 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     onImport: handleFileImport,
     onError: (error) => {
       console.error('Error importing save:', error)
-      alert('Failed to import save file. Please check the file format.')
+      setMessageDialogTitle('Import Failed')
+      setMessageDialogMessage('Failed to import save file. Please check the file format.')
+      setMessageDialogVariant('danger')
+      setShowMessageDialog(true)
     }
   })
 
@@ -212,6 +230,17 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
         variant="danger"
+      />
+
+      <ConfirmDialog
+        isOpen={showMessageDialog}
+        title={messageDialogTitle}
+        message={messageDialogMessage}
+        confirmText="OK"
+        cancelText={null}
+        onConfirm={() => setShowMessageDialog(false)}
+        onCancel={() => setShowMessageDialog(false)}
+        variant={messageDialogVariant}
       />
     </div>
   )

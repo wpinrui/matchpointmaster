@@ -83,24 +83,29 @@ export function attractivenessToIntakeQuality(attractiveness: number): {
 }
 
 /**
- * Calculate maximum team size based on school funding
- * Minimum: 14 players (low rank schools can only afford either boys or girls)
+ * Calculate maximum team size based on school funding and team type
+ * Co-ed schools: 4 teams (C boys, C girls, B boys, B girls) = minimum 7 per team = 28 total
+ * Single gender schools: 2 teams (C and B) = minimum 7 per team = 14 total
  * Better funding = more slots for development
- * Scales from 14 (worst funding) to 40 (best funding)
- * Clamped to ensure it never goes below 14 or above 40
  */
-export function calculateMaxTeamSize(schoolFunding: number): number {
-  const minSize = 14 // Minimum required (can only afford one gender)
-  const maxSize = 40 // Maximum allowed
+export function calculateMaxTeamSize(
+  schoolFunding: number,
+  teamType: 'boys' | 'girls' | 'both' = 'both'
+): number {
+  // Determine minimum based on team type
+  // Co-ed: 4 teams × 7 minimum = 28
+  // Single gender: 2 teams × 7 minimum = 14
+  const minSize = teamType === 'both' ? 28 : 14
+  const maxSize = teamType === 'both' ? 56 : 28 // Max: 14 per team for co-ed, 14 per team for single gender
   const funding = schoolFunding || 50
 
   // Lower funding rank = better funding = more slots
-  // Scale from 14 (worst funding, rank 100) to 40 (best funding, rank 1)
+  // Scale from minSize (worst funding, rank 100) to maxSize (best funding, rank 1)
   // Formula: minSize + ((100 - funding) / 99) * (maxSize - minSize)
   const additionalSlots = Math.round(((100 - funding) / 99) * (maxSize - minSize))
   const calculatedSize = minSize + additionalSlots
 
-  // Clamp to ensure it's always between 14 and 40
+  // Clamp to ensure it's always between minSize and maxSize
   return Math.max(minSize, Math.min(maxSize, calculatedSize))
 }
 

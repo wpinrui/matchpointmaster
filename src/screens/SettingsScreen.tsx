@@ -1,15 +1,26 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { theme } from '../theme/theme'
 import GameCard from '../components/cards/GameCard'
 import GameButton from '../components/buttons/GameButton'
+import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
 
 const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const { exportToJson, clearCurrentSave } = useSaveDataContext()
+  const [showMessageDialog, setShowMessageDialog] = useState(false)
+  const [messageDialogTitle, setMessageDialogTitle] = useState('')
+  const [messageDialogMessage, setMessageDialogMessage] = useState('')
+  const [messageDialogVariant, setMessageDialogVariant] = useState<'primary' | 'danger'>(
+    'primary'
+  )
 
   const handleExport = () => {
-    exportToJson()
+    const result = exportToJson()
+    setMessageDialogTitle(result.success ? 'Success' : 'Export Failed')
+    setMessageDialogMessage(result.message)
+    setMessageDialogVariant(result.success ? 'primary' : 'danger')
+    setShowMessageDialog(true)
   }
 
   const handleClear = () => {
@@ -91,6 +102,17 @@ const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showMessageDialog}
+        title={messageDialogTitle}
+        message={messageDialogMessage}
+        confirmText="OK"
+        cancelText={null}
+        onConfirm={() => setShowMessageDialog(false)}
+        onCancel={() => setShowMessageDialog(false)}
+        variant={messageDialogVariant}
+      />
     </div>
   )
 }

@@ -4,7 +4,7 @@
 
 export enum GamePhase {
   DRAFT = 'draft', // January - Player draft
-  TRAINING = 'training', // February-May, August-October
+  TRAINING = 'training', // February-April, August-October
   INTRA_CLUB = 'intra_club', // End of May
   ZONAL = 'zonal', // June
   NATIONAL = 'national', // July
@@ -27,8 +27,9 @@ export function getPhaseForMonth(month: number): GamePhase {
     case 2:
     case 3:
     case 4:
-    case 5:
       return GamePhase.TRAINING
+    case 5:
+      return GamePhase.INTRA_CLUB
     case 6:
       return GamePhase.ZONAL
     case 7:
@@ -54,7 +55,6 @@ export function getPhaseDisplayName(phase: GamePhase, month: number): string {
     case GamePhase.DRAFT:
       return 'pre-draft'
     case GamePhase.TRAINING:
-      if (month === 5) return 'pre-intra-club'
       return 'training'
     case GamePhase.INTRA_CLUB:
       return 'intra-club'
