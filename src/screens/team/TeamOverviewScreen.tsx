@@ -126,7 +126,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             fontWeight: theme.typography.fontWeight.bold,
             color: theme.colors.text.primary,
             marginBottom: theme.spacing.lg,
-            textAlign: 'center'
+            textAlign: 'left'
           }}
         >
           Team Statistics

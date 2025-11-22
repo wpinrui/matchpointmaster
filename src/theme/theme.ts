@@ -24,25 +24,47 @@ export const theme = {
       dark: '#E6BD2A',
       contrast: '#000000'
     },
-    // Background colors
+    // Background colors - Dark theme
     background: {
-      primary: '#F5F7FA',
-      secondary: '#E8ECF1',
-      dark: '#1A1D29',
-      overlay: 'rgba(0, 0, 0, 0.6)'
+      primary: '#0F1115', // Very dark grey for containers
+      secondary: '#252932', // Lighter grey for cards
+      nested: '#323640', // Even lighter grey for nested cards (cards within cards)
+      dark: '#0A0C0F',
+      overlay: 'rgba(0, 0, 0, 0.8)'
     },
-    // Text colors
+    // Text colors - Dark theme
     text: {
-      primary: '#1A1D29',
-      secondary: '#4A5568',
-      light: '#718096',
-      inverse: '#FFFFFF'
+      primary: '#FFFFFF',
+      secondary: '#B0B8C4',
+      light: '#6B7280',
+      inverse: '#000000'
+    },
+    // Border colors
+    border: {
+      default: '#3A3F4E', // Light grey for borders
+      light: '#4A4F5E',
+      dark: '#2A2F3E',
+      selection: '#00D9FF', // Neon blue for selection highlights
+      hover: '#6B7280' // Lighter grey for hover effects
+    },
+    // Neon colors for hover effects
+    neon: {
+      primary: '#FF8C42', // Neon orange
+      secondary: '#00BFFF', // Neon blue
+      accent: '#FFEB3B', // Neon yellow
+      success: '#00FF88', // Neon green
+      danger: '#FF1744' // Neon red
+    },
+    // Gender colors for player cards
+    gender: {
+      female: '#FF6B6B', // Lighter red for female
+      male: '#5B9BD5' // Lighter blue for male
     },
     // Status colors
     success: {
-      main: '#48BB78',
-      light: '#68D391',
-      dark: '#38A169',
+      main: '#16A34A', // Darker, more saturated green
+      light: '#22C55E',
+      dark: '#15803D',
       contrast: '#FFFFFF'
     },
     error: {
@@ -126,15 +148,22 @@ export const theme = {
     '2xl': '1.5rem', // 24px
     full: '9999px'
   },
+  // Border width for consistent styling
+  borderWidth: {
+    default: '1.5px',
+    thick: '2px',
+    thin: '1px'
+  },
+  // Shadows removed in favor of borders - keeping for backward compatibility but should not be used
   shadows: {
-    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-    xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-    '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-    inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-    glow: '0 0 20px rgba(255, 107, 53, 0.4)',
-    glowStrong: '0 0 30px rgba(255, 107, 53, 0.6)'
+    sm: 'none',
+    md: 'none',
+    lg: 'none',
+    xl: 'none',
+    '2xl': 'none',
+    inner: 'none',
+    glow: 'none',
+    glowStrong: 'none'
   },
   transitions: {
     fast: '150ms ease-in-out',
@@ -156,10 +185,10 @@ export const theme = {
     primary: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
     secondary: 'linear-gradient(135deg, #004E89 0%, #0066CC 100%)',
     accent: 'linear-gradient(135deg, #FFD23F 0%, #FFC107 100%)',
-    overlay: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.7) 100%)',
-    card: 'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
-    glass:
-      'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)'
+    overlay: 'linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%)',
+    card: '#252932', // Lighter grey for cards - no gradient in dark theme
+    nestedCard: '#323640', // Even lighter grey for nested cards
+    glass: 'rgba(37, 41, 50, 0.8)' // Card grey with transparency
   }
 } as const
 

@@ -27,7 +27,7 @@ const ProfileScreen: React.FC<ScreenProps> = () => {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
           marginBottom: theme.spacing.xl,
-          textAlign: 'center'
+          textAlign: 'left'
         }}
       >
         Profile

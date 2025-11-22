@@ -21,15 +21,16 @@ const GameInput: React.FC<GameInputProps> = ({
   ...props
 }) => {
   const inputStyle: CSSProperties = {
-    background: theme.colors.neutral.white,
-    border: `2px solid ${error ? theme.colors.error.main : theme.colors.neutral.gray300}`,
+    background: theme.colors.background.secondary,
+    border: `${theme.borderWidth.default} solid ${
+      error ? theme.colors.error.main : theme.colors.border.default
+    }`,
     borderRadius: theme.borderRadius.md,
     padding: `${theme.spacing.md} ${theme.spacing.lg}`,
     fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.primary,
     transition: `all ${theme.transitions.fast}`,
     width: '100%',
-    boxShadow: theme.shadows.sm,
     ...style
   }
 
@@ -55,17 +56,15 @@ const GameInput: React.FC<GameInputProps> = ({
         size={size}
         style={inputStyle}
         onFocus={(e) => {
-          e.target.style.borderColor = error
-            ? theme.colors.error.main
-            : theme.colors.primary.main
-          e.target.style.boxShadow = theme.shadows.md
+          if (!error) {
+            e.target.style.borderColor = theme.colors.border.selection
+          }
           e.target.style.outline = 'none'
         }}
         onBlur={(e) => {
           e.target.style.borderColor = error
             ? theme.colors.error.main
-            : theme.colors.neutral.gray300
-          e.target.style.boxShadow = theme.shadows.sm
+            : theme.colors.border.default
         }}
         {...props}
       />

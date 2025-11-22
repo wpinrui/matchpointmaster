@@ -79,7 +79,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           gap: theme.spacing.lg
         }}
       >
-        <div style={{ flex: 1, textAlign: 'center' }}>
+        <div style={{ flex: 1 }}>
           <h1
             style={{
               fontFamily: theme.typography.fontFamily.heading,
@@ -90,7 +90,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               margin: 0,
-              marginBottom: theme.spacing.sm
+              marginBottom: theme.spacing.sm,
+              textAlign: 'left'
             }}
           >
             {season.year} {phaseDisplayName}
@@ -294,7 +295,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             flexDirection: 'column',
             gap: theme.spacing.lg,
             overflow: 'hidden',
-            borderLeft: `1px solid ${theme.colors.neutral.gray300}`,
+            borderLeft: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
             paddingLeft: theme.spacing.lg
           }}
         >
@@ -380,8 +381,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
-                background: theme.colors.neutral.gray100
+                justifyContent: 'center'
               }}
             >
               <p

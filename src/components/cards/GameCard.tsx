@@ -19,12 +19,10 @@ const GameCard: React.FC<GameCardProps> = ({
   onClick
 }) => {
   const cardStyle: CSSProperties = {
-    background: theme.gradients.card,
+    background: style?.background || theme.gradients.card,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.xl,
-    boxShadow: glow ? theme.shadows.glow : theme.shadows.xl,
-    backdropFilter: 'blur(20px)',
-    border: `1px solid rgba(255, 255, 255, 0.3)`,
+    border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
     transition: `all ${theme.transitions.normal}`,
     ...style
   }
@@ -33,6 +31,16 @@ const GameCard: React.FC<GameCardProps> = ({
     <div
       className={`game-card ${className}`}
       style={cardStyle}
+      onMouseEnter={(e) => {
+        if (glow) {
+          e.currentTarget.style.borderColor = theme.colors.border.selection
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (glow) {
+          e.currentTarget.style.borderColor = theme.colors.border.default
+        }
+      }}
       onClick={(e) => {
         if (onClick) {
           onClick(e)
@@ -55,7 +63,7 @@ const GameCard: React.FC<GameCardProps> = ({
             fontWeight: theme.typography.fontWeight.bold,
             color: theme.colors.text.primary,
             marginBottom: theme.spacing.lg,
-            textAlign: 'center'
+            textAlign: 'left'
           }}
         >
           {title}

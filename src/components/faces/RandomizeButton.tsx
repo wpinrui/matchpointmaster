@@ -24,11 +24,9 @@ export const RandomizeButton: React.FC<RandomizeButtonProps> = ({ onClick }) => 
         letterSpacing: '0.5px'
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'scale(1.05)'
         e.currentTarget.style.boxShadow = theme.shadows.lg
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'scale(1)'
         e.currentTarget.style.boxShadow = theme.shadows.md
       }}
     >

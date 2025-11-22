@@ -47,8 +47,8 @@ const GameButton: React.FC<GameButtonProps> = ({
 
     return {
       background: gradientMap[variant],
-      color: variant === 'accent' ? theme.colors.text.primary : theme.colors.text.inverse,
-      border: 'none',
+      color: theme.colors.neutral.white, // All buttons have white text
+      border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
       borderRadius: theme.borderRadius.lg,
       padding:
         size === 'sm'
@@ -64,7 +64,6 @@ const GameButton: React.FC<GameButtonProps> = ({
             : theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.semibold,
       cursor: props.disabled ? 'not-allowed' : 'pointer',
-      boxShadow: glow ? theme.shadows.glow : theme.shadows.md,
       transition: `all ${theme.transitions.normal}`,
       textTransform: 'uppercase',
       letterSpacing: '0.5px',
@@ -90,20 +89,18 @@ const GameButton: React.FC<GameButtonProps> = ({
       style={buttonStyle}
       onMouseEnter={(e) => {
         if (!props.disabled) {
-          e.currentTarget.style.transform = 'translateY(-2px)'
-          e.currentTarget.style.boxShadow = glow
-            ? theme.shadows.glowStrong
-            : theme.shadows.lg
+          const neonColorMap: Record<GameButtonVariant, string> = {
+            primary: theme.colors.neon.primary,
+            secondary: theme.colors.neon.secondary,
+            accent: theme.colors.neon.accent,
+            success: theme.colors.neon.success,
+            danger: theme.colors.neon.danger
+          }
+          e.currentTarget.style.borderColor = neonColorMap[variant]
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)'
-        e.currentTarget.style.boxShadow = glow ? theme.shadows.glow : theme.shadows.md
-      }}
-      onMouseDown={(e) => {
-        if (!props.disabled) {
-          e.currentTarget.style.transform = 'translateY(0)'
-        }
+        e.currentTarget.style.borderColor = theme.colors.border.default
       }}
       {...props}
     >

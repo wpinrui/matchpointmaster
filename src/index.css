@@ -11,6 +11,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  background: #0F1115;
+  color: #FFFFFF;
 }
 
 /* Smooth scrolling */
@@ -39,7 +41,7 @@ html {
 }
 
 .game-button:active {
-  transform: scale(0.98);
+  /* Transform removed */
 }
 
 /* Card hover effects */
@@ -49,7 +51,7 @@ html {
 
 /* Input focus animations */
 .game-input input:focus {
-  transform: scale(1.02);
+  /* Transform removed */
 }
 
 /* Dropdown styling */
@@ -66,15 +68,15 @@ select::-ms-expand {
 /* Style dropdown options */
 select option {
   padding: 12px 16px;
-  background: white;
-  color: #1A1D29;
+  background: #1A1D29;
+  color: #FFFFFF;
   border: none;
   margin: 2px 0;
 }
 
 select option:hover,
 select option:focus {
-  background: #F5F7FA;
+  background: #2A2F3E;
 }
 
 select option:checked {
@@ -129,13 +131,13 @@ select option:checked {
   animation: pulse 2s ease-in-out infinite;
 }
 
-/* Glow animation */
+/* Glow animation - Updated for dark theme with borders */
 @keyframes glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+    border-color: #00D9FF;
   }
   50% {
-    box-shadow: 0 0 30px rgba(255, 107, 53, 0.6);
+    border-color: #00BFFF;
   }
 }
 
@@ -145,30 +147,31 @@ select option:checked {
 
 /* Image hover effect */
 img {
-  transition: transform 0.3s ease;
+  transition: opacity 0.3s ease;
 }
 
 img:hover {
-  transform: scale(1.05);
+  /* Transform removed */
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Dark theme */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #0F1115;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+  background: #3A3F4E;
   border-radius: 10px;
+  border: 1px solid #2A2F3E;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #E55A2B 0%, #E6821A 100%);
+  background: #4A4F5E;
 }
 
 /* Image picker modal styling */

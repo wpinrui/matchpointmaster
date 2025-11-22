@@ -176,12 +176,10 @@ export const ImagePickerDialog: React.FC<ImagePickerDialogProps> = ({
                 onError={() => setError('Failed to load some images')}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = theme.colors.primary.main
-                  e.currentTarget.style.transform = 'scale(1.1)'
                   e.currentTarget.style.boxShadow = theme.shadows.lg
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = theme.colors.neutral.gray300
-                  e.currentTarget.style.transform = 'scale(1)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               />

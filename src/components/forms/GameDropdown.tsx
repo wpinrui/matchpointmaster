@@ -24,15 +24,16 @@ const GameDropdown: React.FC<GameDropdownProps> = ({
   const [isFocused, setIsFocused] = useState(false)
 
   const selectStyle: CSSProperties = {
-    background: theme.colors.neutral.white,
-    border: `2px solid ${isFocused ? theme.colors.primary.main : theme.colors.neutral.gray300}`,
+    background: theme.colors.background.secondary,
+    border: `${theme.borderWidth.default} solid ${
+      isFocused ? theme.colors.border.selection : theme.colors.border.default
+    }`,
     borderRadius: theme.borderRadius.md,
     padding: `${theme.spacing.md} ${theme.spacing.xl} ${theme.spacing.md} ${theme.spacing.lg}`,
     fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.primary,
     transition: `all ${theme.transitions.fast}`,
     width: '100%',
-    boxShadow: isFocused ? theme.shadows.md : theme.shadows.sm,
     cursor: 'pointer',
     appearance: 'none',
     WebkitAppearance: 'none',
@@ -95,7 +96,7 @@ const GameDropdown: React.FC<GameDropdownProps> = ({
                   maxWidth: '400px',
                   minWidth: '250px',
                   zIndex: theme.zIndex.tooltip,
-                  boxShadow: theme.shadows.lg,
+                  border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
                   whiteSpace: 'normal',
                   lineHeight: theme.typography.lineHeight.relaxed,
                   pointerEvents: 'none'
@@ -126,14 +127,12 @@ const GameDropdown: React.FC<GameDropdownProps> = ({
         style={selectStyle}
         onFocus={(e) => {
           setIsFocused(true)
-          e.target.style.borderColor = theme.colors.primary.main
-          e.target.style.boxShadow = theme.shadows.md
-          e.target.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='${encodeURIComponent(theme.colors.primary.main)}' d='M7 10L2 5h10z'/%3E%3C/svg%3E")`
+          e.target.style.borderColor = theme.colors.border.selection
+          e.target.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='${encodeURIComponent(theme.colors.border.selection)}' d='M7 10L2 5h10z'/%3E%3C/svg%3E")`
         }}
         onBlur={(e) => {
           setIsFocused(false)
-          e.target.style.borderColor = theme.colors.neutral.gray300
-          e.target.style.boxShadow = theme.shadows.sm
+          e.target.style.borderColor = theme.colors.border.default
           e.target.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='${encodeURIComponent(theme.colors.text.secondary)}' d='M7 10L2 5h10z'/%3E%3C/svg%3E")`
         }}
       >

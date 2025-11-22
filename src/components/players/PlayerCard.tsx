@@ -12,7 +12,11 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
   const fullName = `${player.firstName} ${player.lastName}`
 
   return (
-    <GameCard>
+    <GameCard
+      style={{
+        background: theme.gradients.nestedCard
+      }}
+    >
       <div
         style={{
           display: 'flex',
@@ -68,8 +72,8 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
                 style={{
                   color:
                     player.gender === Gender.FEMALE
-                      ? '#DC2626' // Red for female
-                      : '#1E3A8A', // Navy for male
+                      ? theme.colors.gender.female
+                      : theme.colors.gender.male,
                   fontWeight: theme.typography.fontWeight.semibold
                 }}
               >
@@ -114,7 +118,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
             gap: theme.spacing.xs,
             marginTop: theme.spacing.sm,
             paddingTop: theme.spacing.sm,
-            borderTop: `1px solid ${theme.colors.neutral.gray300}`
+            borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
           }}
         >
           <div
@@ -152,7 +156,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
             style={{
               marginTop: theme.spacing.md,
               paddingTop: theme.spacing.md,
-              borderTop: `1px solid ${theme.colors.neutral.gray300}`
+              borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
             }}
           >
             {actionButton}
@@ -208,7 +212,7 @@ const SkillBar: React.FC<SkillBarProps> = ({ label, value }) => {
         style={{
           width: '100%',
           height: '8px',
-          backgroundColor: theme.colors.neutral.gray200,
+          backgroundColor: theme.colors.border.dark,
           borderRadius: theme.borderRadius.full,
           overflow: 'hidden'
         }}

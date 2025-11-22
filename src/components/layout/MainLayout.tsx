@@ -34,7 +34,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         gap: theme.spacing.lg,
         height: '100vh',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        background: theme.colors.background.primary
       }}
     >
       {/* Background Image */}
@@ -53,8 +54,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       />
       <div style={CommonStyles.blurStyle} />
 
-      {/* Left Sidebar Card */}
-      <GameCard
+      {/* Left Sidebar Container */}
+      <div
         style={{
           width: '240px',
           minWidth: '240px',
@@ -65,9 +66,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({
           position: 'relative',
           zIndex: 1,
           padding: theme.spacing.md,
+          overflowY: 'auto',
+          background: `${theme.colors.background.primary}99`, // Add transparency (60% opacity)
           backdropFilter: 'blur(10px)',
-          background: 'rgba(255, 255, 255, 0.92)',
-          overflowY: 'auto'
+          WebkitBackdropFilter: 'blur(10px)',
+          border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
+          borderRadius: theme.borderRadius.lg
         }}
       >
         {sidebarItems.map((item) => (
@@ -78,13 +82,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             style={{
               padding: theme.spacing.md,
               background:
-                currentScreen === item.screen
-                  ? theme.gradients.primary
-                  : 'rgba(255, 255, 255, 0.5)',
-              border: `2px solid ${
+                currentScreen === item.screen ? theme.gradients.primary : 'transparent',
+              border: `${theme.borderWidth.default} solid ${
                 currentScreen === item.screen
                   ? theme.colors.primary.main
-                  : 'rgba(0, 0, 0, 0.1)'
+                  : theme.colors.border.default
               }`,
               borderRadius: theme.borderRadius.lg,
               color:
@@ -101,18 +103,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({
               transition: `all ${theme.transitions.normal}`,
               display: 'flex',
               alignItems: 'center',
-              gap: theme.spacing.sm,
-              boxShadow:
-                currentScreen === item.screen ? theme.shadows.glow : theme.shadows.sm
+              gap: theme.spacing.sm
             }}
             onMouseEnter={(e) => {
               if (currentScreen !== item.screen) {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.7)'
+                e.currentTarget.style.borderColor = theme.colors.border.hover
               }
             }}
             onMouseLeave={(e) => {
               if (currentScreen !== item.screen) {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)'
+                e.currentTarget.style.borderColor = theme.colors.border.default
               }
             }}
           >
@@ -120,21 +120,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             <span>{item.label}</span>
           </button>
         ))}
-      </GameCard>
+      </div>
 
-      {/* Main Content Area Card */}
-      <GameCard
+      {/* Main Content Area Container */}
+      <div
         style={{
           flex: 1,
           height: '100%',
           position: 'relative',
           zIndex: 1,
           minWidth: 0,
-          backdropFilter: 'blur(10px)',
-          background: 'rgba(255, 255, 255, 0.92)',
           overflow: 'hidden',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          background: `${theme.colors.background.primary}99`, // Add transparency (60% opacity)
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
+          borderRadius: theme.borderRadius.lg
         }}
       >
         <div
@@ -147,7 +150,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         >
           {children}
         </div>
-      </GameCard>
+      </div>
     </div>
   )
 }

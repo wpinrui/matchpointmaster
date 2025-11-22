@@ -40,25 +40,21 @@ export const FaceGrid: React.FC<FaceGridProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: isSelected ? theme.shadows.lg : 'none',
-              transform: isSelected ? 'scale(1.02)' : 'scale(1)'
+              boxShadow: isSelected ? theme.shadows.lg : 'none'
             }}
             onMouseEnter={(e) => {
               if (!isSelected) {
                 e.currentTarget.style.borderColor = theme.colors.primary.light
-                e.currentTarget.style.transform = 'scale(1.05)'
                 e.currentTarget.style.boxShadow = theme.shadows.md
               }
             }}
             onMouseLeave={(e) => {
               if (!isSelected) {
                 e.currentTarget.style.borderColor = theme.colors.neutral.gray300
-                e.currentTarget.style.transform = 'scale(1)'
                 e.currentTarget.style.boxShadow = 'none'
               } else {
                 // Keep selected styling on mouse leave
                 e.currentTarget.style.borderColor = theme.colors.primary.main
-                e.currentTarget.style.transform = 'scale(1.02)'
                 e.currentTarget.style.boxShadow = theme.shadows.lg
               }
             }}

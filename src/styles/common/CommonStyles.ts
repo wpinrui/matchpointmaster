@@ -31,9 +31,7 @@ const dialogStyle: React.CSSProperties = {
   zIndex: theme.zIndex.modal,
   width: '90%',
   maxWidth: '800px',
-  boxShadow: theme.shadows['2xl'],
-  backdropFilter: 'blur(20px)',
-  border: `1px solid rgba(255, 255, 255, 0.3)`,
+  border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
   animation: 'fadeIn 0.5s ease-out'
 }
 

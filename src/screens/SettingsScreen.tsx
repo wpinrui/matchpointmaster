@@ -43,7 +43,7 @@ const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
           marginBottom: theme.spacing.xl,
-          textAlign: 'center'
+          textAlign: 'left'
         }}
       >
         Settings
