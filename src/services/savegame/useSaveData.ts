@@ -270,6 +270,27 @@ export const useSaveData = () => {
     }))
   }
 
+  const updateSkillSnapshots = {
+    add: (snapshot: SaveData['skillSnapshots'][0]) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        skillSnapshots: [...prevData.skillSnapshots, snapshot]
+      }))
+    },
+    addMany: (snapshots: SaveData['skillSnapshots']) => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        skillSnapshots: [...prevData.skillSnapshots, ...snapshots]
+      }))
+    },
+    clear: () => {
+      setSaveData((prevData) => ({
+        ...prevData,
+        skillSnapshots: []
+      }))
+    }
+  }
+
   const updateTrainingPlan = {
     set: (plan: SaveData['trainingPlan']) => {
       setSaveData((prevData) => ({
@@ -348,6 +369,7 @@ export const useSaveData = () => {
     draftCompleted: saveData.draftCompleted,
     emails: saveData.emails,
     trainingPlan: saveData.trainingPlan,
+    skillSnapshots: saveData.skillSnapshots,
     currentSaveId,
     updateManager,
     updateSchool,
@@ -355,6 +377,7 @@ export const useSaveData = () => {
     updateTeamRoster,
     updateSeason,
     updateTrainingPlan,
+    updateSkillSnapshots,
     markEmailAsRead,
     addEmail,
     exportToJson,

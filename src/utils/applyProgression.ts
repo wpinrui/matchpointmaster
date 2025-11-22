@@ -6,10 +6,30 @@ import {
   Player,
   SaveData,
   TrainingPlan,
-  PlayerTraining
+  PlayerTraining,
+  SkillSnapshot
 } from '../services/savegame/types'
 import { calculatePlayerProgression, applySkillImprovements } from './playerProgression'
 import { GamePhase } from './gamePhases'
+
+/**
+ * Create skill snapshots for all team players before progression
+ */
+export function createSkillSnapshots(
+  players: Player[],
+  teamRoster: string[],
+  month: number,
+  year: number
+): SkillSnapshot[] {
+  return players
+    .filter((p) => teamRoster.includes(p.id))
+    .map((player) => ({
+      playerId: player.id,
+      skills: { ...player.skills }, // Deep copy
+      month,
+      year
+    }))
+}
 
 /**
  * Process player progression for all players on the team

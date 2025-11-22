@@ -124,7 +124,8 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         season: initializeSeasonData(),
         draftCompleted: false,
         emails: [], // Will be populated below
-        trainingPlan: null
+        trainingPlan: null,
+        skillSnapshots: []
       }
 
       // Generate initial emails with actual names and in-game dates
@@ -245,7 +246,8 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       season: initializeSeasonData(),
       draftCompleted: false,
       emails: [],
-      trainingPlan: null
+      trainingPlan: null,
+      skillSnapshots: []
     }
 
     // Generate initial emails with actual names and in-game dates

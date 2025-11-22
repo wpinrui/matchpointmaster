@@ -1,17 +1,19 @@
 import React, { useMemo, useState } from 'react'
 import GameButton from '../components/buttons/GameButton'
 import GameCard from '../components/cards/GameCard'
+import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
 import { EmailCard } from '../components/emails/EmailCard'
 import { TimelineItem } from '../components/home/TimelineItem'
 import { TopProspectsCard } from '../components/home/TopProspectsCard'
-import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
+import { TrainingInsightsCard } from '../components/home/TrainingInsightsCard'
+import { TrainingProgressCard } from '../components/home/TrainingProgressCard'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { Email } from '../services/savegame/types'
 import { theme } from '../theme/theme'
+import { createSkillSnapshots, processPlayerProgression } from '../utils/applyProgression'
 import { MONTH_NAMES } from '../utils/constants'
-import { GamePhase, getPhaseDisplayName, getNextPhase } from '../utils/gamePhases'
-import { processPlayerProgression } from '../utils/applyProgression'
+import { GamePhase, getNextPhase, getPhaseDisplayName } from '../utils/gamePhases'
 
 const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const {
@@ -26,13 +28,37 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     manager,
     school,
     updatePlayers,
-    updateTrainingPlan
+    updateTrainingPlan,
+    skillSnapshots,
+    updateSkillSnapshots
   } = useSaveDataContext()
   const [showDraftDialog, setShowDraftDialog] = useState(false)
 
   const phaseDisplayName = getPhaseDisplayName(season.phase as GamePhase, season.month)
 
   const isDraftPhase = season.phase === GamePhase.DRAFT && !draftCompleted
+
+  // Check if we're in training phase
+  const isTrainingPhase =
+    season.phase === GamePhase.TRAINING || season.phase === GamePhase.TRAINING_2
+
+  // Check if this is February (first training month) or later
+  const isFirstTrainingMonth = isTrainingPhase && season.month === 2
+
+  // Get previous month's snapshots for progress comparison
+  // Only compare within the same training phase (Feb-May or Aug-Oct)
+  const previousMonthSnapshots = useMemo(() => {
+    if (!isTrainingPhase) return []
+
+    // Only show progress if we're past the first training month
+    if (season.month === 2 || season.month === 8) return []
+
+    // Get snapshots from the previous month within the same training phase
+    const prevMonth = season.month - 1
+    return skillSnapshots.filter(
+      (s) => s.month === prevMonth && s.year === season.year
+    )
+  }, [skillSnapshots, season.month, season.year, isTrainingPhase])
 
   const unreadEmails = useMemo(() => {
     return emails.filter((e) => !e.read).sort((a, b) => b.timestamp - a.timestamp)
@@ -81,6 +107,16 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           currentPhaseString === GamePhase.TRAINING_2
         ) {
           if (trainingPlan && !trainingPlan.completed) {
+            // Create skill snapshots before progression
+            const snapshots = createSkillSnapshots(
+              players,
+              teamRoster,
+              season.month,
+              season.year
+            )
+            updateSkillSnapshots.addMany(snapshots)
+
+            // Process progression
             const updatedPlayers = processPlayerProgression(
               players,
               teamRoster,
@@ -191,9 +227,10 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isDraftPhase
-                ? 'repeat(auto-fit, minmax(280px, 1fr))'
-                : '1fr',
+              gridTemplateColumns:
+                isDraftPhase || isTrainingPhase
+                  ? 'repeat(auto-fit, minmax(280px, 1fr))'
+                  : '1fr',
               gap: theme.spacing.lg,
               alignItems: 'start'
             }}
@@ -243,13 +280,28 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             {/* Top Prospects Card - Only during draft phase */}
             {isDraftPhase && <TopProspectsCard />}
 
+            {/* Training Insights Card - February (first training month) */}
+            {isFirstTrainingMonth && (
+              <TrainingInsightsCard changeScreen={changeScreen} />
+            )}
+
+            {/* Training Progress Card - Training months after February */}
+            {isTrainingPhase && !isFirstTrainingMonth && previousMonthSnapshots.length > 0 && (
+              <TrainingProgressCard
+                oldSnapshots={previousMonthSnapshots}
+                allSnapshots={skillSnapshots}
+                currentYear={season.year}
+                currentMonth={season.month}
+              />
+            )}
+
             {/* Season Timeline Card - Always visible, narrower */}
             <GameCard
               style={{
                 padding: theme.spacing.lg,
                 display: 'flex',
                 flexDirection: 'column',
-                maxWidth: isDraftPhase ? 'none' : '400px'
+                maxWidth: isDraftPhase || isTrainingPhase ? 'none' : '400px'
               }}
             >
               <h2

@@ -42,6 +42,17 @@ export type SaveData = {
   draftCompleted: boolean // Whether draft phase has been completed for this season
   emails: Email[] // In-game emails
   trainingPlan: TrainingPlan | null // Current month's training plan, null if not set
+  skillSnapshots: SkillSnapshot[] // Historical skill snapshots for progress tracking
+}
+
+/**
+ * Skill snapshot for tracking player progress over time
+ */
+export type SkillSnapshot = {
+  playerId: string
+  skills: PlayerSkills
+  month: number
+  year: number
 }
 
 /**

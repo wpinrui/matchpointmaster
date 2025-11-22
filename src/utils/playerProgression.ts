@@ -284,7 +284,7 @@ function calculateBaseImprovement(
   }
 
   // Base improvement for targeted skill
-  let base = 2.0 // Base improvement per month
+  let base = 6.0 // Base improvement per month
 
   // Individual coaching gives bonus
   if (isIndividualCoaching) {

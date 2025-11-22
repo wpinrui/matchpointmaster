@@ -23,7 +23,7 @@ import {
   getRecommendedTrainingFocus,
   isTournamentPrepPhase
 } from '../utils/trainingPlans'
-import { processPlayerProgression } from '../utils/applyProgression'
+import { processPlayerProgression, createSkillSnapshots } from '../utils/applyProgression'
 
 const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const {
@@ -35,7 +35,8 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     trainingPlan,
     updateTrainingPlan,
     updateSeason,
-    updatePlayers
+    updatePlayers,
+    updateSkillSnapshots
   } = useSaveDataContext()
 
   const [selectedPlayerForTraining, setSelectedPlayerForTraining] = useState<
@@ -223,6 +224,16 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
             // Process player progression before advancing phase
             if (trainingPlan && !trainingPlan.completed) {
+              // Create skill snapshots before progression
+              const snapshots = createSkillSnapshots(
+                players,
+                teamRoster,
+                season.month,
+                season.year
+              )
+              updateSkillSnapshots.addMany(snapshots)
+
+              // Process progression
               const updatedPlayers = processPlayerProgression(
                 players,
                 teamRoster,

@@ -43,5 +43,6 @@ export const initialSaveData: SaveData = {
   season: initializeSeasonData(),
   draftCompleted: false,
   emails: [], // Emails will be generated when game is created with actual names
-  trainingPlan: null // Training plan will be set during training phase
+  trainingPlan: null, // Training plan will be set during training phase
+  skillSnapshots: [] // Skill snapshots for progress tracking
 }
