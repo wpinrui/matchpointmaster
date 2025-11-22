@@ -9,7 +9,8 @@ export enum Screens {
   TRAINING = 'TRAINING',
   PROFILE = 'PROFILE',
   SETTINGS = 'SETTINGS',
-  EMAIL = 'EMAIL'
+  EMAIL = 'EMAIL',
+  MATCH = 'MATCH'
 }
 
 export type ScreenProps = {

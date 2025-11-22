@@ -11,6 +11,7 @@ import { GamePhase } from '../../utils/gamePhases'
 import { completeDraftAndProgress } from '../../utils/phaseProgression'
 import { validateTeamBeforeDraft } from '../../utils/draftHelpers'
 import { generatePlayer, IntakeQuality } from '../../utils/playerGeneration'
+import { calculateOverallRating } from '../../utils/cardTiers'
 import {
   attractivenessToIntakeQuality,
   calculateMaxTeamSize,
@@ -142,17 +143,25 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   // Get players not on the team (available for draft)
   // Filter by school team type: boys-only shows only boys, girls-only shows only girls, both shows all
+  // Sort by overall rating (highest first)
   const availablePlayers = useMemo(() => {
     const allAvailable = players.filter((p) => !teamRoster.includes(p.id))
 
     // Filter by team type
+    let filtered: typeof allAvailable
     if (school.teamType === 'boys') {
-      return allAvailable.filter((p) => p.gender === Gender.MALE)
+      filtered = allAvailable.filter((p) => p.gender === Gender.MALE)
     } else if (school.teamType === 'girls') {
-      return allAvailable.filter((p) => p.gender === Gender.FEMALE)
+      filtered = allAvailable.filter((p) => p.gender === Gender.FEMALE)
+    } else {
+      // 'both' shows all players
+      filtered = allAvailable
     }
-    // 'both' shows all players
-    return allAvailable
+
+    // Sort by overall rating (highest first)
+    return filtered.sort(
+      (a, b) => calculateOverallRating(b.skills) - calculateOverallRating(a.skills)
+    )
   }, [players, teamRoster, school.teamType])
 
   // Calculate school reputation from history
@@ -235,17 +244,25 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   // Get players currently on the team
   // Filter by school team type: boys-only shows only boys, girls-only shows only girls, both shows all
+  // Sort by overall rating (highest first)
   const teamPlayers = useMemo(() => {
     const allTeamPlayers = players.filter((p) => teamRoster.includes(p.id))
 
     // Filter by team type
+    let filtered: typeof allTeamPlayers
     if (school.teamType === 'boys') {
-      return allTeamPlayers.filter((p) => p.gender === Gender.MALE)
+      filtered = allTeamPlayers.filter((p) => p.gender === Gender.MALE)
     } else if (school.teamType === 'girls') {
-      return allTeamPlayers.filter((p) => p.gender === Gender.FEMALE)
+      filtered = allTeamPlayers.filter((p) => p.gender === Gender.FEMALE)
+    } else {
+      // 'both' shows all players
+      filtered = allTeamPlayers
     }
-    // 'both' shows all players
-    return allTeamPlayers
+
+    // Sort by overall rating (highest first)
+    return filtered.sort(
+      (a, b) => calculateOverallRating(b.skills) - calculateOverallRating(a.skills)
+    )
   }, [players, teamRoster, school.teamType])
 
   const handleDraftPlayer = (playerId: string) => {
