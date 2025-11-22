@@ -338,6 +338,21 @@ export function calculatePlayerProgression(
   // Random variance: ±10%
   const randomVariance = 0.9 + Math.random() * 0.2 // 0.9 to 1.1
 
+  // Debug logging
+  console.log(`[Progression] ${player.firstName} ${player.lastName}:`, {
+    focus,
+    isIndividualCoaching,
+    multipliers: {
+      styleSynergy,
+      traitMultiplier,
+      peerInfluence,
+      facilitiesMultiplier,
+      coachingMultiplier,
+      randomVariance
+    },
+    traits: player.traits
+  })
+
   // Calculate improvement for each skill
   const skillKeys: (keyof PlayerSkills)[] = [
     'forehand',
@@ -387,7 +402,30 @@ export function calculatePlayerProgression(
 
     // Clamp improvement (can't go above 100, can't be negative)
     const newSkill = Math.min(100, Math.max(0, currentSkill + totalImprovement))
-    improvements[skill] = newSkill - currentSkill // Return the delta
+    const improvement = newSkill - currentSkill
+
+    // Debug logging for each skill
+    console.log(
+      `  ${skill}: ${currentSkill.toFixed(2)} → ${newSkill.toFixed(2)} (+${improvement.toFixed(2)})`,
+      {
+        baseImprovement,
+        diminishingReturnsMultiplier,
+        totalMultiplier:
+          styleSynergy *
+          traitMultiplier *
+          peerInfluence *
+          facilitiesMultiplier *
+          coachingMultiplier *
+          randomVariance,
+        breakdown: {
+          base: baseImprovement,
+          afterDiminishing: baseImprovement * diminishingReturnsMultiplier,
+          afterAllMultipliers: totalImprovement
+        }
+      }
+    )
+
+    improvements[skill] = improvement // Return the delta
   })
 
   return improvements
@@ -406,10 +444,9 @@ export function applySkillImprovements(
     const skillKey = key as keyof PlayerSkills
     const improvement = improvements[skillKey]
     if (improvement !== undefined) {
-      newSkills[skillKey] = Math.min(
-        100,
-        Math.max(0, player.skills[skillKey] + improvement)
-      )
+      // Round down to whole number (Math.floor)
+      const newValue = Math.min(100, Math.max(0, player.skills[skillKey] + improvement))
+      newSkills[skillKey] = Math.floor(newValue)
     }
   })
 

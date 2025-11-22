@@ -205,7 +205,7 @@ const SkillBar: React.FC<SkillBarProps> = ({ label, value }) => {
             fontWeight: theme.typography.fontWeight.medium
           }}
         >
-          {value}
+          {Math.floor(value)}
         </span>
       </div>
       <div
