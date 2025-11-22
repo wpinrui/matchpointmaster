@@ -1,13 +1,13 @@
-import { initializeMatch, simulateRally, type MatchState } from './matchEngine'
 import {
-  Player,
-  Gender,
-  Handedness,
-  GripStyle,
-  RubberType,
   FavourStyle,
-  PlayStyle
+  Gender,
+  GripStyle,
+  Handedness,
+  Player,
+  PlayStyle,
+  RubberType
 } from '../services/savegame/types'
+import { initializeMatch, simulateRally } from './matchEngine'
 
 /**
  * Create a test player with specified stats
@@ -163,7 +163,7 @@ function runMatchSimulation(
 }
 
 /**
- * Run experiments to test the effect of +25 advantage in each stat
+ * Run experiments to test the effect of +50 advantage in each stat
  */
 export function runStatAdvantageExperiments(numPoints: number = 5000): {
   experiments: Array<{
@@ -192,9 +192,9 @@ export function runStatAdvantageExperiments(numPoints: number = 5000): {
   const player2 = createTestPlayer('Player 2', 'player-2', {})
 
   const experiments = stats.map((stat) => {
-    // Create Player 1 with +25 in this stat
+    // Create Player 1 with +50 in this stat
     const player1Stats: Record<string, number> = {}
-    player1Stats[stat] = 75 // +25 advantage
+    player1Stats[stat] = 100 // +50 advantage
 
     const player1 = createTestPlayer('Player 1', 'player-1', player1Stats)
 

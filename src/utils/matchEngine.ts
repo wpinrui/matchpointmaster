@@ -491,22 +491,25 @@ function calculateError(
   const spinError = 1 - idealConditions.spinReading
   const pressureError = Math.abs(0.5 - idealConditions.pressure) * 2
 
-  // Consistency reduces error
-  const consistencyFactor = 1 - consistency / 100
+  // Consistency reduces error - make this much more impactful
+  // Low consistency = massive error, high consistency = minimal error
+  const consistencyFactor = Math.pow(1 - consistency / 100, 0.5) // Square root for steeper curve
 
   // Equipment unpredictability adds error
   const equipmentError = equipmentModifiers.unpredictability
 
-  // Combine errors
+  // Combine errors - make skill errors much more impactful for low stat players
   const totalError =
-    (positioningError * 0.3 +
-      skillError * 0.3 +
+    (positioningError * 0.25 +
+      skillError * 0.4 + // Increased weight for skill errors
       spinError * 0.2 +
       pressureError * 0.1 +
-      equipmentError * 0.1) *
+      equipmentError * 0.05) *
     consistencyFactor
 
-  return Math.max(0, Math.min(1, totalError))
+  // For very low skill players, ensure high error rates
+  // For very high skill players, ensure low error rates
+  return Math.max(0, Math.min(0.95, totalError)) // Cap at 95% error max
 }
 
 /**
@@ -520,8 +523,10 @@ function calculateRallyWinChance(
   intendedDepth: BallDepth,
   power: number
 ): number {
-  // Base chance based on shot quality - more conservative to allow longer rallies
-  let winChance = shotQuality * 0.4 // Reduced from 0.5
+  // Base chance based on shot quality - use exponential scaling to amplify differences
+  // This makes stat advantages much more impactful
+  // Quality of 0.5 -> ~0.35 base, Quality of 1.0 -> ~0.75 base
+  let winChance = Math.pow(shotQuality, 0.7) * 0.85 // Exponential scaling amplifies quality differences
 
   // Position advantage - hitting away from opponent
   const opponentMatch = calculatePositioningMatch(
@@ -531,21 +536,21 @@ function calculateRallyWinChance(
     opponentFootwork
   )
   const positionAdvantage = 1 - opponentMatch
-  winChance += positionAdvantage * 0.2 // Reduced from 0.25
+  winChance += positionAdvantage * 0.3 // Increased from 0.25
 
   // Power advantage - but diminishing returns
-  const powerBonus = Math.min(0.12, (power / 100) * 0.18) // Slightly reduced
+  const powerBonus = Math.min(0.18, (power / 100) * 0.25) // Increased
   winChance += powerBonus
 
   // Depth matters - long attacking shots are more likely to win
   if (intendedDepth === BallDepth.LONG && power > 50) {
-    winChance += 0.04 // Slightly reduced
+    winChance += 0.06 // Increased
   }
 
   // Lucky bounce chance (net or corner) - already factored in separately
   // Don't double-count here
 
-  return Math.max(0.03, Math.min(0.8, winChance)) // Cap between 3% and 80% (reduced max)
+  return Math.max(0.05, Math.min(0.95, winChance)) // Increased max cap to 95%
 }
 
 /**
@@ -615,6 +620,7 @@ function calculateDifficulty(
   }
 
   // Speed difficulty - more gradual
+  // Very slow balls (speed < 10) should always be easy, regardless of other factors
   let speedDifficulty = 0
   if (ball.speed > 80) {
     speedDifficulty = 0.25
@@ -622,8 +628,10 @@ function calculateDifficulty(
     speedDifficulty = 0.15
   } else if (ball.speed > 25) {
     speedDifficulty = 0.05
+  } else if (ball.speed < 10) {
+    speedDifficulty = -0.2 // Very slow balls are MUCH easier - negative to offset other difficulties
   } else {
-    speedDifficulty = 0 // Very slow balls are easy
+    speedDifficulty = 0 // Slow balls are easy
   }
 
   // Depth affects difficulty
@@ -719,11 +727,16 @@ export function simulateRally(
     let servePosition: BallPosition
     if (serveQuality > 0.6) {
       // High serve quality - can target better (slightly favor backhand as it's often weaker)
-      servePosition = servePositionRand < 0.45 ? BallPosition.BACKHAND :
-        servePositionRand < 0.9 ? BallPosition.FOREHAND : BallPosition.MIDDLE
+      servePosition =
+        servePositionRand < 0.45
+          ? BallPosition.BACKHAND
+          : servePositionRand < 0.9
+            ? BallPosition.FOREHAND
+            : BallPosition.MIDDLE
     } else {
       // Lower serve quality - more random
-      servePosition = servePositionRand < 0.5 ? BallPosition.FOREHAND : BallPosition.BACKHAND
+      servePosition =
+        servePositionRand < 0.5 ? BallPosition.FOREHAND : BallPosition.BACKHAND
     }
 
     // Serves: Better serve stat = more likely to serve short (safer, more controlled)
@@ -732,12 +745,20 @@ export function simulateRally(
     let serveDepth: BallDepth
     if (serveQuality > 0.7) {
       // High serve quality - more likely to serve short (better control)
-      serveDepth = serveDepthRand < 0.7 ? BallDepth.SHORT :
-        serveDepthRand < 0.95 ? BallDepth.MID : BallDepth.LONG
+      serveDepth =
+        serveDepthRand < 0.7
+          ? BallDepth.SHORT
+          : serveDepthRand < 0.95
+            ? BallDepth.MID
+            : BallDepth.LONG
     } else {
       // Lower serve quality - more variety but riskier
-      serveDepth = serveDepthRand < 0.6 ? BallDepth.SHORT :
-        serveDepthRand < 0.9 ? BallDepth.MID : BallDepth.LONG
+      serveDepth =
+        serveDepthRand < 0.6
+          ? BallDepth.SHORT
+          : serveDepthRand < 0.9
+            ? BallDepth.MID
+            : BallDepth.LONG
     }
 
     // Serve spin: Better serve stat = more spin variety and control
@@ -745,12 +766,20 @@ export function simulateRally(
     let serveSpin: BallSpin
     if (serveQuality > 0.65) {
       // High serve quality - can vary spin more effectively
-      serveSpin = serveSpinRand < 0.35 ? BallSpin.TOPSPIN :
-        serveSpinRand < 0.8 ? BallSpin.BACKSPIN : BallSpin.NO_SPIN
+      serveSpin =
+        serveSpinRand < 0.35
+          ? BallSpin.TOPSPIN
+          : serveSpinRand < 0.8
+            ? BallSpin.BACKSPIN
+            : BallSpin.NO_SPIN
     } else {
       // Lower serve quality - more predictable
-      serveSpin = serveSpinRand < 0.4 ? BallSpin.TOPSPIN :
-        serveSpinRand < 0.85 ? BallSpin.BACKSPIN : BallSpin.NO_SPIN
+      serveSpin =
+        serveSpinRand < 0.4
+          ? BallSpin.TOPSPIN
+          : serveSpinRand < 0.85
+            ? BallSpin.BACKSPIN
+            : BallSpin.NO_SPIN
     }
 
     ball = {
@@ -762,11 +791,7 @@ export function simulateRally(
     }
 
     // Calculate base difficulty
-    let difficulty = calculateDifficulty(
-      ball,
-      receiverPosition,
-      receiver.skills.footwork
-    )
+    let difficulty = calculateDifficulty(ball, receiverPosition, receiver.skills.footwork)
 
     // Better serve quality makes the serve harder to return
     // Adjust difficulty based on serve quality (more granular and impactful)
@@ -807,6 +832,35 @@ export function simulateRally(
         difficulty
       }
     })
+
+    // Serve can win the point directly (ace or unreturnable serve)
+    // Higher serve stat = higher chance of winning serve
+    // Use exponential scaling - 0 serve stat = near 0% chance, 100 serve stat = much higher chance
+    // Difficulty bonus should only apply if serve stat is already decent
+    const baseServeWinChance = Math.pow(serveQuality, 0.5) * 0.25 // Exponential: 0 quality = 0%, 1.0 quality = 25%
+    const difficultyBonus =
+      serveQuality > 0.3
+        ? difficulty === 'hard'
+          ? 0.1
+          : difficulty === 'medium'
+            ? 0.05
+            : 0.02
+        : 0
+    const serveWinChance = baseServeWinChance + difficultyBonus
+    // Cap at reasonable max, but ensure 0 serve stat = 0% chance
+    if (Math.random() < Math.min(0.4, serveWinChance)) {
+      events.push({
+        type: 'point',
+        player: currentPlayer,
+        description: `${server.shortName || server.firstName} wins the point with an unreturnable serve`,
+        timestamp: Date.now()
+      })
+      return {
+        winner: currentPlayer,
+        events,
+        newPositions: positions
+      }
+    }
 
     currentPlayer = 1 - currentPlayer // Switch to receiver
   }
@@ -862,17 +916,31 @@ export function simulateRally(
       equipmentModifiers
     )
 
-    // Apply variance to shot execution
-    const actualQuality = applyVariance(shot.quality, 0.15)
+    // Apply variance to shot execution - variance should respect base quality
+    // If quality is 0, variance shouldn't help. If quality is 1, variance should be minimal
+    const baseVariance = 0.05 // Further reduced variance
+    // Variance scales with quality - perfect shots have minimal variance, terrible shots stay terrible
+    const skillBasedVariance = baseVariance * (1 - shot.quality * 0.98) // Even stronger scaling - 98% reduction for perfect shots
+    // For 0 quality shots, variance should be near zero - they can't get lucky
+    // For very low quality (< 0.1), severely limit variance
+    const varianceBoost = shot.quality < 0.1 ? shot.quality * 0.1 : skillBasedVariance // 0 quality = 0 variance, 0.1 quality = 0.01 variance
+    const actualQuality = Math.min(
+      1.0,
+      Math.max(shot.quality * 0.5, applyVariance(shot.quality, varianceBoost))
+    )
+    // Ensure 0 quality stays 0 (or very close to 0)
+    const finalQuality =
+      shot.quality < 0.01 ? Math.min(0.02, actualQuality) : actualQuality
 
-    // Check for errors (ball out) - more realistic error rates
+    // Check for errors (ball out) - make error rates much more extreme for stat differences
     // Base error chance scales with error value and consistency
-    // High consistency players make fewer errors
-    const baseErrorChance = shot.error * (1 - hitter.skills.consistency / 100)
+    // Low consistency players make many more errors, high consistency players make very few
+    const errorConsistencyFactor = Math.pow(1 - hitter.skills.consistency / 100, 0.5) // Steeper curve
+    const baseErrorChance = shot.error * errorConsistencyFactor
 
     // Adjust based on shot difficulty and rally length
     // Longer rallies increase error chance slightly
-    const rallyLengthPenalty = Math.min(0.1, rallyLength * 0.005)
+    const rallyLengthPenalty = Math.min(0.08, rallyLength * 0.004)
 
     // Defensive players have lower error rates on defensive shots
     const isDefensiveShot = !shouldAttack(
@@ -889,12 +957,18 @@ export function simulateRally(
     )
     const defensiveBonus =
       isDefensiveShot &&
-        (hitter.playStyle === PlayStyle.CHOPPER ||
-          hitter.playStyle === PlayStyle.DEFENSIVE_SPECIALIST)
-        ? 0.3
+      (hitter.playStyle === PlayStyle.CHOPPER ||
+        hitter.playStyle === PlayStyle.DEFENSIVE_SPECIALIST)
+        ? 0.4
         : 1.0
 
-    const finalErrorChance = baseErrorChance * 0.08 * defensiveBonus + rallyLengthPenalty
+    // Make error chance much more impactful - low stat players should error frequently
+    // High stat players should error rarely
+    const errorMultiplier = 0.12 // Increased from 0.08
+    const finalErrorChance = Math.min(
+      0.95,
+      baseErrorChance * errorMultiplier * defensiveBonus + rallyLengthPenalty
+    )
 
     if (Math.random() < finalErrorChance) {
       // Ball goes out
@@ -920,7 +994,7 @@ export function simulateRally(
     // Calculate rally win chance
     // More balanced win chance calculation
     const baseWinChance = calculateRallyWinChance(
-      actualQuality,
+      finalQuality,
       opponentPosition,
       opponent.skills.footwork,
       shot.intendedPosition,
@@ -928,18 +1002,18 @@ export function simulateRally(
       shot.power
     )
 
-    // Rally length factor - more gradual increase
+    // Rally length factor - reduced penalty to allow stat advantages to show through
     // Average rally length in table tennis is 3-5 exchanges, so we want most points to end naturally
-    const rallyLengthFactor = Math.min(1.4, 1 + rallyLength * 0.012) // Slightly slower increase
+    const rallyLengthFactor = Math.min(1.3, 1 + rallyLength * 0.01) // Reduced from 1.4 and 0.012
 
-    // Also factor in consistency - high consistency players extend rallies
+    // Also factor in consistency - high consistency players extend rallies, but reduce penalty
     const consistencyFactor =
       (hitter.skills.consistency + opponent.skills.consistency) / 200
-    const extendedRallyPenalty = consistencyFactor > 0.7 ? 0.85 : 1.0 // High consistency = longer rallies (more penalty)
+    const extendedRallyPenalty = consistencyFactor > 0.7 ? 0.92 : 1.0 // Reduced from 0.85 to 0.92
 
-    // Reduce win chance slightly to allow more exchanges
+    // Allow higher max for stat advantages - don't cap too aggressively
     const winChance = Math.min(
-      0.85,
+      0.97, // Increased from 0.95 to allow even larger stat advantages
       baseWinChance * rallyLengthFactor * extendedRallyPenalty
     )
 
@@ -947,14 +1021,16 @@ export function simulateRally(
     // Return quality is based on the hitter's receive stat (they're the one returning the ball)
     // Higher receive stat = better return quality, especially on difficult balls
     // Incoming ball difficulty affects return quality, but high receive stat reduces the penalty
-    const baseDifficultyPenalty = incomingDifficulty === 'hard' ? 0.3 : incomingDifficulty === 'medium' ? 0.15 : 0
+    const baseDifficultyPenalty =
+      incomingDifficulty === 'hard' ? 0.35 : incomingDifficulty === 'medium' ? 0.18 : 0
     const receiveSkill = hitter.skills.receive / 100
-    // Higher receive stat reduces difficulty penalty (better players handle difficult balls better)
-    const difficultyPenalty = baseDifficultyPenalty * (1 - receiveSkill * 0.5) // High receive (1.0) reduces penalty by 50%
-    const baseReturnQuality = receiveSkill
+    // Higher receive stat reduces difficulty penalty more effectively (better players handle difficult balls much better)
+    const difficultyPenalty = baseDifficultyPenalty * (1 - receiveSkill * 0.7) // High receive (1.0) reduces penalty by 70%
+    // Base return quality should scale better - higher receive stat = significantly better returns
+    const baseReturnQuality = 0.5 + receiveSkill * 0.5 // Scales from 0.5 to 1.0 based on receive stat
     const returnQuality = applyVariance(
-      Math.max(0.2, baseReturnQuality - difficultyPenalty),
-      0.1
+      Math.max(0.25, baseReturnQuality - difficultyPenalty),
+      0.08 // Reduced variance for better returns
     )
 
     // Update positions based on shot and ball location (more dynamic)
@@ -1048,35 +1124,80 @@ export function simulateRally(
 
     // Determine ideal target position (away from opponent)
     const idealTarget = getIdealAttackPosition(opponentPosition)
-    
+
     // High placement skill = better targeting (away from opponent, less middle shots)
     if (placementSkill > 0.7) {
       // High placement - can target away from opponent very well
       if (idealTarget === BallPosition.FOREHAND) {
-        returnPosition = rand < 0.8 ? BallPosition.FOREHAND : rand < 0.95 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.8
+            ? BallPosition.FOREHAND
+            : rand < 0.95
+              ? BallPosition.BACKHAND
+              : BallPosition.MIDDLE
       } else if (idealTarget === BallPosition.BACKHAND) {
-        returnPosition = rand < 0.8 ? BallPosition.BACKHAND : rand < 0.95 ? BallPosition.FOREHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.8
+            ? BallPosition.BACKHAND
+            : rand < 0.95
+              ? BallPosition.FOREHAND
+              : BallPosition.MIDDLE
       } else {
         // Opponent is neutral - target corners
-        returnPosition = rand < 0.45 ? BallPosition.FOREHAND : rand < 0.9 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.45
+            ? BallPosition.FOREHAND
+            : rand < 0.9
+              ? BallPosition.BACKHAND
+              : BallPosition.MIDDLE
       }
     } else if (placementSkill > 0.5) {
       // Medium placement - moderate targeting
       if (idealTarget === BallPosition.FOREHAND) {
-        returnPosition = rand < 0.6 ? BallPosition.FOREHAND : rand < 0.85 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.6
+            ? BallPosition.FOREHAND
+            : rand < 0.85
+              ? BallPosition.BACKHAND
+              : BallPosition.MIDDLE
       } else if (idealTarget === BallPosition.BACKHAND) {
-        returnPosition = rand < 0.6 ? BallPosition.BACKHAND : rand < 0.85 ? BallPosition.FOREHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.6
+            ? BallPosition.BACKHAND
+            : rand < 0.85
+              ? BallPosition.FOREHAND
+              : BallPosition.MIDDLE
       } else {
-        returnPosition = rand < 0.4 ? BallPosition.FOREHAND : rand < 0.8 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.4
+            ? BallPosition.FOREHAND
+            : rand < 0.8
+              ? BallPosition.BACKHAND
+              : BallPosition.MIDDLE
       }
     } else {
       // Lower placement - more random, less accurate targeting
       if (idealTarget === BallPosition.FOREHAND) {
-        returnPosition = rand < 0.4 ? BallPosition.FOREHAND : rand < 0.75 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.4
+            ? BallPosition.FOREHAND
+            : rand < 0.75
+              ? BallPosition.BACKHAND
+              : BallPosition.MIDDLE
       } else if (idealTarget === BallPosition.BACKHAND) {
-        returnPosition = rand < 0.4 ? BallPosition.BACKHAND : rand < 0.75 ? BallPosition.FOREHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.4
+            ? BallPosition.BACKHAND
+            : rand < 0.75
+              ? BallPosition.FOREHAND
+              : BallPosition.MIDDLE
       } else {
-        returnPosition = rand < 0.35 ? BallPosition.FOREHAND : rand < 0.7 ? BallPosition.BACKHAND : BallPosition.MIDDLE
+        returnPosition =
+          rand < 0.35
+            ? BallPosition.FOREHAND
+            : rand < 0.7
+              ? BallPosition.BACKHAND
+              : BallPosition.MIDDLE
       }
     }
 
@@ -1220,7 +1341,7 @@ export function simulateRally(
 
     // Check for lucky bounce
     const luckyBounce = checkLuckyBounce(
-      calculateLuckyBounceChance(actualQuality, opponent.skills.footwork),
+      calculateLuckyBounceChance(finalQuality, opponent.skills.footwork),
       opponent.skills.footwork
     )
 
