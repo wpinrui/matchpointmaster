@@ -27,23 +27,20 @@ export const GenderSelect: React.FC<GenderSelectProps> = ({ value, onChange }) =
         value={value}
         onChange={(e) => onChange(e.target.value as Gender)}
         style={{
-          background: theme.colors.neutral.white,
-          border: `2px solid ${theme.colors.neutral.gray300}`,
+          background: theme.colors.background.secondary,
+          border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
           borderRadius: theme.borderRadius.md,
           padding: `${theme.spacing.md} ${theme.spacing.lg}`,
           fontSize: theme.typography.fontSize.base,
           color: theme.colors.text.primary,
           transition: `all ${theme.transitions.fast}`,
-          width: '100%',
-          boxShadow: theme.shadows.sm
+          width: '100%'
         }}
         onFocus={(e) => {
-          e.target.style.borderColor = theme.colors.primary.main
-          e.target.style.boxShadow = theme.shadows.md
+          e.target.style.borderColor = theme.colors.border.selection
         }}
         onBlur={(e) => {
-          e.target.style.borderColor = theme.colors.neutral.gray300
-          e.target.style.boxShadow = theme.shadows.sm
+          e.target.style.borderColor = theme.colors.border.default
         }}
       >
         {GENDER_OPTIONS.map((option) => (

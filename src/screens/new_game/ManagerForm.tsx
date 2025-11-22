@@ -23,6 +23,14 @@ const ManagerForm: React.FC<{
   const { isDialogOpen, openDialog, closeDialog } = useImagePicker()
   const [storedFaceOptions, setStoredFaceOptions] = React.useState<string[]>([])
 
+  // Reset profile image and face options when gender changes
+  React.useEffect(() => {
+    if (data.imagePath) {
+      onChange('imagePath', null)
+    }
+    setStoredFaceOptions([])
+  }, [data.gender]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleImageSelect = (imagePath: string) => {
     onChange('imagePath', imagePath)
     closeDialog()

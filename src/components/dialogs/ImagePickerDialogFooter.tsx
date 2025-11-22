@@ -17,22 +17,30 @@ export const ImagePickerDialogFooter: React.FC<ImagePickerDialogFooterProps> = (
     <Modal.Footer
       style={{
         background: theme.colors.background.primary,
-        borderTop: `1px solid ${theme.colors.neutral.gray300}`,
-        borderRadius: `0 0 ${theme.borderRadius.lg} ${theme.borderRadius.lg}`
+        borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
+        borderRadius: `0 0 ${theme.borderRadius.lg} ${theme.borderRadius.lg}`,
+        padding: theme.spacing.lg
       }}
     >
       <button
         onClick={onCancel}
         style={{
           padding: `${theme.spacing.md} ${theme.spacing.xl}`,
-          background: theme.colors.neutral.gray300,
+          background: theme.colors.background.secondary,
           color: theme.colors.text.primary,
-          border: 'none',
+          border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
           borderRadius: theme.borderRadius.md,
           cursor: 'pointer',
           fontSize: theme.typography.fontSize.base,
           fontWeight: theme.typography.fontWeight.medium,
-          marginRight: theme.spacing.md
+          marginRight: theme.spacing.md,
+          transition: `all ${theme.transitions.fast}`
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = theme.colors.border.light
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = theme.colors.border.default
         }}
       >
         Cancel
@@ -44,16 +52,29 @@ export const ImagePickerDialogFooter: React.FC<ImagePickerDialogFooterProps> = (
           padding: `${theme.spacing.md} ${theme.spacing.xl}`,
           background: selectedFaceUrl
             ? theme.gradients.primary
-            : theme.colors.neutral.gray300,
+            : theme.colors.background.secondary,
           color: selectedFaceUrl
             ? theme.colors.text.inverse
             : theme.colors.text.secondary,
-          border: 'none',
+          border: `${theme.borderWidth.default} solid ${
+            selectedFaceUrl ? theme.colors.primary.main : theme.colors.border.default
+          }`,
           borderRadius: theme.borderRadius.md,
           cursor: selectedFaceUrl ? 'pointer' : 'not-allowed',
           fontSize: theme.typography.fontSize.base,
           fontWeight: theme.typography.fontWeight.medium,
-          opacity: selectedFaceUrl ? 1 : 0.6
+          opacity: selectedFaceUrl ? 1 : 0.6,
+          transition: `all ${theme.transitions.fast}`
+        }}
+        onMouseEnter={(e) => {
+          if (selectedFaceUrl) {
+            e.currentTarget.style.borderColor = theme.colors.neon.primary
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (selectedFaceUrl) {
+            e.currentTarget.style.borderColor = theme.colors.primary.main
+          }
         }}
       >
         Confirm

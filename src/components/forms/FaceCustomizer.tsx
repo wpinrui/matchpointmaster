@@ -42,8 +42,30 @@ const FaceCustomizer: React.FC<FaceCustomizerProps> = ({
     }
   }, [initialSeed, onFaceChange, gender, currentSelectedFace, onFaceOptionsChange])
 
+  // Track previous gender to detect changes
+  const prevGenderRef = React.useRef<Gender | undefined>(gender)
+
   // Initialize faces: use stored options if available, otherwise generate new ones
+  // When gender changes, always regenerate faces and reset selection
   React.useEffect(() => {
+    const genderChanged = prevGenderRef.current !== gender
+    prevGenderRef.current = gender
+
+    // If gender changed, always reset and generate new faces
+    if (genderChanged) {
+      setSelectedFaceUrl('')
+      const faces = generateFaceSet(6, initialSeed || 'manager', gender)
+      setFaceOptions(faces)
+      onFaceOptionsChange?.(faces)
+      // Always select first face when gender changes
+      if (faces.length > 0) {
+        setSelectedFaceUrl(faces[0])
+        onFaceChange(faces[0])
+      }
+      return
+    }
+
+    // Normal initialization: use stored options if available
     if (storedFaceOptions.length > 0) {
       // Restore stored faces
       setFaceOptions(storedFaceOptions)
@@ -73,7 +95,7 @@ const FaceCustomizer: React.FC<FaceCustomizerProps> = ({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gender]) // Regenerate when gender changes
+  }, [gender, storedFaceOptions]) // Regenerate when gender changes or stored options change
 
   const handleFaceSelect = (faceUrl: string) => {
     setSelectedFaceUrl(faceUrl)

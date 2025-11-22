@@ -65,10 +65,10 @@ select::-ms-expand {
   display: none;
 }
 
-/* Style dropdown options */
+/* Style dropdown options - Dark theme */
 select option {
   padding: 12px 16px;
-  background: #1A1D29;
+  background: #252932;
   color: #FFFFFF;
   border: none;
   margin: 2px 0;
@@ -76,7 +76,7 @@ select option {
 
 select option:hover,
 select option:focus {
-  background: #2A2F3E;
+  background: #323640;
 }
 
 select option:checked {
@@ -178,11 +178,21 @@ img:hover {
 .image-picker-modal-content {
   border-radius: 0.75rem !important;
   overflow: hidden;
-  border: none !important;
+  border: 1.5px solid #3A3F4E !important;
+  background: transparent !important;
 }
 
 .image-picker-modal-content .modal-content {
   border-radius: 0.75rem !important;
   overflow: hidden;
   border: none !important;
+  background: transparent !important;
+}
+
+.image-picker-modal-content .modal-body {
+  background: #0F1115 !important;
+}
+
+.image-picker-modal-content .modal-footer {
+  background: #0F1115 !important;
 }

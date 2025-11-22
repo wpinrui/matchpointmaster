@@ -31,31 +31,27 @@ export const FaceGrid: React.FC<FaceGridProps> = ({
             style={{
               cursor: 'pointer',
               borderRadius: theme.borderRadius.md,
-              border: `3px solid ${
-                isSelected ? theme.colors.primary.main : theme.colors.neutral.gray300
+              border: `${theme.borderWidth.thick} solid ${
+                isSelected ? theme.colors.primary.main : theme.colors.border.default
               }`,
               padding: theme.spacing.sm,
-              background: theme.colors.neutral.white,
+              background: theme.colors.background.secondary,
               transition: `all ${theme.transitions.normal}`,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: isSelected ? theme.shadows.lg : 'none'
+              justifyContent: 'center'
             }}
             onMouseEnter={(e) => {
               if (!isSelected) {
                 e.currentTarget.style.borderColor = theme.colors.primary.light
-                e.currentTarget.style.boxShadow = theme.shadows.md
               }
             }}
             onMouseLeave={(e) => {
               if (!isSelected) {
-                e.currentTarget.style.borderColor = theme.colors.neutral.gray300
-                e.currentTarget.style.boxShadow = 'none'
+                e.currentTarget.style.borderColor = theme.colors.border.default
               } else {
                 // Keep selected styling on mouse leave
                 e.currentTarget.style.borderColor = theme.colors.primary.main
-                e.currentTarget.style.boxShadow = theme.shadows.lg
               }
             }}
           >
