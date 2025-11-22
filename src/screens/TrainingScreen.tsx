@@ -4,6 +4,7 @@ import GameCard from '../components/cards/GameCard'
 import { PlayerCard } from '../components/players/PlayerCard'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
+import { generatePhaseProgressionEmail } from '../utils/emailGenerator'
 import {
   TrainingFocus,
   PlayerTraining,
@@ -33,6 +34,8 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     manager,
     school,
     trainingPlan,
+    skillSnapshots,
+    addEmail,
     updateTrainingPlan,
     updateSeason,
     updatePlayers,
@@ -220,7 +223,10 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           variant="success"
           onClick={() => {
             const currentPhase = season.phase as GamePhase
-            const nextPhase = getNextPhase(currentPhase, season.month)
+            const currentMonth = season.month
+            const currentYear = season.year
+            const nextPhase = getNextPhase(currentPhase, currentMonth)
+            const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
 
             // Process player progression before advancing phase
             // Always process progression during training phase, regardless of completed flag
@@ -234,8 +240,8 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               const snapshots = createSkillSnapshots(
                 players,
                 teamRoster,
-                season.month,
-                season.year
+                currentMonth,
+                currentYear
               )
               updateSkillSnapshots.addMany(snapshots)
 
@@ -247,7 +253,7 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 manager,
                 school,
                 season.phase,
-                season.month
+                currentMonth
               )
               updatePlayers.set(updatedPlayers)
 
@@ -266,7 +272,6 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               trainingPlan
             ) {
               // Check if training plan month/year doesn't match next month (new training month)
-              const newYear = nextPhase.month === 1 ? season.year + 1 : season.year
               if (
                 trainingPlan.month !== nextPhase.month ||
                 trainingPlan.year !== newYear
@@ -280,7 +285,31 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             // Reset draft if it's a new year
             if (nextPhase.month === 1) {
               updateSeason.setDraftCompleted(false)
+              updateSeason.setYear(newYear)
             }
+
+            // Generate and add phase progression email
+            // Get snapshots from the month we're leaving (currentMonth)
+            // These snapshots were just created before we advanced the month
+            // For training phase progressions, we want to compare against the month we completed
+            const previousMonthSnapshots = skillSnapshots.filter(
+              (s) => s.month === currentMonth && s.year === currentYear
+            )
+
+            const phaseProgressionEmail = generatePhaseProgressionEmail(
+              manager.fullName || 'Coach',
+              school.name || 'the school',
+              players,
+              teamRoster,
+              currentMonth,
+              currentYear,
+              currentPhase,
+              nextPhase.month,
+              newYear,
+              nextPhase.phase as GamePhase,
+              previousMonthSnapshots.length > 0 ? previousMonthSnapshots : []
+            )
+            addEmail(phaseProgressionEmail)
 
             // Navigate back to home screen
             changeScreen(Screens.HOME)

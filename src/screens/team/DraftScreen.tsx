@@ -8,6 +8,7 @@ import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import { GamePhase, getNextPhase } from '../../utils/gamePhases'
+import { generatePhaseProgressionEmail } from '../../utils/emailGenerator'
 import { generatePlayer, IntakeQuality } from '../../utils/playerGeneration'
 import {
   attractivenessToIntakeQuality,
@@ -27,7 +28,8 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     updatePlayers,
     season,
     draftCompleted,
-    updateSeason
+    updateSeason,
+    addEmail
   } = useSaveDataContext()
 
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
@@ -48,19 +50,68 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   const handleConfirmLeave = () => {
+    const currentMonth = season.month
+    const currentYear = season.year
+    const currentPhase = GamePhase.DRAFT
+
+    // Mark draft as completed
     updateSeason.setDraftCompleted(true)
+
+    // Progress to February training phase (if still in January/DRAFT)
+    if (season.phase === 'draft' && season.month === 1) {
+      const nextPhase = getNextPhase(GamePhase.DRAFT, currentMonth)
+      updateSeason.setMonth(nextPhase.month)
+      updateSeason.setPhase(nextPhase.phase)
+
+      // Generate and add phase progression email
+      const phaseProgressionEmail = generatePhaseProgressionEmail(
+        manager.fullName || 'Coach',
+        school.name || 'the school',
+        players,
+        teamRoster,
+        currentMonth,
+        currentYear,
+        currentPhase,
+        nextPhase.month,
+        currentYear,
+        nextPhase.phase as GamePhase,
+        [] // No previous snapshots for draft phase
+      )
+      addEmail(phaseProgressionEmail)
+    }
+
     setShowLeaveConfirm(false)
     changeScreen(Screens.HOME)
   }
 
   const handleEndDraft = () => {
+    const currentMonth = season.month
+    const currentYear = season.year
+    const currentPhase = GamePhase.DRAFT
+
     // Mark draft as completed
     updateSeason.setDraftCompleted(true)
 
     // Progress to February training phase
-    const nextPhase = getNextPhase(GamePhase.DRAFT, season.month)
+    const nextPhase = getNextPhase(GamePhase.DRAFT, currentMonth)
     updateSeason.setMonth(nextPhase.month)
     updateSeason.setPhase(nextPhase.phase)
+
+    // Generate and add phase progression email
+    const phaseProgressionEmail = generatePhaseProgressionEmail(
+      manager.fullName || 'Coach',
+      school.name || 'the school',
+      players,
+      teamRoster,
+      currentMonth,
+      currentYear,
+      currentPhase,
+      nextPhase.month,
+      currentYear,
+      nextPhase.phase as GamePhase,
+      [] // No previous snapshots for draft phase
+    )
+    addEmail(phaseProgressionEmail)
 
     // Navigate to home
     changeScreen(Screens.HOME)

@@ -14,6 +14,7 @@ import { Email } from '../services/savegame/types'
 import { theme } from '../theme/theme'
 import { createSkillSnapshots, processPlayerProgression } from '../utils/applyProgression'
 import { MONTH_NAMES } from '../utils/constants'
+import { generatePhaseProgressionEmail } from '../utils/emailGenerator'
 import { GamePhase, getNextPhase, getPhaseDisplayName } from '../utils/gamePhases'
 
 const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
@@ -31,7 +32,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     updatePlayers,
     updateTrainingPlan,
     skillSnapshots,
-    updateSkillSnapshots
+    updateSkillSnapshots,
+    addEmail
   } = useSaveDataContext()
   const [showDraftDialog, setShowDraftDialog] = useState(false)
 
@@ -135,12 +137,26 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           }
         }
 
+        // Capture current values before advancing
+        const currentMonth = season.month
+        const currentYear = season.year
+        const currentPhase = currentPhaseString as GamePhase
+        const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
+
+        // Get snapshots from the month we're leaving (currentMonth)
+        // These snapshots were just created before we advanced the month (if in training phase)
+        // For training phase progressions, we want to compare against the month we completed
+        const previousMonthSnapshots = skillSnapshots.filter(
+          (s) => s.month === currentMonth && s.year === currentYear
+        )
+
         // Advance phase
         updateSeason.setMonth(nextPhase.month)
         updateSeason.setPhase(nextPhase.phase)
         if (nextPhase.month === 1) {
           // New year - reset draft
           updateSeason.setDraftCompleted(false)
+          updateSeason.setYear(newYear)
         }
 
         // If entering a new training month, reset completed flag and update month/year
@@ -150,13 +166,28 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           trainingPlan
         ) {
           // Check if training plan month/year doesn't match next month (new training month)
-          const newYear = nextPhase.month === 1 ? season.year + 1 : season.year
           if (trainingPlan.month !== nextPhase.month || trainingPlan.year !== newYear) {
             // Update training plan to reflect new month/year and reset completed flag
             updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
             updateTrainingPlan.setCompleted(false)
           }
         }
+
+        // Generate and add phase progression email
+        const phaseProgressionEmail = generatePhaseProgressionEmail(
+          manager.fullName || 'Coach',
+          school.name || 'the school',
+          players,
+          teamRoster,
+          currentMonth,
+          currentYear,
+          currentPhase,
+          nextPhase.month,
+          newYear,
+          nextPhase.phase as GamePhase,
+          previousMonthSnapshots
+        )
+        addEmail(phaseProgressionEmail)
       }
     }
   }
@@ -225,20 +256,149 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 400px',
+          gridTemplateColumns: '500px 1fr',
           gap: theme.spacing.xl,
           flex: 1,
           overflow: 'hidden'
         }}
       >
-        {/* Left Column - Main Content Cards */}
+        {/* Left Column - Email Preview (moved to left, widened) */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: theme.spacing.lg,
+            overflow: 'hidden',
+            borderRight: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
+            paddingRight: theme.spacing.lg
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: theme.typography.fontFamily.heading,
+                fontSize: theme.typography.fontSize['2xl'],
+                fontWeight: theme.typography.fontWeight.bold,
+                color: theme.colors.text.primary,
+                margin: 0
+              }}
+            >
+              Inbox
+              {unreadEmails.length > 0 && (
+                <span
+                  style={{
+                    marginLeft: theme.spacing.sm,
+                    fontSize: theme.typography.fontSize.base,
+                    color: theme.colors.primary.main,
+                    fontWeight: theme.typography.fontWeight.bold
+                  }}
+                >
+                  ({unreadEmails.length})
+                </span>
+              )}
+            </h2>
+            <GameButton
+              variant="secondary"
+              size="sm"
+              onClick={() => changeScreen(Screens.EMAIL)}
+              type="button"
+            >
+              View All
+            </GameButton>
+          </div>
+
+          {unreadEmails.length > 0 ? (
+            <div
+              style={{
+                overflowY: 'auto',
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: theme.spacing.sm
+              }}
+            >
+              {unreadEmails.slice(0, 5).map((email) => (
+                <EmailCard
+                  key={email.id}
+                  email={email}
+                  onClick={() => handleEmailClick(email)}
+                  currentSeasonYear={season.year}
+                  currentSeasonMonth={season.month}
+                />
+              ))}
+              {unreadEmails.length > 5 && (
+                <div
+                  style={{
+                    textAlign: 'center',
+                    padding: theme.spacing.md,
+                    color: theme.colors.text.secondary,
+                    fontSize: theme.typography.fontSize.sm
+                  }}
+                >
+                  +{unreadEmails.length - 5} more unread email
+                  {unreadEmails.length - 5 !== 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
+          ) : (
+            <GameCard
+              style={{
+                padding: theme.spacing.xl,
+                textAlign: 'center',
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize.base,
+                  color: theme.colors.text.secondary,
+                  margin: 0,
+                  marginBottom: theme.spacing.md
+                }}
+              >
+                No unread emails
+              </p>
+              <p
+                style={{
+                  fontSize: theme.typography.fontSize.sm,
+                  color: theme.colors.text.secondary,
+                  margin: 0,
+                  marginBottom: theme.spacing.lg
+                }}
+              >
+                Check your inbox for updates about the game world, tournaments, and
+                important announcements.
+              </p>
+              <GameButton
+                variant="primary"
+                size="sm"
+                onClick={() => changeScreen(Screens.EMAIL)}
+                type="button"
+              >
+                Open Inbox
+              </GameButton>
+            </GameCard>
+          )}
+        </div>
+
+        {/* Right Column - Main Content Cards */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
             gap: theme.spacing.lg,
             overflow: 'auto',
-            paddingRight: theme.spacing.md
+            paddingLeft: theme.spacing.md
           }}
         >
           {/* Three Card Layout - Responsive */}
@@ -411,135 +571,6 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               </div>
             </GameCard>
           </div>
-        </div>
-
-        {/* Right Column - Email Preview */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.lg,
-            overflow: 'hidden',
-            borderLeft: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
-            paddingLeft: theme.spacing.lg
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-          >
-            <h2
-              style={{
-                fontFamily: theme.typography.fontFamily.heading,
-                fontSize: theme.typography.fontSize['2xl'],
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                margin: 0
-              }}
-            >
-              Inbox
-              {unreadEmails.length > 0 && (
-                <span
-                  style={{
-                    marginLeft: theme.spacing.sm,
-                    fontSize: theme.typography.fontSize.base,
-                    color: theme.colors.primary.main,
-                    fontWeight: theme.typography.fontWeight.bold
-                  }}
-                >
-                  ({unreadEmails.length})
-                </span>
-              )}
-            </h2>
-            <GameButton
-              variant="secondary"
-              size="sm"
-              onClick={() => changeScreen(Screens.EMAIL)}
-              type="button"
-            >
-              View All
-            </GameButton>
-          </div>
-
-          {unreadEmails.length > 0 ? (
-            <div
-              style={{
-                overflowY: 'auto',
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: theme.spacing.sm
-              }}
-            >
-              {unreadEmails.slice(0, 5).map((email) => (
-                <EmailCard
-                  key={email.id}
-                  email={email}
-                  onClick={() => handleEmailClick(email)}
-                  currentSeasonYear={season.year}
-                  currentSeasonMonth={season.month}
-                />
-              ))}
-              {unreadEmails.length > 5 && (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: theme.spacing.md,
-                    color: theme.colors.text.secondary,
-                    fontSize: theme.typography.fontSize.sm
-                  }}
-                >
-                  +{unreadEmails.length - 5} more unread email
-                  {unreadEmails.length - 5 !== 1 ? 's' : ''}
-                </div>
-              )}
-            </div>
-          ) : (
-            <GameCard
-              style={{
-                padding: theme.spacing.xl,
-                textAlign: 'center',
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <p
-                style={{
-                  fontSize: theme.typography.fontSize.base,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.md
-                }}
-              >
-                No unread emails
-              </p>
-              <p
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.lg
-                }}
-              >
-                Check your inbox for updates about the game world, tournaments, and
-                important announcements.
-              </p>
-              <GameButton
-                variant="primary"
-                size="sm"
-                onClick={() => changeScreen(Screens.EMAIL)}
-                type="button"
-              >
-                Open Inbox
-              </GameButton>
-            </GameCard>
-          )}
         </div>
       </div>
 

@@ -1,6 +1,20 @@
-import { Email, EmailTag, SaveData } from '../services/savegame/types'
+import {
+  Email,
+  EmailTag,
+  SaveData,
+  SkillSnapshot,
+  Player
+} from '../services/savegame/types'
 import { calculateMaxTeamSize } from './schoolReputation'
 import { getTeamCompositionRequirements } from './teamTypeDisplay'
+import { GamePhase, getPhaseDisplayName } from './gamePhases'
+import { MONTH_NAMES } from './constants'
+import {
+  getTopImprovers,
+  calculateTeamAverageImprovement,
+  calculateTeamTotalImprovement
+} from './trainingInsights'
+import { getImprovementChartData, getYearToDateSnapshots } from './trainingAnalytics'
 
 /**
  * Generate a timestamp based on in-game date
@@ -120,4 +134,245 @@ This is an exciting time for table tennis enthusiasts at ${schoolName}, and we l
   }
 
   return [welcomeEmail, newsEmail]
+}
+
+/**
+ * Generate a phase progression email when advancing to a new phase/month
+ * Includes training summaries for training month progressions
+ */
+export function generatePhaseProgressionEmail(
+  managerName: string,
+  schoolName: string,
+  players: Player[],
+  teamRoster: string[],
+  previousMonth: number,
+  previousYear: number,
+  previousPhase: GamePhase,
+  currentMonth: number,
+  currentYear: number,
+  currentPhase: GamePhase,
+  previousMonthSnapshots: SkillSnapshot[]
+): Email {
+  const monthName = MONTH_NAMES[currentMonth - 1]
+  const previousMonthName = MONTH_NAMES[previousMonth - 1]
+  const phaseDisplayName = getPhaseDisplayName(currentPhase, currentMonth)
+
+  // Get team players
+  const teamPlayers = players.filter((p) => teamRoster.includes(p.id))
+
+  // Generate email subject and body based on phase
+  let subject = ''
+  let body = ''
+  let tags: EmailTag[] = [EmailTag.ADMINISTRATIVE]
+
+  // Check if we're continuing within training phase (e.g., Feb to Mar, Mar to Apr, etc.)
+  const isTrainingContinuation =
+    (previousPhase === GamePhase.TRAINING || previousPhase === GamePhase.TRAINING_2) &&
+    (currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2)
+
+  if (isTrainingContinuation && teamPlayers.length > 0) {
+    // Training month progression - include training summary
+    subject = `Training Update: ${previousMonthName} Summary & ${monthName} Preview`
+    tags = [EmailTag.TRAINING, EmailTag.ADMINISTRATIVE]
+
+    // Calculate training statistics
+    const topImprovers = getTopImprovers(previousMonthSnapshots, teamPlayers, 3)
+    const teamAvgImprovement = calculateTeamAverageImprovement(
+      previousMonthSnapshots,
+      teamPlayers
+    )
+    const teamTotalImprovement = calculateTeamTotalImprovement(
+      previousMonthSnapshots,
+      teamPlayers
+    )
+
+    // Check if we have snapshots to show detailed stats
+    const hasSnapshots = previousMonthSnapshots.length > 0
+
+    if (hasSnapshots) {
+      // Calculate training statistics from snapshots
+      const topImprovers = getTopImprovers(previousMonthSnapshots, teamPlayers, 3)
+      const teamAvgImprovement = calculateTeamAverageImprovement(
+        previousMonthSnapshots,
+        teamPlayers
+      )
+      const teamTotalImprovement = calculateTeamTotalImprovement(
+        previousMonthSnapshots,
+        teamPlayers
+      )
+
+      body = `Dear ${managerName},
+
+## ${previousMonthName} Training Summary
+
+We've completed another month of training, and I'm pleased to share the progress your team has made:
+
+### Overall Team Performance
+
+- **Total Skill Improvement:** +${Math.round(teamTotalImprovement)} points across all players
+- **Average Improvement per Player:** +${teamAvgImprovement.toFixed(1)} points per skill
+
+${
+  topImprovers.length > 0
+    ? `
+### Top Performers This Month
+
+${topImprovers
+  .map(
+    (improver, index) =>
+      `${index + 1}. **${improver.player.firstName} ${improver.player.lastName}** - +${Math.round(
+        improver.totalImprovement
+      )} total skill points`
+  )
+  .join('\n')}
+`
+    : ''
+}
+
+### Looking Ahead to ${monthName}
+
+We're now entering ${monthName} ${currentYear}, and the **${phaseDisplayName}** phase continues.
+
+${getPhaseDescription(currentPhase, currentMonth)}
+
+Keep up the excellent work!
+
+Best regards,
+School Administration`
+    } else {
+      // No snapshots yet (first training month progression or snapshots not created)
+      body = `Dear ${managerName},
+
+## ${previousMonthName} Training Summary
+
+We've completed another month of training. Your team has been working hard and making progress.
+
+### Looking Ahead to ${monthName}
+
+We're now entering ${monthName} ${currentYear}, and the **${phaseDisplayName}** phase continues.
+
+${getPhaseDescription(currentPhase, currentMonth)}
+
+Continue focusing on your training plan to maximize player development.
+
+Best regards,
+School Administration`
+    }
+  } else {
+    // Check if we're continuing in the same phase or entering a new phase
+    const isNewPhase = previousPhase !== currentPhase
+    const isTrainingContinuation =
+      (previousPhase === GamePhase.TRAINING || previousPhase === GamePhase.TRAINING_2) &&
+      (currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2)
+
+    if (isNewPhase) {
+      // Entering a new phase
+      subject = `Phase Update: Entering ${phaseDisplayName} Phase`
+      tags = [EmailTag.ADMINISTRATIVE]
+
+      body = `Dear ${managerName},
+
+## Phase Progression Update
+
+We've now entered **${monthName} ${currentYear}**, beginning the **${phaseDisplayName}** phase.
+
+${getPhaseDescription(currentPhase, currentMonth)}
+
+If you have any questions or need assistance, please don't hesitate to reach out.
+
+Best regards,
+School Administration`
+    } else if (isTrainingContinuation) {
+      // Continuing within training phase (e.g., March in training phase after February)
+      subject = `Training Update: ${monthName} Preview`
+      tags = [EmailTag.TRAINING, EmailTag.ADMINISTRATIVE]
+
+      body = `Dear ${managerName},
+
+## Month Progression Update
+
+We've now entered **${monthName} ${currentYear}**. The **${phaseDisplayName}** phase continues.
+
+${getPhaseDescription(currentPhase, currentMonth)}
+
+If you have any questions or need assistance, please don't hesitate to reach out.
+
+Best regards,
+School Administration`
+    } else {
+      // Continuing within same non-training phase
+      subject = `Update: ${monthName} Preview`
+      tags = [EmailTag.ADMINISTRATIVE]
+
+      body = `Dear ${managerName},
+
+## Month Progression Update
+
+We've now entered **${monthName} ${currentYear}**. The **${phaseDisplayName}** phase continues.
+
+${getPhaseDescription(currentPhase, currentMonth)}
+
+If you have any questions or need assistance, please don't hesitate to reach out.
+
+Best regards,
+School Administration`
+    }
+  }
+
+  return {
+    id: `phase-progression-${currentYear}-${currentMonth}-${Date.now()}`,
+    from: 'School Administration',
+    subject,
+    body,
+    timestamp: getInGameTimestamp(currentYear, currentMonth, 1, 9, 0), // First day of month, 9 AM
+    read: false,
+    tags
+  }
+}
+
+/**
+ * Get phase description text for emails
+ */
+function getPhaseDescription(phase: GamePhase, month: number): string {
+  switch (phase) {
+    case GamePhase.DRAFT:
+      return `This is the **Draft Phase**. You have the opportunity to select players for your team. Once you leave the draft screen, you cannot add more players for the rest of the season, so choose wisely!`
+
+    case GamePhase.TRAINING:
+      if (month === 2) {
+        return `This is the beginning of the **Training Phase**. Focus on developing your players' skills and preparing them for upcoming competitions. Set up your training plan to maximize player development.`
+      } else if (month === 5) {
+        return `We're in the **Pre-Intra-Club** phase. This is your final month of training before the intra-club round-robin tournament. Make sure your players are ready to compete!`
+      }
+      return `The **Training Phase** continues. Focus on developing your players' skills through your training plan.`
+
+    case GamePhase.INTRA_CLUB:
+      return `This is the **Intra-Club Round-Robin** phase. Your players will compete to determine their rankings within the squad. This will help you identify your strongest players for upcoming tournaments.`
+
+    case GamePhase.ZONAL:
+      return `Welcome to the **Zonal School Tournament** phase! Your team will compete against other schools in your zone. The top 4 teams will advance to the national tournament. Good luck!`
+
+    case GamePhase.NATIONAL:
+      return `Congratulations on making it to the **National Championships**! This is an immediate knockout tournament with seeding. Every match counts - give it your all!`
+
+    case GamePhase.TRAINING_2:
+      if (month === 8) {
+        return `We're entering the second **Training Phase** of the season. Continue developing your players' skills and preparing for the national singles tournament.`
+      } else if (month === 10) {
+        return `This is the **Pre-Singles** phase - your final training month before the national singles tournament. Make final preparations!`
+      }
+      return `The second **Training Phase** continues. Keep up the excellent work developing your players.`
+
+    case GamePhase.SINGLES_SELECTION:
+      return `Welcome to the **Singles Selection** phase. Players will be notified of their selection for the national singles tournament based on their ELO rankings.`
+
+    case GamePhase.SINGLES_TOURNAMENT:
+      return `This is the **National Singles Tournament** phase! The top 64 boys and 64 girls from across the country will compete. This is a prestigious competition - best of luck to your players!`
+
+    case GamePhase.GRADUATION:
+      return `We've reached the **Graduation & Celebrations** phase. This is a time to reflect on the season, celebrate achievements, and prepare for the next year.`
+
+    default:
+      return `We're now in the **${getPhaseDisplayName(phase, month)}** phase. Continue managing your team effectively.`
+  }
 }
