@@ -30,7 +30,9 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     season,
     draftCompleted,
     updateSeason,
-    addEmail
+    addEmail,
+    aiSchools,
+    updateAISchools
   } = useSaveDataContext()
 
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
@@ -70,7 +72,8 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           players,
           teamRoster,
           manager,
-          school
+          school,
+          aiSchools
         },
         {
           updateSeason: {
@@ -78,7 +81,9 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             setMonth: updateSeason.setMonth,
             setPhase: updateSeason.setPhase
           },
-          addEmail
+          addEmail,
+          updatePlayers,
+          updateAISchools
         }
       )
     }
@@ -107,7 +112,8 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         players,
         teamRoster,
         manager,
-        school
+        school,
+        aiSchools
       },
       {
         updateSeason: {
@@ -115,7 +121,9 @@ const DraftScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           setMonth: updateSeason.setMonth,
           setPhase: updateSeason.setPhase
         },
-        addEmail
+        addEmail,
+        updatePlayers,
+        updateAISchools
       }
     )
 

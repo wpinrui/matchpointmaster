@@ -10,7 +10,17 @@ import {
   generateTrainingResultsEmail
 } from './emailGenerator'
 import { createSkillSnapshots, processPlayerProgression } from './applyProgression'
-import { initializeAISchoolTraining, applyAISchoolTraining } from './aiSchools'
+import {
+  initializeAISchoolTraining,
+  applyAISchoolTraining,
+  generateAISchoolDraftPlayers
+} from './aiSchools'
+import { calculateOverallRating } from './cardTiers'
+import {
+  calculateMaxTeamSize,
+  calculatePlayerPoolSize,
+  calculateSchoolAttractiveness
+} from './schoolReputation'
 import type {
   Player,
   SaveData,
@@ -19,6 +29,7 @@ import type {
   Email,
   AISchool
 } from '../services/savegame/types'
+import { Gender } from '../services/savegame/types'
 
 type Manager = SaveData['manager']
 type School = SaveData['school']
@@ -288,6 +299,66 @@ export function advanceToNextPhase(
 }
 
 /**
+ * Simulate AI schools drafting players from their own individual pools
+ * Each school generates their own draft pool and drafts the best available players until they reach capacity
+ */
+function simulateAISchoolDrafting(aiSchools: AISchool[]): AISchool[] {
+  return aiSchools.map((school) => {
+    // Calculate max team size for this school
+    const maxTeamSize = calculateMaxTeamSize(school.funding, school.teamType)
+
+    // Get current team size (existing players on roster)
+    const currentTeamSize = school.teamRoster.length
+
+    // Calculate how many players this school needs
+    const playersNeeded = maxTeamSize - currentTeamSize
+
+    if (playersNeeded <= 0) {
+      return school // No capacity
+    }
+
+    // Calculate school attractiveness to determine pool size
+    const schoolAttractiveness = calculateSchoolAttractiveness(
+      school.reputation,
+      school.funding,
+      school.managerStats.reputation
+    )
+    const poolSize = calculatePlayerPoolSize(schoolAttractiveness)
+
+    // Generate this school's own draft pool
+    const draftPool = generateAISchoolDraftPlayers(school, poolSize)
+
+    // Filter by team type
+    let eligiblePlayers = draftPool
+    if (school.teamType === 'boys') {
+      eligiblePlayers = draftPool.filter((p) => p.gender === Gender.MALE)
+    } else if (school.teamType === 'girls') {
+      eligiblePlayers = draftPool.filter((p) => p.gender === Gender.FEMALE)
+    }
+    // 'both' allows all genders
+
+    // Sort by overall rating (best first)
+    const sortedPlayers = [...eligiblePlayers].sort(
+      (a, b) => calculateOverallRating(b.skills) - calculateOverallRating(a.skills)
+    )
+
+    // Draft the best available players up to capacity
+    const playersToDraft = sortedPlayers.slice(0, playersNeeded)
+    const draftedPlayerIds = playersToDraft.map((p) => p.id)
+
+    // Add drafted players to school's players array and team roster
+    const updatedPlayers = [...school.players, ...playersToDraft]
+    const updatedTeamRoster = [...school.teamRoster, ...draftedPlayerIds]
+
+    return {
+      ...school,
+      players: updatedPlayers,
+      teamRoster: updatedTeamRoster
+    }
+  })
+}
+
+/**
  * Complete draft and progress to training phase
  * Simplified version for draft completion that doesn't require all callbacks
  */
@@ -299,6 +370,7 @@ export function completeDraftAndProgress(
     teamRoster: string[]
     manager: Manager
     school: School
+    aiSchools?: AISchool[]
   },
   callbacks: {
     updateSeason: {
@@ -307,9 +379,27 @@ export function completeDraftAndProgress(
       setPhase: (phase: string) => void
     }
     addEmail: (email: Email) => void
+    updatePlayers?: {
+      set: (players: Player[]) => void
+    }
+    updateAISchools?: {
+      set: (schools: AISchool[]) => void
+    }
   }
 ): void {
   const { updateSeason } = callbacks
+
+  // Simulate AI schools drafting from their own individual pools
+  let updatedAISchools = params.aiSchools || []
+
+  if (params.aiSchools && params.aiSchools.length > 0) {
+    updatedAISchools = simulateAISchoolDrafting(params.aiSchools)
+
+    // Update AI schools if callback is provided
+    if (callbacks.updateAISchools) {
+      callbacks.updateAISchools.set(updatedAISchools)
+    }
+  }
 
   // Mark draft as completed
   updateSeason.setDraftCompleted(true)
