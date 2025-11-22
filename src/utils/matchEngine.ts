@@ -561,8 +561,9 @@ function checkLuckyBounce(shotQuality: number): {
 /**
  * Noise parameter for R1 and R2 calculations
  * This can be tuned through testing
+ * Reduced from 10 to 8 to make stats matter more relative to variance
  */
-const NOISE_RANGE = 10 // ±10 points of noise
+const NOISE_RANGE = 8 // ±8 points of noise
 
 /**
  * Generate noise for calculations
@@ -658,15 +659,24 @@ function generatePointFeedback(
 
 /**
  * Calculate R1: Footwork vs Placement
- * R1 = Player B's footwork + noise - Player A's placement + noise
- * This is: (B_footwork + noise1) - (A_placement - noise2)
- * Which equals: B_footwork + noise1 - A_placement + noise2
+ * R1 = Player B's footwork + noise - Player A's placement + noise + consistency bonus
+ * This is: (B_footwork + noise1) - (A_placement - noise2) + consistency
+ * Which equals: B_footwork + noise1 - A_placement + noise2 + consistency_bonus
  */
 function calculateR1(
   playerB: Player,
   playerA: Player,
   r1Bonus: number = 0
-): { r1: number; breakdown: { playerBFootwork: number; playerAPlacement: number; noise1: number; noise2: number; bonus: number } } {
+): {
+  r1: number
+  breakdown: {
+    playerBFootwork: number
+    playerAPlacement: number
+    noise1: number
+    noise2: number
+    bonus: number
+  }
+} {
   const playerBFootwork = playerB.skills.footwork
   const playerAPlacement = playerA.skills.placement
   const noise1 = generateNoise() // Noise for B's footwork
@@ -689,6 +699,48 @@ function calculateR1(
 }
 
 /**
+ * Calculate R1 for serve: Footwork vs Serve
+ * R1 = B's footwork + noise - A's serve + noise
+ * This is: (B_footwork + noise1) - (A_serve - noise2)
+ * Which equals: B_footwork + noise1 - A_serve + noise2
+ * For serve, we use serve stat instead of placement because serve affects placement difficulty
+ */
+function calculateR1Serve(
+  playerB: Player,
+  playerA: Player,
+  r1Bonus: number = 0
+): {
+  r1: number
+  breakdown: {
+    playerBFootwork: number
+    playerAServe: number
+    noise1: number
+    noise2: number
+    bonus: number
+  }
+} {
+  const playerBFootwork = playerB.skills.footwork
+  const playerAServe = playerA.skills.serve
+  const noise1 = generateNoise() // Noise for B's footwork
+  const noise2 = generateNoise() // Noise for A's serve (positive because it's subtracted)
+
+  // Higher R1 = B is doing better (B's footwork stronger, A's serve weaker)
+  // Lower R1 = B is doing worse (B's footwork weaker, A's serve stronger)
+  const r1 = playerBFootwork + noise1 - playerAServe + noise2 + r1Bonus
+
+  return {
+    r1,
+    breakdown: {
+      playerBFootwork,
+      playerAServe,
+      noise1,
+      noise2,
+      bonus: r1Bonus
+    }
+  }
+}
+
+/**
  * Calculate R2: Stroke + Spin vs Stroke + Spin
  * R2 = Weighted sum of B's stroke (forehand/backhand) and spin + noise - A's weighted sum + noise
  * This is: (B_weighted + noise1) - (A_weighted - noise2)
@@ -698,10 +750,29 @@ function calculateR2(
   playerB: Player,
   playerA: Player,
   isForehand: boolean,
-  playerBModifiers: { spinMultiplier: number; receiveMultiplier: number; consistencyMultiplier: number },
-  playerAModifiers: { spinMultiplier: number; receiveMultiplier: number; consistencyMultiplier: number },
+  playerBModifiers: {
+    spinMultiplier: number
+    receiveMultiplier: number
+    consistencyMultiplier: number
+  },
+  playerAModifiers: {
+    spinMultiplier: number
+    receiveMultiplier: number
+    consistencyMultiplier: number
+  },
   r2Bonus: number = 0
-): { r2: number; breakdown: { playerBStroke: number; playerBSpin: number; playerAStroke: number; playerASpin: number; noise1: number; noise2: number; bonus: number } } {
+): {
+  r2: number
+  breakdown: {
+    playerBStroke: number
+    playerBSpin: number
+    playerAStroke: number
+    playerASpin: number
+    noise1: number
+    noise2: number
+    bonus: number
+  }
+} {
   // Weighted sum: 60% stroke, 40% spin
   const strokeWeight = 0.6
   const spinWeight = 0.4
@@ -744,9 +815,22 @@ function calculateR2(
 function calculateR2Serve(
   playerB: Player,
   playerA: Player,
-  playerBModifiers: { spinMultiplier: number; receiveMultiplier: number; consistencyMultiplier: number },
+  playerBModifiers: {
+    spinMultiplier: number
+    receiveMultiplier: number
+    consistencyMultiplier: number
+  },
   r2Bonus: number = 0
-): { r2: number; breakdown: { playerBReceive: number; playerAServe: number; noise1: number; noise2: number; bonus: number } } {
+): {
+  r2: number
+  breakdown: {
+    playerBReceive: number
+    playerAServe: number
+    noise1: number
+    noise2: number
+    bonus: number
+  }
+} {
   const playerBReceive = playerB.skills.receive * playerBModifiers.receiveMultiplier
   const playerAServe = playerA.skills.serve
   const noise1 = generateNoise() // Noise for B's receive
@@ -769,19 +853,94 @@ function calculateR2Serve(
 }
 
 /**
- * Check if point is lost based on R1 and R2
+ * Calculate loss probability based on R1 value using a curved function
+ * Uses sigmoid-like curve: probability increases smoothly as R1 becomes more negative
+ *
+ * Extremely steep probability curve to balance footwork dominance and boost placement/serve:
+ * - R1 = 0: ~0% loss chance (baseline)
+ * - R1 = -5: ~11% loss chance
+ * - R1 = -10: ~27% loss chance
+ * - R1 = -15: ~46% loss chance
+ * - R1 = -20: ~66% loss chance
+ * - R1 = -25: ~82% loss chance
+ * - R1 = -30: ~92% loss chance
+ */
+function calculateR1LossProbability(r1: number): number {
+  if (r1 >= 0) return 0 // No loss chance if R1 is positive or neutral
+
+  // Much steeper exponential curve: probability increases quickly as R1 becomes negative
+  // Using: P = 1 - exp(r1 / steepness) where steeper = more impactful
+  const steepness = -6 // Extremely steep curve - makes deficits devastating
+  const probability = 1 - Math.exp(r1 / steepness)
+
+  // Cap at 95% maximum (always leave small chance to recover)
+  return Math.min(0.95, Math.max(0, probability))
+}
+
+/**
+ * Calculate loss probability based on R2 value using a curved function
+ * Same curve shape as R1
+ */
+function calculateR2LossProbability(r2: number): number {
+  if (r2 >= 0) return 0
+
+  const steepness = -6 // Same steepness as R1 for consistency
+  const probability = 1 - Math.exp(r2 / steepness)
+  return Math.min(0.95, Math.max(0, probability))
+}
+
+/**
+ * Calculate loss probability based on combined R1+R2 value
+ * Combined deficit uses a gentler curve to allow more rallies
+ */
+function calculateCombinedLossProbability(combined: number): number {
+  if (combined >= 0) return 0
+
+  // Slightly gentler curve for combined deficit (allows more rallies when one stat is okay)
+  const steepness = -12 // Less steep than individual stats, but still impactful
+  const probability = 1 - Math.exp(combined / steepness)
+  return Math.min(0.95, Math.max(0, probability))
+}
+
+/**
+ * Check if point is lost based on R1 and R2 using curved probabilities
  * Returns true if point is lost, false otherwise
  */
-function checkPointLoss(r1: number, r2: number): { lost: boolean; reason: string | null } {
-  if (r1 < -15) {
-    return { lost: true, reason: 'R1 < -15 (footwork/placement deficit too large)' }
+function checkPointLoss(
+  r1: number,
+  r2: number
+): { lost: boolean; reason: string | null } {
+  // Calculate individual probabilities
+  const r1LossProb = calculateR1LossProbability(r1)
+  const r2LossProb = calculateR2LossProbability(r2)
+  const combinedLossProb = calculateCombinedLossProbability(r1 + r2)
+
+  // Combine probabilities: use the maximum (worst deficit determines risk)
+  // This ensures that severe deficits in any area create significant risk
+  // Note: We could also use combined probability formula, but max is simpler and more intuitive
+  const maxLossProb = Math.max(r1LossProb, r2LossProb, combinedLossProb)
+
+  // Roll for loss
+  if (Math.random() < maxLossProb) {
+    // Determine which deficit caused the loss (most severe)
+    if (combinedLossProb >= r1LossProb && combinedLossProb >= r2LossProb) {
+      return {
+        lost: true,
+        reason: `R1 + R2 = ${Math.round(r1 + r2)} (combined deficit too large, ${Math.round(combinedLossProb * 100)}% loss chance)`
+      }
+    } else if (r1LossProb >= r2LossProb) {
+      return {
+        lost: true,
+        reason: `R1 = ${Math.round(r1)} (footwork/placement deficit, ${Math.round(r1LossProb * 100)}% loss chance)`
+      }
+    } else {
+      return {
+        lost: true,
+        reason: `R2 = ${Math.round(r2)} (stroke/spin deficit, ${Math.round(r2LossProb * 100)}% loss chance)`
+      }
+    }
   }
-  if (r2 < -15) {
-    return { lost: true, reason: 'R2 < -15 (stroke/spin deficit too large)' }
-  }
-  if (r1 + r2 < -20) {
-    return { lost: true, reason: 'R1 + R2 < -20 (combined deficit too large)' }
-  }
+
   return { lost: false, reason: null }
 }
 
@@ -790,7 +949,11 @@ function checkPointLoss(r1: number, r2: number): { lost: boolean; reason: string
  * Returns true if point is won, false otherwise
  * Strong shots (high positive R1 or R2, or combined) can win the point
  */
-function checkPointWin(r1: number, r2: number, rallyLength: number): { won: boolean; reason: string | null } {
+function checkPointWin(
+  r1: number,
+  r2: number,
+  rallyLength: number
+): { won: boolean; reason: string | null } {
   // Very strong individual stats can win immediately
   if (r1 > 30) {
     return { won: true, reason: 'R1 > 30 (superior footwork/placement)' }
@@ -858,9 +1021,9 @@ export function simulateRally(
 
   // Consistency check before serve
   const serveConsistencyRatio = server.skills.consistency / 100
-  const serveErrorChance = Math.pow(1 - serveConsistencyRatio, 2) * 0.1 // Max 10% error chance
-  const serveQualityPenalty = (1 - server.skills.serve / 100) * 0.05 // Up to 5% additional
-  const totalServeErrorChance = Math.min(0.15, serveErrorChance + serveQualityPenalty)
+  const serveErrorChance = Math.pow(1 - serveConsistencyRatio, 2) * 0.08 // Max 8% error chance (tuned down from 10%)
+  const serveQualityPenalty = (1 - server.skills.serve / 100) * 0.04 // Up to 4% additional (tuned down from 5%)
+  const totalServeErrorChance = Math.min(0.12, serveErrorChance + serveQualityPenalty) // Capped at 12% (down from 15%)
 
   if (Math.random() < totalServeErrorChance) {
     const serverName = server.shortName || server.firstName
@@ -907,15 +1070,29 @@ export function simulateRally(
   })
 
   // Calculate R1 and R2 for serve receive
-  // For service: use serve/receive stats
+  // For service: use serve/receive stats for both R1 and R2
+  // R1 uses serve stat (placement difficulty), R2 uses serve stat (speed/spin)
   // Lucky bounce: better placement (harder footwork) but net bounce = slower serve (easier receive)
-  const serveR1Result = calculateR1(receiver, server, serveR1Penalty)
-  const serveR2Result = calculateR2Serve(receiver, server, receiverModifiers, serveR2BonusForReceiver)
+  const serveR1Result = calculateR1Serve(receiver, server, serveR1Penalty)
+  const serveR2Result = calculateR2Serve(
+    receiver,
+    server,
+    receiverModifiers,
+    serveR2BonusForReceiver
+  )
 
   const serveR1 = serveR1Result.r1
   const serveR2 = serveR2Result.r2
 
-  // Check if receiver loses point on serve return
+  // Log the return attempt first (so we can see R1/R2 values even for service aces)
+  events.push({
+    type: 'return',
+    player: 1 - currentPlayer,
+    description: `${receiver.shortName || receiver.firstName} returns (R1: ${Math.round(serveR1)}, R2: ${Math.round(serveR2)})`,
+    timestamp: Date.now()
+  })
+
+  // Check if receiver loses point on serve return (service ace)
   const serveLossCheck = checkPointLoss(serveR1, serveR2)
   if (serveLossCheck.lost) {
     const serverName = server.shortName || server.firstName
@@ -933,29 +1110,14 @@ export function simulateRally(
     }
   }
 
-  // Check if receiver wins point on serve return (strong return)
-  const serveWinCheck = checkPointWin(serveR1, serveR2, rallyLength)
-  if (serveWinCheck.won) {
-    const serverName = server.shortName || server.firstName
-    const receiverName = receiver.shortName || receiver.firstName
-    events.push({
-      type: 'point',
-      player: 1 - currentPlayer,
-      description: `${receiverName} wins the point (${serveWinCheck.reason})`,
-      timestamp: Date.now()
-    })
-    return {
-      winner: 1 - currentPlayer,
-      events,
-      newPositions: positions
-    }
-  }
-
   // Consistency check on receiver's return
   const receiveConsistencyRatio = receiver.skills.consistency / 100
-  const receiveErrorChance = Math.pow(1 - receiveConsistencyRatio, 2) * 0.15 // Max 15% error chance
-  const receiveQualityPenalty = (1 - (serveR1 + serveR2) / 200) * 0.1 // Penalty based on poor R1/R2
-  const totalReceiveErrorChance = Math.min(0.25, receiveErrorChance + receiveQualityPenalty)
+  const receiveErrorChance = Math.pow(1 - receiveConsistencyRatio, 2) * 0.12 // Max 12% error chance (tuned down from 15%)
+  const receiveQualityPenalty = (1 - (serveR1 + serveR2) / 200) * 0.08 // Penalty based on poor R1/R2 (tuned down from 10%)
+  const totalReceiveErrorChance = Math.min(
+    0.2,
+    receiveErrorChance + receiveQualityPenalty
+  ) // Capped at 20% (down from 25%)
 
   if (Math.random() < totalReceiveErrorChance) {
     const serverName = server.shortName || server.firstName
@@ -979,22 +1141,33 @@ export function simulateRally(
     }
   }
 
+  // Check if receiver wins point on serve return (strong return) - after consistency check
+  const serveWinCheck = checkPointWin(serveR1, serveR2, rallyLength)
+  if (serveWinCheck.won) {
+    const serverName = server.shortName || server.firstName
+    const receiverName = receiver.shortName || receiver.firstName
+    events.push({
+      type: 'point',
+      player: 1 - currentPlayer,
+      description: `${receiverName} wins the point (${serveWinCheck.reason})`,
+      timestamp: Date.now()
+    })
+    return {
+      winner: 1 - currentPlayer,
+      events,
+      newPositions: positions
+    }
+  }
+
   // Calculate cumulative bonus for next shot: (R1+R2)/2
   cumulativeR1R2Bonus = (serveR1 + serveR2) / 2
-
-  events.push({
-    type: 'return',
-    player: 1 - currentPlayer,
-    description: `${receiver.shortName || receiver.firstName} returns (R1: ${Math.round(serveR1)}, R2: ${Math.round(serveR2)})`,
-    timestamp: Date.now()
-  })
 
   // Switch to receiver (now they become the hitter)
   currentPlayer = 1 - currentPlayer
   rallyLength++
 
   // Rally loop: Each shot follows the same pattern
-  let pointWon = false
+  const pointWon = false
   while (!pointWon) {
     const hitter = currentPlayer === 0 ? player1 : player2
     const opponent = currentPlayer === 0 ? player2 : player1
@@ -1004,15 +1177,13 @@ export function simulateRally(
         ? hitter.forehandRubber
         : hitter.backhandRubber
     )
-    const opponentModifiers = getEquipmentModifiers(
-      opponent.forehandRubber
-    )
+    const opponentModifiers = getEquipmentModifiers(opponent.forehandRubber)
 
     // Consistency check before hit
     const hitterConsistencyRatio = hitter.skills.consistency / 100
-    const hitterErrorChance = Math.pow(1 - hitterConsistencyRatio, 2) * 0.15 // Max 15% error chance
-    const bonusPenalty = (1 - cumulativeR1R2Bonus / 50) * 0.05 // Penalty if previous shot was poor
-    const totalHitterErrorChance = Math.min(0.25, hitterErrorChance + bonusPenalty)
+    const hitterErrorChance = Math.pow(1 - hitterConsistencyRatio, 2) * 0.12 // Max 12% error chance (tuned down from 15%)
+    const bonusPenalty = (1 - cumulativeR1R2Bonus / 50) * 0.04 // Penalty if previous shot was poor (tuned down from 5%)
+    const totalHitterErrorChance = Math.min(0.2, hitterErrorChance + bonusPenalty) // Capped at 20% (down from 25%)
 
     if (Math.random() < totalHitterErrorChance) {
       const hitterName = hitter.shortName || hitter.firstName
@@ -1043,8 +1214,11 @@ export function simulateRally(
 
     // Check for lucky bounce on opponent's shot
     // The opponent just hit the ball, so check if they got a lucky bounce
-    const opponentStroke = isHitterForehand ? opponent.skills.forehand : opponent.skills.backhand
-    const opponentWeightedStroke = opponentStroke * 0.6 + opponent.skills.spin * opponentModifiers.spinMultiplier * 0.4
+    const opponentStroke = isHitterForehand
+      ? opponent.skills.forehand
+      : opponent.skills.backhand
+    const opponentWeightedStroke =
+      opponentStroke * 0.6 + opponent.skills.spin * opponentModifiers.spinMultiplier * 0.4
     const lucky = checkLuckyBounce(opponentWeightedStroke)
 
     // Lucky bounce effects on returner's R1/R2:
@@ -1123,9 +1297,9 @@ export function simulateRally(
 
     // Consistency check on hitter's return
     const returnConsistencyRatio = hitter.skills.consistency / 100
-    const returnErrorChance = Math.pow(1 - returnConsistencyRatio, 2) * 0.15
-    const returnQualityPenalty = (1 - (r1 + r2) / 200) * 0.1
-    const totalReturnErrorChance = Math.min(0.25, returnErrorChance + returnQualityPenalty)
+    const returnErrorChance = Math.pow(1 - returnConsistencyRatio, 2) * 0.12 // Tuned down from 15%
+    const returnQualityPenalty = (1 - (r1 + r2) / 200) * 0.08 // Tuned down from 10%
+    const totalReturnErrorChance = Math.min(0.2, returnErrorChance + returnQualityPenalty) // Capped at 20% (down from 25%)
 
     if (Math.random() < totalReturnErrorChance) {
       const hitterName = hitter.shortName || hitter.firstName

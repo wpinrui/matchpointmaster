@@ -234,7 +234,7 @@ export function runStatAdvantageExperiments(
     'consistency'
   ] as const
 
-  const advantages = [25, 50] // Test medium and large advantages (removed +10 to reduce points)
+  const advantages = [5, 10, 15, 20, 25, 30, 40, 50] // Test small to large advantages
 
   const player2 = createTestPlayer('Player 2', 'player-2', {})
 
