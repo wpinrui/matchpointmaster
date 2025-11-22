@@ -232,7 +232,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: theme.spacing.lg,
+        gap: theme.spacing.sm,
         height: '100%'
       }}
     >
@@ -257,7 +257,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
               margin: 0,
-              marginBottom: theme.spacing.xs
+              marginBottom: theme.spacing.lg
             }}
           >
             Team Overview
@@ -321,7 +321,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       <GameCard
         style={{
           padding: theme.spacing.lg,
-          marginBottom: theme.spacing.lg
+          marginBottom: theme.spacing.sm
         }}
       >
         <div
@@ -408,7 +408,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         <GameCard
           style={{
             padding: theme.spacing.md,
-            marginBottom: theme.spacing.lg
+            marginBottom: theme.spacing.sm
           }}
         >
           <div
