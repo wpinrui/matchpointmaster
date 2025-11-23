@@ -9,6 +9,7 @@ import {
 } from '../../utils/crestConstants'
 import { ColorPicker } from './ColorPicker'
 import { ShapePicker } from './ShapePicker'
+import { StyledFlex, StyledCard } from '../../styles'
 
 interface CrestCustomizerProps {
   initialPrimaryColor?: string
@@ -68,15 +69,7 @@ export const CrestCustomizer: React.FC<CrestCustomizerProps> = ({
   }, [])
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: theme.spacing.xl,
-        alignItems: 'center',
-        width: '100%'
-      }}
-    >
+    <StyledFlex direction="column" gap="xl" align="center" style={{ width: '100%' }}>
       {/* Color Pickers */}
       <div
         style={{
@@ -101,14 +94,10 @@ export const CrestCustomizer: React.FC<CrestCustomizerProps> = ({
       </div>
 
       {/* Shape Pickers */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '900px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: theme.spacing.lg
-        }}
+      <StyledFlex
+        direction="column"
+        gap="lg"
+        style={{ width: '100%', maxWidth: '900px' }}
       >
         <ShapePicker
           label="Outside Shape"
@@ -122,21 +111,20 @@ export const CrestCustomizer: React.FC<CrestCustomizerProps> = ({
           selectedShape={insideShape}
           onSelectShape={(shape) => setInsideShape(shape as InsideShape)}
         />
-      </div>
+      </StyledFlex>
 
       {/* Crest Preview */}
-      <div
+      <StyledCard
         style={{
           width: '100%',
           maxWidth: '400px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
           padding: theme.spacing.xl,
           background: theme.colors.neutral.white,
-          borderRadius: theme.borderRadius.lg,
           boxShadow: theme.shadows.lg,
-          border: `3px solid ${theme.colors.primary.main}`
+          border: `3px solid ${theme.colors.primary.main}`,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
         }}
       >
         {selectedCrestUrl && (
@@ -150,7 +138,7 @@ export const CrestCustomizer: React.FC<CrestCustomizerProps> = ({
             }}
           />
         )}
-      </div>
-    </div>
+      </StyledCard>
+    </StyledFlex>
   )
 }

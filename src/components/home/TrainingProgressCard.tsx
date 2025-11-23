@@ -20,6 +20,7 @@ import { ImprovementBarChart } from './ImprovementBarChart'
 import { ViewModeToggle } from './ViewModeToggle'
 import { TeamImprovementSummary } from './TeamImprovementSummary'
 import { TopImproversList } from './TopImproversList'
+import { StyledHeading, StyledText, StyledFlex } from '../../styles'
 
 interface TrainingProgressCardProps {
   oldSnapshots: SkillSnapshot[] // Previous month's snapshots (for "Past Month" view)
@@ -106,26 +107,12 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
           overflow: 'hidden'
         }}
       >
-        <h2
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            marginBottom: theme.spacing.md,
-            marginTop: 0
-          }}
-        >
+        <StyledHeading size="h5" margin={`0 0 ${theme.spacing.md} 0`}>
           Training Progress
-        </h2>
-        <p
-          style={{
-            fontSize: theme.typography.fontSize.base,
-            color: theme.colors.text.secondary
-          }}
-        >
+        </StyledHeading>
+        <StyledText size="base" color="secondary">
           No players on the team yet.
-        </p>
+        </StyledText>
       </GameCard>
     )
   }
@@ -141,37 +128,23 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
         overflow: 'hidden'
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: theme.spacing.md,
-          flexShrink: 0
-        }}
+      <StyledFlex
+        justify="space-between"
+        align="center"
+        style={{ marginBottom: theme.spacing.md, flexShrink: 0 }}
       >
-        <h2
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            margin: 0
-          }}
-        >
+        <StyledHeading size="h5" margin="0">
           Training Progress
-        </h2>
-
+        </StyledHeading>
         <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
-      </div>
+      </StyledFlex>
 
-      <div
+      <StyledFlex
+        direction="column"
         style={{
           flex: 1,
           overflow: 'auto',
-          minHeight: 0,
-          display: 'flex',
-          flexDirection: 'column'
+          minHeight: 0
         }}
       >
         {/* Team Overall Improvement */}
@@ -197,7 +170,7 @@ export const TrainingProgressCard: React.FC<TrainingProgressCardProps> = ({
             <ImprovementBarChart data={chartData} maxBars={10} />
           </div>
         )}
-      </div>
+      </StyledFlex>
     </GameCard>
   )
 }

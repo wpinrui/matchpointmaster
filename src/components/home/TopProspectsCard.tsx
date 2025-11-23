@@ -5,6 +5,7 @@ import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { theme } from '../../theme/theme'
 import { Gender } from '../../services/savegame/types'
 import { calculateOverallRating } from '../../utils/cardTiers'
+import { StyledHeading, StyledText, StyledFlex } from '../../styles'
 
 export const TopProspectsCard: React.FC = () => {
   const { players, teamRoster, school } = useSaveDataContext()
@@ -38,58 +39,35 @@ export const TopProspectsCard: React.FC = () => {
         overflow: 'hidden'
       }}
     >
-      <h2
-        style={{
-          fontFamily: theme.typography.fontFamily.heading,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.bold,
-          color: theme.colors.text.primary,
-          marginBottom: theme.spacing.md,
-          marginTop: 0,
-          flexShrink: 0
-        }}
+      <StyledHeading
+        size="h5"
+        margin={`0 0 ${theme.spacing.md} 0`}
+        style={{ flexShrink: 0 }}
       >
         Top Prospects
-      </h2>
+      </StyledHeading>
 
-      <div
-        style={{
-          flex: 1,
-          overflow: 'auto',
-          minHeight: 0
-        }}
-      >
+      <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
         {topProspects.length > 0 ? (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: theme.spacing.md
-            }}
-          >
+          <StyledFlex direction="column" gap="md">
             {topProspects.map((player) => (
               <div key={player.id}>
                 <PlayerCard player={player} />
               </div>
             ))}
-          </div>
+          </StyledFlex>
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-              padding: theme.spacing.xl,
-              color: theme.colors.text.secondary
-            }}
+          <StyledFlex
+            align="center"
+            justify="center"
+            style={{ textAlign: 'center', padding: theme.spacing.xl }}
           >
-            <p style={{ margin: 0, fontSize: theme.typography.fontSize.base }}>
+            <StyledText size="base" color="secondary" style={{ margin: 0 }}>
               {players.length === 0
                 ? 'No players available yet. Visit the draft screen to see available prospects.'
                 : 'All available players have been drafted or no players match your team type.'}
-            </p>
-          </div>
+            </StyledText>
+          </StyledFlex>
         )}
       </div>
     </GameCard>

@@ -1,5 +1,7 @@
 import React from 'react'
 import { theme } from '../../theme/theme'
+import { StyledLabel } from '../../styles'
+import styled from '@emotion/styled'
 
 interface ShapePickerProps {
   label: string
@@ -7,6 +9,42 @@ interface ShapePickerProps {
   selectedShape: string
   onSelectShape: (shape: string) => void
 }
+
+const ShapeGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: ${theme.spacing.sm};
+  width: 100%;
+`
+
+interface ShapeButtonProps {
+  selected: boolean
+}
+
+const ShapeButton = styled.button<ShapeButtonProps>`
+  padding: ${theme.spacing.md};
+  border: 2px solid
+    ${({ selected }) =>
+      selected ? theme.colors.primary.main : theme.colors.neutral.gray300};
+  border-radius: ${theme.borderRadius.md};
+  background: ${({ selected }) =>
+    selected ? theme.colors.primary.light + '20' : theme.colors.neutral.white};
+  color: ${theme.colors.text.primary};
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${({ selected }) =>
+    selected ? theme.typography.fontWeight.medium : theme.typography.fontWeight.normal};
+  cursor: pointer;
+  transition: all ${theme.transitions.normal};
+  text-transform: capitalize;
+  box-shadow: ${({ selected }) => (selected ? theme.shadows.md : 'none')};
+  font-family: ${theme.typography.fontFamily.primary};
+
+  &:hover {
+    border-color: ${({ selected }) =>
+      selected ? theme.colors.primary.main : theme.colors.primary.light};
+    box-shadow: ${({ selected }) => (selected ? theme.shadows.md : theme.shadows.sm)};
+  }
+`
 
 export const ShapePicker: React.FC<ShapePickerProps> = ({
   label,
@@ -16,69 +54,22 @@ export const ShapePicker: React.FC<ShapePickerProps> = ({
 }) => {
   return (
     <div style={{ marginBottom: theme.spacing.lg }}>
-      <label
-        style={{
-          display: 'block',
-          marginBottom: theme.spacing.sm,
-          fontWeight: theme.typography.fontWeight.medium,
-          color: theme.colors.text.primary,
-          fontSize: theme.typography.fontSize.sm
-        }}
-      >
-        {label}
-      </label>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
-          gap: theme.spacing.sm,
-          width: '100%'
-        }}
-      >
+      <StyledLabel>{label}</StyledLabel>
+      <ShapeGrid>
         {shapes.map((shape) => {
           const isSelected = shape === selectedShape
           return (
-            <button
+            <ShapeButton
               key={shape}
               type="button"
               onClick={() => onSelectShape(shape)}
-              style={{
-                padding: theme.spacing.md,
-                border: `2px solid ${
-                  isSelected ? theme.colors.primary.main : theme.colors.neutral.gray300
-                }`,
-                borderRadius: theme.borderRadius.md,
-                background: isSelected
-                  ? theme.colors.primary.light + '20'
-                  : theme.colors.neutral.white,
-                color: theme.colors.text.primary,
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: isSelected
-                  ? theme.typography.fontWeight.medium
-                  : theme.typography.fontWeight.normal,
-                cursor: 'pointer',
-                transition: `all ${theme.transitions.normal}`,
-                textTransform: 'capitalize',
-                boxShadow: isSelected ? theme.shadows.md : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.borderColor = theme.colors.primary.light
-                  e.currentTarget.style.boxShadow = theme.shadows.sm
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSelected) {
-                  e.currentTarget.style.borderColor = theme.colors.neutral.gray300
-                  e.currentTarget.style.boxShadow = 'none'
-                }
-              }}
+              selected={isSelected}
             >
               {shape}
-            </button>
+            </ShapeButton>
           )
         })}
-      </div>
+      </ShapeGrid>
     </div>
   )
 }

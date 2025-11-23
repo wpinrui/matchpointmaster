@@ -19,7 +19,7 @@ export const useDynamicStyles = <T extends Record<string, any>>(
   styleFn: (props: T) => CSSObject,
   props: T
 ) => {
-  return useMemo(() => css(styleFn(props)), [props])
+  return useMemo(() => css(styleFn(props)), [styleFn, props])
 }
 
 /**

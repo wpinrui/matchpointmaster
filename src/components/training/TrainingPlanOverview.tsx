@@ -8,6 +8,7 @@ import {
   getRecommendedTrainingFocus
 } from '../../utils/trainingPlans'
 import { GamePhase } from '../../utils/gamePhases'
+import { StyledHeading, StyledText, StyledFlex, StyledCard } from '../../styles'
 
 interface TrainingPlanOverviewProps {
   trainingPlan: TrainingPlan
@@ -40,36 +41,14 @@ export const TrainingPlanOverview: React.FC<TrainingPlanOverviewProps> = ({
         marginBottom: theme.spacing.lg
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: theme.spacing.lg
-        }}
-      >
+      <StyledFlex justify="space-between" align="flex-start" gap="lg">
         <div style={{ flex: 1 }}>
-          <h3
-            style={{
-              fontFamily: theme.typography.fontFamily.heading,
-              fontSize: theme.typography.fontSize.xl,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              margin: 0,
-              marginBottom: theme.spacing.sm
-            }}
-          >
+          <StyledHeading size="h5" margin={`0 0 ${theme.spacing.sm} 0`}>
             Training Plan
-          </h3>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: theme.spacing.xs
-            }}
-          >
-            <div>
-              <strong style={{ color: theme.colors.text.primary }}>Team Focus:</strong>{' '}
+          </StyledHeading>
+          <StyledFlex direction="column" gap="xs">
+            <StyledText size="base" color="primary">
+              <strong>Team Focus:</strong>{' '}
               {trainingPlan.teamFocus ? (
                 <span style={{ color: theme.colors.text.secondary }}>
                   {getTrainingFocusDisplayName(trainingPlan.teamFocus)}
@@ -79,45 +58,40 @@ export const TrainingPlanOverview: React.FC<TrainingPlanOverviewProps> = ({
                   Not set
                 </span>
               )}
-            </div>
-            <div>
-              <strong style={{ color: theme.colors.text.primary }}>
-                Individual Coaching:
-              </strong>{' '}
+            </StyledText>
+            <StyledText size="base" color="primary">
+              <strong>Individual Coaching:</strong>{' '}
               <span style={{ color: theme.colors.text.secondary }}>
                 {trainingPlan.coachingSlotsUsed} / {maxCoachingSlots} slots used
               </span>
-            </div>
-            <div>
-              <strong style={{ color: theme.colors.text.primary }}>
-                Players with Individual Plans:
-              </strong>{' '}
+            </StyledText>
+            <StyledText size="base" color="primary">
+              <strong>Players with Individual Plans:</strong>{' '}
               <span style={{ color: theme.colors.text.secondary }}>
                 {trainingPlan.playerAssignments.length}
               </span>
-            </div>
+            </StyledText>
             {trainingPlan.teamFocus && expectedSummary.totalExpectedImprovement > 0 && (
-              <div
+              <StyledCard
                 style={{
                   marginTop: theme.spacing.xs,
                   padding: theme.spacing.sm,
                   background: theme.colors.primary.main + '20',
-                  borderRadius: theme.borderRadius.sm,
                   border: `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
                 }}
               >
-                <strong style={{ color: theme.colors.text.primary }}>
-                  Expected Improvement:
-                </strong>{' '}
-                <span style={{ color: theme.colors.success.main }}>
-                  +{expectedSummary.totalExpectedImprovement} total points
-                </span>{' '}
-                (~{expectedSummary.averagePerPlayer} per player)
-              </div>
+                <StyledText size="base" color="primary">
+                  <strong>Expected Improvement:</strong>{' '}
+                  <span style={{ color: theme.colors.success.main }}>
+                    +{expectedSummary.totalExpectedImprovement} total points
+                  </span>{' '}
+                  (~{expectedSummary.averagePerPlayer} per player)
+                </StyledText>
+              </StyledCard>
             )}
-          </div>
+          </StyledFlex>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
+        <StyledFlex direction="column" gap="sm">
           <GameButton variant="primary" size="sm" onClick={onSetTeamFocus}>
             {trainingPlan.teamFocus ? 'Change Team Focus' : 'Set Team Focus'}
           </GameButton>
@@ -135,8 +109,8 @@ export const TrainingPlanOverview: React.FC<TrainingPlanOverviewProps> = ({
               {showPreview ? 'Hide Preview' : 'Show Expected Improvements'}
             </GameButton>
           )}
-        </div>
-      </div>
+        </StyledFlex>
+      </StyledFlex>
     </GameCard>
   )
 }

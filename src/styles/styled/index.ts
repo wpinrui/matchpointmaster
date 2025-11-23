@@ -669,3 +669,35 @@ export const StyledPaginationButton = styled.button<{ disabled?: boolean }>`
     background: ${theme.colors.primary.main + '30'};
   }
 `
+
+// ============================================================================
+// Sidebar Navigation Components
+// ============================================================================
+
+interface SidebarButtonProps {
+  active?: boolean
+}
+
+export const StyledSidebarButton = styled.button<SidebarButtonProps>`
+  padding: ${theme.spacing.md};
+  background: ${({ active }) => (active ? theme.gradients.primary : 'transparent')};
+  border: ${theme.borderWidth.default} solid
+    ${({ active }) => (active ? theme.colors.primary.main : theme.colors.border.default)};
+  border-radius: ${theme.borderRadius.lg};
+  color: ${({ active }) =>
+    active ? theme.colors.neutral.white : theme.colors.text.primary};
+  font-family: ${theme.typography.fontFamily.heading};
+  font-size: ${theme.typography.fontSize.base};
+  font-weight: ${({ active }) =>
+    active ? theme.typography.fontWeight.bold : theme.typography.fontWeight.medium};
+  cursor: pointer;
+  transition: all ${theme.transitions.normal};
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.sm};
+
+  &:hover {
+    border-color: ${({ active }) =>
+      active ? theme.colors.primary.main : theme.colors.border.hover};
+  }
+`

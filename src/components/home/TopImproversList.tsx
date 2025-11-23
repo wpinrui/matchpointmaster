@@ -3,7 +3,7 @@ import { theme } from '../../theme/theme'
 import { Player, SkillSnapshot } from '../../services/savegame/types'
 import { getPlayerFullName } from '../../utils/playerGeneration'
 import { getMostImprovedSkill } from '../../utils/trainingInsights'
-import { StyledFlex, StyledHeading, StyledText } from '../../styles'
+import { StyledFlex, StyledHeading, StyledText, StyledCard } from '../../styles'
 
 interface TopImproversListProps {
   topImprovers: Array<{
@@ -36,12 +36,11 @@ export const TopImproversList: React.FC<TopImproversListProps> = ({
           oldSnapshot && getMostImprovedSkill(oldSnapshot.skills, player.skills)
 
         return (
-          <div
+          <StyledCard
             key={player.id}
             style={{
               padding: theme.spacing.sm,
               background: theme.colors.border.default + '40',
-              borderRadius: theme.borderRadius.sm,
               border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
             }}
           >
@@ -66,7 +65,7 @@ export const TopImproversList: React.FC<TopImproversListProps> = ({
                 Most improved: {mostImproved.label} (+{mostImproved.improvement})
               </StyledText>
             )}
-          </div>
+          </StyledCard>
         )
       })}
     </StyledFlex>

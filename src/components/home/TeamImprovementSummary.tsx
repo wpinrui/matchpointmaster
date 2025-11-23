@@ -2,7 +2,7 @@ import React from 'react'
 import { theme } from '../../theme/theme'
 import { TrainingPlan } from '../../services/savegame/types'
 import { getTrainingFocusDisplayName } from '../../utils/trainingPlans'
-import { StyledFlex, StyledText } from '../../styles'
+import { StyledFlex, StyledText, StyledCard } from '../../styles'
 
 interface TeamImprovementSummaryProps {
   teamTotalImprovement: number
@@ -16,12 +16,11 @@ export const TeamImprovementSummary: React.FC<TeamImprovementSummaryProps> = ({
   trainingPlan
 }) => {
   return (
-    <div
+    <StyledCard
       style={{
         marginBottom: theme.spacing.md,
         padding: theme.spacing.md,
         background: theme.colors.primary.main + '20',
-        borderRadius: theme.borderRadius.sm,
         border: `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
       }}
     >
@@ -58,46 +57,29 @@ export const TeamImprovementSummary: React.FC<TeamImprovementSummaryProps> = ({
             borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
           }}
         >
-          <div
-            style={{
-              fontSize: theme.typography.fontSize.sm,
-              color: theme.colors.text.secondary,
-              marginBottom: theme.spacing.xs
-            }}
+          <StyledText
+            size="sm"
+            color="secondary"
+            style={{ marginBottom: theme.spacing.xs }}
           >
             <strong style={{ color: theme.colors.text.primary }}>Training Focus:</strong>{' '}
             {getTrainingFocusDisplayName(trainingPlan.teamFocus)}
-          </div>
+          </StyledText>
           {teamTotalImprovement > 50 ? (
-            <div
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.success.main
-              }}
-            >
+            <StyledText size="sm" style={{ color: theme.colors.success.main }}>
               ✓ Excellent results! The training focus is working well.
-            </div>
+            </StyledText>
           ) : teamTotalImprovement > 30 ? (
-            <div
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary
-              }}
-            >
+            <StyledText size="sm" color="secondary">
               ✓ Good progress. Consider adjusting focus if needed.
-            </div>
+            </StyledText>
           ) : (
-            <div
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary
-              }}
-            >
+            <StyledText size="sm" color="secondary">
               ⚠ Lower than expected. Review training plan effectiveness.
-            </div>
+            </StyledText>
           )}
         </div>
       )}
-    </div>
+    </StyledCard>
   )
 }

@@ -5,6 +5,7 @@ import { PlayerCard } from '../players/PlayerCard'
 import { theme } from '../../theme/theme'
 import { Player, TrainingPlan, TrainingFocus } from '../../services/savegame/types'
 import { getTrainingFocusDisplayName } from '../../utils/trainingPlans'
+import { StyledHeading, StyledText, StyledFlex, StyledGrid } from '../../styles'
 
 interface TrainingPlayerListProps {
   teamPlayers: Player[]
@@ -27,41 +28,17 @@ export const TrainingPlayerList: React.FC<TrainingPlayerListProps> = ({
 }) => {
   return (
     <div>
-      <h2
-        style={{
-          fontFamily: theme.typography.fontFamily.heading,
-          fontSize: theme.typography.fontSize['2xl'],
-          fontWeight: theme.typography.fontWeight.bold,
-          color: theme.colors.text.primary,
-          marginBottom: theme.spacing.lg
-        }}
-      >
+      <StyledHeading size="h2" margin={`0 0 ${theme.spacing.lg} 0`}>
         Team Roster ({teamPlayers.length})
-      </h2>
+      </StyledHeading>
       {teamPlayers.length === 0 ? (
-        <GameCard
-          style={{
-            padding: theme.spacing.xl,
-            textAlign: 'center'
-          }}
-        >
-          <p
-            style={{
-              fontSize: theme.typography.fontSize.base,
-              color: theme.colors.text.secondary
-            }}
-          >
+        <GameCard style={{ padding: theme.spacing.xl, textAlign: 'center' }}>
+          <StyledText size="base" color="secondary">
             No players on the team yet.
-          </p>
+          </StyledText>
         </GameCard>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: theme.spacing.md
-          }}
-        >
+        <StyledGrid columns="repeat(auto-fill, minmax(280px, 1fr))" gap="md">
           {teamPlayers.map((player) => {
             const playerFocus = getPlayerFocus(player.id)
             const playerAssignment = getPlayerTraining(player.id)
@@ -72,45 +49,39 @@ export const TrainingPlayerList: React.FC<TrainingPlayerListProps> = ({
                 <PlayerCard
                   player={player}
                   actionButton={
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: theme.spacing.xs
-                      }}
-                    >
+                    <StyledFlex direction="column" gap="xs">
                       {playerFocus && (
-                        <div
+                        <StyledText
+                          size="sm"
+                          color="secondary"
                           style={{
                             padding: theme.spacing.xs,
                             background: hasCoaching
                               ? theme.colors.primary.light + '40'
                               : theme.colors.border.default + '40',
                             borderRadius: theme.borderRadius.sm,
-                            fontSize: theme.typography.fontSize.sm,
-                            color: theme.colors.text.secondary,
                             textAlign: 'center'
                           }}
                         >
                           {hasCoaching ? '🎯' : '👥'}{' '}
                           {getTrainingFocusDisplayName(playerFocus)}
-                        </div>
+                        </StyledText>
                       )}
                       <GameButton
                         variant="primary"
                         size="sm"
                         onClick={() => onSelectPlayer(player.id)}
-                        style={{ width: '100%' }}
+                        fullWidth
                       >
                         {playerAssignment ? 'Change Training' : 'Set Training'}
                       </GameButton>
-                    </div>
+                    </StyledFlex>
                   }
                 />
               </div>
             )
           })}
-        </div>
+        </StyledGrid>
       )}
     </div>
   )

@@ -1,6 +1,7 @@
 import React from 'react'
 import { theme } from '../../theme/theme'
 import { getPlayerFullName } from '../../utils/playerGeneration'
+import { StyledFlex, StyledText } from '../../styles'
 
 interface Insight {
   player: {
@@ -20,28 +21,23 @@ interface InsightsListProps {
 export const InsightsList: React.FC<InsightsListProps> = ({ insights }) => {
   if (insights.length === 0) {
     return (
-      <p
-        style={{
-          fontSize: theme.typography.fontSize.base,
-          color: theme.colors.text.secondary,
-          margin: 0,
-          textAlign: 'center',
-          padding: theme.spacing.lg
-        }}
+      <StyledText
+        size="base"
+        color="secondary"
+        style={{ margin: 0, textAlign: 'center', padding: theme.spacing.lg }}
       >
         No insights available yet.
-      </p>
+      </StyledText>
     )
   }
 
   return (
-    <div
+    <StyledFlex
+      direction="column"
+      gap="sm"
       style={{
         overflowY: 'auto',
         flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: theme.spacing.sm,
         marginBottom: theme.spacing.md,
         minHeight: 0
       }}
@@ -61,51 +57,35 @@ export const InsightsList: React.FC<InsightsListProps> = ({ insights }) => {
             flexShrink: 0
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              marginBottom: theme.spacing.xs
-            }}
+          <StyledFlex
+            justify="space-between"
+            align="flex-start"
+            style={{ marginBottom: theme.spacing.xs }}
           >
             <div>
-              <strong
-                style={{
-                  color: theme.colors.text.primary,
-                  fontSize: theme.typography.fontSize.sm
-                }}
-              >
+              <StyledText size="sm" weight="bold" color="primary">
                 {getPlayerFullName(insight.player as any)}
-              </strong>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.xs,
-                  color: theme.colors.text.secondary,
-                  marginLeft: theme.spacing.xs
-                }}
+              </StyledText>
+              <StyledText
+                size="xs"
+                color="secondary"
+                style={{ marginLeft: theme.spacing.xs }}
               >
                 — {insight.skillLabel}
-              </span>
+              </StyledText>
             </div>
-            <span
+            <StyledText
+              size="sm"
+              weight="bold"
               style={{
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.bold,
                 color: insight.isMax ? theme.colors.success.main : theme.colors.error.main
               }}
             >
               {insight.improvement > 0 ? '+' : ''}
               {Math.floor(insight.improvement)}
-            </span>
-          </div>
-          <div
-            style={{
-              fontSize: theme.typography.fontSize.xs,
-              color: theme.colors.text.secondary,
-              lineHeight: 1.5
-            }}
-          >
+            </StyledText>
+          </StyledFlex>
+          <StyledText size="xs" color="secondary" style={{ lineHeight: 1.5 }}>
             {insight.isMax ? (
               <span style={{ color: theme.colors.success.main }}>
                 <strong>Strong Improvement:</strong>
@@ -128,9 +108,9 @@ export const InsightsList: React.FC<InsightsListProps> = ({ insights }) => {
                 </li>
               ))}
             </ul>
-          </div>
+          </StyledText>
         </div>
       ))}
-    </div>
+    </StyledFlex>
   )
 }

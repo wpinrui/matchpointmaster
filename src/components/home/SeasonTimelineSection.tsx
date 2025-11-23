@@ -5,6 +5,7 @@ import React from 'react'
 import GameCard from '../cards/GameCard'
 import { TimelineItem } from './TimelineItem'
 import { theme } from '../../theme/theme'
+import { StyledHeading, StyledFlex } from '../../styles'
 
 interface SeasonTimelineSectionProps {
   currentMonth: number
@@ -31,24 +32,17 @@ export const SeasonTimelineSection: React.FC<SeasonTimelineSectionProps> = ({
         overflow: 'hidden'
       }}
     >
-      <h2
-        style={{
-          fontFamily: theme.typography.fontFamily.heading,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.bold,
-          color: theme.colors.text.primary,
-          marginBottom: theme.spacing.md,
-          marginTop: 0,
-          flexShrink: 0
-        }}
+      <StyledHeading
+        size="h5"
+        margin={`0 0 ${theme.spacing.md} 0`}
+        style={{ flexShrink: 0 }}
       >
         Season Timeline
-      </h2>
-      <div
+      </StyledHeading>
+      <StyledFlex
+        direction="column"
+        gap="sm"
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: theme.spacing.sm,
           flex: 1,
           overflow: 'auto',
           minHeight: 0
@@ -91,7 +85,7 @@ export const SeasonTimelineSection: React.FC<SeasonTimelineSectionProps> = ({
           label="Graduation & Celebrations"
           currentMonth={currentMonth}
         />
-      </div>
+      </StyledFlex>
     </GameCard>
   )
 }

@@ -15,6 +15,7 @@ import {
 } from '../../utils/trainingInsights'
 import { TrainingFocus } from '../../services/savegame/types'
 import { getTrainingFocusDisplayName } from '../../utils/trainingPlans'
+import { StyledHeading, StyledText, StyledFlex } from '../../styles'
 
 interface TrainingInsightsCardProps {
   changeScreen: (screen: Screens) => void
@@ -74,26 +75,12 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
           overflow: 'hidden'
         }}
       >
-        <h2
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            marginBottom: theme.spacing.md,
-            marginTop: 0
-          }}
-        >
+        <StyledHeading size="h5" margin={`0 0 ${theme.spacing.md} 0`}>
           Training Insights
-        </h2>
-        <p
-          style={{
-            fontSize: theme.typography.fontSize.base,
-            color: theme.colors.text.secondary
-          }}
-        >
+        </StyledHeading>
+        <StyledText size="base" color="secondary">
           No players on the team yet.
-        </p>
+        </StyledText>
       </GameCard>
     )
   }
@@ -109,27 +96,20 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
         overflow: 'hidden'
       }}
     >
-      <h2
-        style={{
-          fontFamily: theme.typography.fontFamily.heading,
-          fontSize: theme.typography.fontSize.xl,
-          fontWeight: theme.typography.fontWeight.bold,
-          color: theme.colors.text.primary,
-          marginBottom: theme.spacing.md,
-          marginTop: 0,
-          flexShrink: 0
-        }}
+      <StyledHeading
+        size="h5"
+        margin={`0 0 ${theme.spacing.md} 0`}
+        style={{ flexShrink: 0 }}
       >
         Training Insights
-      </h2>
+      </StyledHeading>
 
-      <div
+      <StyledFlex
+        direction="column"
         style={{
           flex: 1,
           overflow: 'auto',
-          minHeight: 0,
-          display: 'flex',
-          flexDirection: 'column'
+          minHeight: 0
         }}
       >
         {/* Team Overview */}
@@ -140,82 +120,40 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
             borderBottom: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: theme.spacing.xs
-            }}
+          <StyledFlex
+            justify="space-between"
+            align="center"
+            style={{ marginBottom: theme.spacing.xs }}
           >
-            <span
-              style={{
-                fontSize: theme.typography.fontSize.base,
-                color: theme.colors.text.secondary
-              }}
-            >
+            <StyledText size="base" color="secondary">
               Team Average Skill:
-            </span>
-            <span
-              style={{
-                fontSize: theme.typography.fontSize.lg,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary
-              }}
-            >
+            </StyledText>
+            <StyledText size="lg" weight="bold" color="primary">
               {teamAverage}
-            </span>
-          </div>
+            </StyledText>
+          </StyledFlex>
           {teamWeakest && (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-            >
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.base,
-                  color: theme.colors.text.secondary
-                }}
-              >
+            <StyledFlex justify="space-between" align="center">
+              <StyledText size="base" color="secondary">
                 Weakest Area:
-              </span>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.base,
-                  fontWeight: theme.typography.fontWeight.medium,
-                  color: theme.colors.text.primary
-                }}
-              >
+              </StyledText>
+              <StyledText size="base" weight="medium" color="primary">
                 {teamWeakest.label} ({teamWeakest.average})
-              </span>
-            </div>
+              </StyledText>
+            </StyledFlex>
           )}
         </div>
 
         {/* Recommendations */}
         {recommendations.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: theme.spacing.sm,
-              marginBottom: theme.spacing.md
-            }}
+          <StyledFlex
+            direction="column"
+            gap="sm"
+            style={{ marginBottom: theme.spacing.md }}
           >
-            <h3
-              style={{
-                fontFamily: theme.typography.fontFamily.heading,
-                fontSize: theme.typography.fontSize.base,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                margin: 0
-              }}
-            >
+            <StyledHeading size="h6" margin="0">
               Recommendations:
-            </h3>
+            </StyledHeading>
             {recommendations.slice(0, 3).map((rec, index) => (
               <div
                 key={index}
@@ -233,42 +171,29 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
                   }`
                 }}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: theme.spacing.xs
-                  }}
+                <StyledFlex
+                  justify="space-between"
+                  align="center"
+                  style={{ marginBottom: theme.spacing.xs }}
                 >
-                  <strong
-                    style={{
-                      color: theme.colors.text.primary,
-                      fontSize: theme.typography.fontSize.sm
-                    }}
-                  >
+                  <StyledText size="sm" weight="bold" color="primary">
                     {getTrainingFocusDisplayName(rec.focus)}
-                  </strong>
-                  <span
-                    style={{
-                      fontSize: theme.typography.fontSize.xs,
-                      color: theme.colors.text.secondary,
-                      textTransform: 'uppercase'
-                    }}
+                  </StyledText>
+                  <StyledText
+                    size="xs"
+                    color="secondary"
+                    style={{ textTransform: 'uppercase' }}
                   >
                     {rec.priority}
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.secondary,
-                    margin: 0,
-                    marginBottom: theme.spacing.xs
-                  }}
+                  </StyledText>
+                </StyledFlex>
+                <StyledText
+                  size="sm"
+                  color="secondary"
+                  style={{ margin: `0 0 ${theme.spacing.xs} 0` }}
                 >
                   {rec.reason}
-                </p>
+                </StyledText>
                 <GameButton
                   variant={rec.priority === 'high' ? 'primary' : 'secondary'}
                   size="sm"
@@ -283,18 +208,19 @@ export const TrainingInsightsCard: React.FC<TrainingInsightsCardProps> = ({
                 </GameButton>
               </div>
             ))}
-          </div>
+          </StyledFlex>
         )}
 
         <GameButton
           variant="primary"
           size="sm"
           onClick={() => changeScreen(Screens.TRAINING)}
-          style={{ width: '100%', flexShrink: 0 }}
+          fullWidth
+          style={{ flexShrink: 0 }}
         >
           Open Training
         </GameButton>
-      </div>
+      </StyledFlex>
     </GameCard>
   )
 }

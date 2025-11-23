@@ -1,6 +1,7 @@
 import React from 'react'
 import { theme } from '../../theme/theme'
 import { getStatColor } from '../../utils/managerStats'
+import { StyledFlex, StyledInput, StyledText } from '../../styles'
 
 interface EditableSkillBarProps {
   label: string
@@ -28,23 +29,12 @@ export const EditableSkillBar: React.FC<EditableSkillBarProps> = ({
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: theme.spacing.xs
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          fontSize: theme.typography.fontSize.sm
-        }}
-      >
-        <span style={{ color: theme.colors.text.secondary }}>{label}</span>
-        <input
+    <StyledFlex direction="column" gap="xs">
+      <StyledFlex justify="space-between" align="center">
+        <StyledText size="sm" color="secondary">
+          {label}
+        </StyledText>
+        <StyledInput
           type="number"
           min="0"
           max="100"
@@ -52,17 +42,11 @@ export const EditableSkillBar: React.FC<EditableSkillBarProps> = ({
           onChange={handleInputChange}
           style={{
             width: '50px',
-            padding: `${theme.spacing.xs} ${theme.spacing.xs}`,
-            borderRadius: theme.borderRadius.sm,
-            border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
-            background: theme.colors.background.secondary,
-            color: theme.colors.text.primary,
-            fontSize: theme.typography.fontSize.sm,
             textAlign: 'center',
             fontWeight: theme.typography.fontWeight.medium
           }}
         />
-      </div>
+      </StyledFlex>
       <input
         type="range"
         min="0"
@@ -102,6 +86,6 @@ export const EditableSkillBar: React.FC<EditableSkillBarProps> = ({
           }}
         />
       </div>
-    </div>
+    </StyledFlex>
   )
 }

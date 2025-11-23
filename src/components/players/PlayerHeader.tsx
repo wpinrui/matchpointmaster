@@ -2,6 +2,7 @@ import React from 'react'
 import { Player, Gender } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import { getPlayerFullName } from '../../utils/playerGeneration'
+import { StyledFlex, StyledHeading, StyledText } from '../../styles'
 
 interface PlayerHeaderProps {
   player: Player
@@ -10,13 +11,7 @@ interface PlayerHeaderProps {
 
 export const PlayerHeader: React.FC<PlayerHeaderProps> = ({ player, fullName }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: theme.spacing.md,
-        alignItems: 'center'
-      }}
-    >
+    <StyledFlex gap="md" align="center">
       {player.imagePath && (
         <img
           src={player.imagePath}
@@ -31,41 +26,27 @@ export const PlayerHeader: React.FC<PlayerHeaderProps> = ({ player, fullName }) 
         />
       )}
       <div style={{ flex: 1 }}>
-        <h3
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize.lg,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            margin: 0,
-            marginBottom: theme.spacing.xs
-          }}
-        >
+        <StyledHeading size="h4" margin={`0 0 ${theme.spacing.xs} 0`}>
           {fullName}
-        </h3>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            fontSize: theme.typography.fontSize.sm,
-            color: theme.colors.text.secondary,
-            lineHeight: 1.3
-          }}
-        >
-          <span
+        </StyledHeading>
+        <StyledFlex direction="column" style={{ lineHeight: 1.3 }}>
+          <StyledText
+            size="sm"
+            weight="semibold"
             style={{
               color:
                 player.gender === Gender.FEMALE
                   ? theme.colors.gender.female
-                  : theme.colors.gender.male,
-              fontWeight: theme.typography.fontWeight.semibold
+                  : theme.colors.gender.male
             }}
           >
             {player.gender}
-          </span>
-          <span>Secondary {player.year}</span>
-        </div>
+          </StyledText>
+          <StyledText size="sm" color="secondary">
+            Secondary {player.year}
+          </StyledText>
+        </StyledFlex>
       </div>
-    </div>
+    </StyledFlex>
   )
 }

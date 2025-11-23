@@ -6,6 +6,7 @@ import { CommonStyles } from '../../styles/common/CommonStyles'
 import GameCard from '../cards/GameCard'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { GamePhase } from '../../utils/gamePhases'
+import { StyledFlex, StyledSidebarButton } from '../../styles'
 
 interface MainLayoutProps {
   currentScreen: Screens
@@ -80,19 +81,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       <div style={CommonStyles.blurStyle} />
 
       {/* Left Sidebar Container */}
-      <div
+      <StyledFlex
+        direction="column"
+        gap="sm"
         style={{
           width: '240px',
           minWidth: '240px',
           height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: theme.spacing.sm,
           position: 'relative',
           zIndex: 1,
           padding: theme.spacing.md,
           overflowY: 'auto',
-          background: `${theme.colors.background.primary}99`, // Add transparency (60% opacity)
+          background: `${theme.colors.background.primary}99`,
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
@@ -100,55 +100,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         }}
       >
         {sidebarItems.map((item) => (
-          <button
+          <StyledSidebarButton
             key={item.screen}
             onClick={() => changeScreen(item.screen)}
             type="button"
-            style={{
-              padding: theme.spacing.md,
-              background:
-                currentScreen === item.screen ? theme.gradients.primary : 'transparent',
-              border: `${theme.borderWidth.default} solid ${
-                currentScreen === item.screen
-                  ? theme.colors.primary.main
-                  : theme.colors.border.default
-              }`,
-              borderRadius: theme.borderRadius.lg,
-              color:
-                currentScreen === item.screen
-                  ? theme.colors.neutral.white
-                  : theme.colors.text.primary,
-              fontFamily: theme.typography.fontFamily.heading,
-              fontSize: theme.typography.fontSize.base,
-              fontWeight:
-                currentScreen === item.screen
-                  ? theme.typography.fontWeight.bold
-                  : theme.typography.fontWeight.medium,
-              cursor: 'pointer',
-              transition: `all ${theme.transitions.normal}`,
-              display: 'flex',
-              alignItems: 'center',
-              gap: theme.spacing.sm
-            }}
-            onMouseEnter={(e) => {
-              if (currentScreen !== item.screen) {
-                e.currentTarget.style.borderColor = theme.colors.border.hover
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (currentScreen !== item.screen) {
-                e.currentTarget.style.borderColor = theme.colors.border.default
-              }
-            }}
+            active={currentScreen === item.screen}
           >
             <span style={{ fontSize: theme.typography.fontSize.xl }}>{item.icon}</span>
             <span>{item.label}</span>
-          </button>
+          </StyledSidebarButton>
         ))}
-      </div>
+      </StyledFlex>
 
       {/* Main Content Area Container */}
-      <div
+      <StyledFlex
+        direction="column"
         style={{
           flex: 1,
           height: '100%',
@@ -156,9 +122,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
           zIndex: 1,
           minWidth: 0,
           overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          background: `${theme.colors.background.primary}99`, // Add transparency (60% opacity)
+          background: `${theme.colors.background.primary}99`,
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
@@ -175,7 +139,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         >
           {children}
         </div>
-      </div>
+      </StyledFlex>
     </div>
   )
 }
