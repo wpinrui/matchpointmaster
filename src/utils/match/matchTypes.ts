@@ -1,7 +1,6 @@
 /**
  * Type definitions for match engine
  */
-import { FavourStyle, PlayStyle } from '../../services/savegame/types'
 
 /**
  * Player horizontal positioning
@@ -41,15 +40,15 @@ export type RallyEvent = {
 
 /**
  * Match state
- * In table tennis: Match = best of 5 sets, Set = first to 11 points (win by 2, or first to 15)
- * There are NO "games" - sets and games are the same thing in table tennis
+ * In table tennis: Match = best of 5 sets, Set = first to 11 points (win by 2)
  */
 export type MatchState = {
+  bestOf: number // odd
   sets: number[] // [player1SetsWon, player2SetsWon] - number of sets won (0-3, first to 3 wins match)
-  currentSet: number // 0-4 (which set we're currently playing)
+  currentSet: number // 0-indexed set number
   setScores: number[][] // [[p1Points, p2Points], ...] - final point scores for each completed set, e.g., [[11, 0], [11, 0], [11, 0]]
   currentSetScore: number[] // [p1Points, p2Points] - points in the current set being played
-  servingPlayer: number // 0 or 1
+  servingPlayer: number // 0 or 1. If 0, then 0 serves the first point of the first set. 1 serves the first point of the second set and so on.
   playerPositions: [PlayerPosition, PlayerPosition]
   rallyEvents: RallyEvent[]
   isComplete: boolean

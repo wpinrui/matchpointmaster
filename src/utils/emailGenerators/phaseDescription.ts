@@ -44,3 +44,4 @@ export function getPhaseDescription(phase: GamePhase, month: number): string {
       return `We're now in the **${getPhaseDisplayName(phase, month)}** phase. Continue managing your team effectively.`
   }
 }
+

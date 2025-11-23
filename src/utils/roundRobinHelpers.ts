@@ -52,3 +52,4 @@ export function getAvailableTeamTypes(
   }
   return teams
 }
+

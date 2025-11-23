@@ -19,3 +19,4 @@ export function createSchoolUpdates(
       updateAttribute('school', 'teamType', teamType)
   }
 }
+

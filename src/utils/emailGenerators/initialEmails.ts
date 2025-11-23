@@ -98,3 +98,4 @@ This is an exciting time for table tennis enthusiasts at ${schoolName}, and we l
 
   return [welcomeEmail, newsEmail]
 }
+

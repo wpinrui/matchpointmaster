@@ -111,3 +111,4 @@ export const TeamStatistics: React.FC<TeamStatisticsProps> = ({
     </GameCard>
   )
 }
+

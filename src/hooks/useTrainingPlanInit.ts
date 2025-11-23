@@ -35,3 +35,4 @@ export function useTrainingPlanInit({
     }
   }, [season, trainingPlan, updateTrainingPlan])
 }
+

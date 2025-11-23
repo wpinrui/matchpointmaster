@@ -144,3 +144,4 @@ export const TrainingPreview: React.FC<TrainingPreviewProps> = ({ expectedSummar
     </GameCard>
   )
 }
+

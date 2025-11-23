@@ -60,3 +60,4 @@ export function getSkillsForFocus(focus: TrainingFocus): (keyof PlayerSkills)[] 
   }
   return skillMap[focus] || []
 }
+

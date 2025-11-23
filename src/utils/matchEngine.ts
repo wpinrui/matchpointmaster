@@ -419,6 +419,7 @@ export function initializeMatch(player1: Player, player2: Player): MatchState {
   )
 
   return {
+    bestOf: 5,
     sets: [0, 0],
     currentSet: 0,
     setScores: [], // Will be populated as sets are completed

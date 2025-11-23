@@ -46,3 +46,4 @@ export function getTeamPlayers(
     (a, b) => calculateOverallRating(b.skills) - calculateOverallRating(a.skills)
   )
 }
+

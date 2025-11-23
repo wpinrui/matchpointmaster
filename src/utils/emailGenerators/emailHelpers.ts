@@ -21,3 +21,4 @@ export function getInGameTimestamp(
   date.setFullYear(2024 + yearDiff)
   return date.getTime()
 }
+

@@ -38,3 +38,4 @@ export function createManagerUpdates(
       updateAttribute('manager', 'stats', newStats)
   }
 }
+
