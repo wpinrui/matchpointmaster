@@ -15,21 +15,21 @@ const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     'primary'
   )
 
-  const handleExport = () => {
-    const result = exportToJson()
+  const handleExport = async () => {
+    const result = await exportToJson()
     setMessageDialogTitle(result.success ? 'Success' : 'Export Failed')
     setMessageDialogMessage(result.message)
     setMessageDialogVariant(result.success ? 'primary' : 'danger')
     setShowMessageDialog(true)
   }
 
-  const handleClear = () => {
+  const handleClear = async () => {
     if (
       window.confirm(
         'Are you sure you want to clear all current save data? This will reset your game to the initial state. This action cannot be undone.'
       )
     ) {
-      clearCurrentSave()
+      await clearCurrentSave()
       // Navigate to LOAD screen to show the cleared state
       changeScreen(Screens.LOAD)
     }

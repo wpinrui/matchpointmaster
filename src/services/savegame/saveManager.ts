@@ -1,10 +1,17 @@
 /**
- * Save Manager - Handles multiple save slots in localStorage
+ * Save Manager - Handles multiple save slots in IndexedDB
+ * Uses IndexedDB to support large save files (99 AI schools with players)
  */
 
 import { initialSaveData } from './initialSaveData'
 import { migrateSaveData, needsMigration } from './migrations'
 import { SaveData } from './types'
+import {
+  getAllSaveSlots as getAllSaveSlotsFromDB,
+  getSaveSlot as getSaveSlotFromDB,
+  saveSaveSlot as saveSaveSlotToDB,
+  deleteSaveSlot as deleteSaveSlotFromDB
+} from './indexedDBStorage'
 
 export type SaveSlot = {
   id: string
@@ -14,19 +21,14 @@ export type SaveSlot = {
   lastPlayed: number
 }
 
-const SAVE_SLOTS_KEY = 'matchpointMaster_saveSlots'
 const CURRENT_SAVE_ID_KEY = 'matchpointMaster_currentSaveId'
 
 /**
- * Get all save slots from localStorage
+ * Get all save slots from IndexedDB
  */
-export const getAllSaveSlots = (): SaveSlot[] => {
+export const getAllSaveSlots = async (): Promise<SaveSlot[]> => {
   try {
-    const savedSlots = localStorage.getItem(SAVE_SLOTS_KEY)
-    if (!savedSlots) {
-      return []
-    }
-    return JSON.parse(savedSlots) as SaveSlot[]
+    return await getAllSaveSlotsFromDB<SaveSlot>()
   } catch (error) {
     console.error('Error loading save slots:', error)
     return []
@@ -34,28 +36,21 @@ export const getAllSaveSlots = (): SaveSlot[] => {
 }
 
 /**
- * Save all save slots to localStorage
- */
-export const saveAllSaveSlots = (slots: SaveSlot[]): void => {
-  try {
-    localStorage.setItem(SAVE_SLOTS_KEY, JSON.stringify(slots))
-  } catch (error) {
-    console.error('Error saving save slots:', error)
-  }
-}
-
-/**
  * Get a specific save slot by ID
  */
-export const getSaveSlot = (id: string): SaveSlot | null => {
-  const slots = getAllSaveSlots()
-  return slots.find((slot) => slot.id === id) || null
+export const getSaveSlot = async (id: string): Promise<SaveSlot | null> => {
+  try {
+    return await getSaveSlotFromDB<SaveSlot>(id)
+  } catch (error) {
+    console.error('Error getting save slot:', error)
+    return null
+  }
 }
 
 /**
  * Create a new save slot
  */
-export const createSaveSlot = (name: string, data: SaveData): SaveSlot => {
+export const createSaveSlot = async (name: string, data: SaveData): Promise<SaveSlot> => {
   const now = Date.now()
   const newSlot: SaveSlot = {
     id: crypto.randomUUID(),
@@ -64,32 +59,30 @@ export const createSaveSlot = (name: string, data: SaveData): SaveSlot => {
     createdAt: now,
     lastPlayed: now
   }
-  const slots = getAllSaveSlots()
-  slots.push(newSlot)
-  saveAllSaveSlots(slots)
+  await saveSaveSlotToDB(newSlot)
   return newSlot
 }
 
 /**
  * Update an existing save slot
  */
-export const updateSaveSlot = (id: string, data: SaveData): void => {
-  const slots = getAllSaveSlots()
-  const slotIndex = slots.findIndex((slot) => slot.id === id)
-  if (slotIndex !== -1) {
-    slots[slotIndex].data = data
-    slots[slotIndex].lastPlayed = Date.now()
-    saveAllSaveSlots(slots)
+export const updateSaveSlot = async (id: string, data: SaveData): Promise<void> => {
+  const existingSlot = await getSaveSlotFromDB<SaveSlot>(id)
+  if (existingSlot) {
+    const updatedSlot: SaveSlot = {
+      ...existingSlot,
+      data,
+      lastPlayed: Date.now()
+    }
+    await saveSaveSlotToDB(updatedSlot)
   }
 }
 
 /**
  * Delete a save slot
  */
-export const deleteSaveSlot = (id: string): void => {
-  const slots = getAllSaveSlots()
-  const filteredSlots = slots.filter((slot) => slot.id !== id)
-  saveAllSaveSlots(filteredSlots)
+export const deleteSaveSlot = async (id: string): Promise<void> => {
+  await deleteSaveSlotFromDB(id)
 
   // If we deleted the current save, clear the current save ID
   const currentSaveId = getCurrentSaveId()
@@ -138,23 +131,22 @@ export const clearCurrentSaveId = (): void => {
 
 /**
  * Get the current active save data
- * Ensures backward compatibility by migrating old save data if needed
  */
-export const getCurrentSaveData = (): SaveData => {
+export const getCurrentSaveData = async (): Promise<SaveData> => {
   const currentSaveId = getCurrentSaveId()
   if (!currentSaveId) {
     return initialSaveData
   }
-  const slot = getSaveSlot(currentSaveId)
+  const slot = await getSaveSlot(currentSaveId)
   if (!slot) {
     return initialSaveData
   }
 
-  // Migrate data if needed
+  // Migrate data structure if needed (for save data format changes, not storage migration)
   if (needsMigration(slot.data)) {
     const migratedData = migrateSaveData(slot.data)
     // Update the slot with migrated data
-    updateSaveSlot(currentSaveId, migratedData)
+    await updateSaveSlot(currentSaveId, migratedData)
     return migratedData
   }
 
@@ -169,13 +161,14 @@ export const exportSaveSlotToJson = (slot: SaveSlot): string => {
 }
 
 /**
- * Import save slot from JSON string
+ * Import save slot from JSON string and save it to IndexedDB
  */
-export const importSaveSlotFromJson = (json: string): SaveSlot | null => {
+export const importSaveSlotFromJson = async (json: string): Promise<SaveSlot | null> => {
   try {
     const slot = JSON.parse(json) as SaveSlot
     // Validate structure
     if (slot && slot.id && slot.name && slot.data && slot.createdAt && slot.lastPlayed) {
+      await saveSaveSlotToDB(slot)
       return slot
     }
     return null

@@ -12,7 +12,6 @@ import {
   deleteSaveSlot,
   getCurrentSaveId,
   importSaveSlotFromJson,
-  saveAllSaveSlots,
   SaveSlot
 } from '../services/savegame/saveManager'
 import { useFileImport } from '../hooks/useFileImport'
@@ -33,12 +32,13 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     refreshSaveSlots()
   }, [])
 
-  const refreshSaveSlots = () => {
-    setSaveSlots(getAllSaveSlots())
+  const refreshSaveSlots = async () => {
+    const slots = await getAllSaveSlots()
+    setSaveSlots(slots)
   }
 
-  const handleLoadSave = (slotId: string) => {
-    loadSaveSlot(slotId)
+  const handleLoadSave = async (slotId: string) => {
+    await loadSaveSlot(slotId)
     changeScreen(Screens.HOME)
   }
 
@@ -46,10 +46,10 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     setDeleteConfirmSlot(slotId)
   }
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteConfirmSlot) {
-      deleteSaveSlot(deleteConfirmSlot)
-      refreshSaveSlots()
+      await deleteSaveSlot(deleteConfirmSlot)
+      await refreshSaveSlots()
       setDeleteConfirmSlot(null)
     }
   }
@@ -58,24 +58,12 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     setDeleteConfirmSlot(null)
   }
 
-  const handleFileImport = (json: string) => {
+  const handleFileImport = async (json: string) => {
     try {
-      const importedSlot = importSaveSlotFromJson(json)
+      const importedSlot = await importSaveSlotFromJson(json)
       if (importedSlot) {
-        // Add the imported slot to the save slots
-        const allSlots = getAllSaveSlots()
-        // Check if slot with same ID already exists
-        const existingIndex = allSlots.findIndex((s) => s.id === importedSlot.id)
-        if (existingIndex !== -1) {
-          // Update existing slot
-          allSlots[existingIndex] = importedSlot
-        } else {
-          // Add new slot
-          allSlots.push(importedSlot)
-        }
-        // Save all slots
-        saveAllSaveSlots(allSlots)
-        refreshSaveSlots()
+        // Slot is already saved to IndexedDB by importSaveSlotFromJson
+        await refreshSaveSlots()
         setMessageDialogTitle('Success')
         setMessageDialogMessage('Save imported successfully!')
         setMessageDialogVariant('primary')

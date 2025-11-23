@@ -24,17 +24,36 @@ import { createSkillSnapshotsUpdates } from './updateHelpers/skillSnapshotsUpdat
 import { createRoundRobinUpdates } from './updateHelpers/roundRobinUpdates'
 
 export const useSaveData = () => {
-  const [saveData, setSaveData] = useState<SaveData>(getCurrentSaveData())
+  const [saveData, setSaveData] = useState<SaveData>(initialSaveData)
   const [currentSaveId, setCurrentSaveIdState] = useState<string | null>(
     getCurrentSaveId()
   )
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Load initial save data on mount
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const data = await getCurrentSaveData()
+        setSaveData(data)
+      } catch (error) {
+        console.error('Error loading initial save data:', error)
+        setSaveData(initialSaveData)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadInitialData()
+  }, [])
 
   // Auto-save to current save slot whenever saveData changes
   useEffect(() => {
-    if (currentSaveId) {
-      updateSaveSlot(currentSaveId, saveData)
+    if (currentSaveId && !isLoading) {
+      updateSaveSlot(currentSaveId, saveData).catch((error) => {
+        console.error('Error auto-saving:', error)
+      })
     }
-  }, [saveData, currentSaveId])
+  }, [saveData, currentSaveId, isLoading])
 
   const updateAttribute = <T extends keyof SaveData, K extends keyof SaveData[T]>(
     category: T,
@@ -69,7 +88,7 @@ export const useSaveData = () => {
    * Export current save to JSON file (manual download)
    * Returns { success: boolean, message: string } to allow components to show dialogs
    */
-  const exportToJson = (): { success: boolean; message: string } => {
+  const exportToJson = async (): Promise<{ success: boolean; message: string }> => {
     try {
       if (!currentSaveId) {
         return {
@@ -77,7 +96,7 @@ export const useSaveData = () => {
           message: 'No active save to export. Please create or load a save first.'
         }
       }
-      const slot = getSaveSlot(currentSaveId)
+      const slot = await getSaveSlot(currentSaveId)
       if (!slot) {
         return {
           success: false,
@@ -103,8 +122,8 @@ export const useSaveData = () => {
   /**
    * Load a specific save slot
    */
-  const loadSaveSlot = (saveId: string) => {
-    const slot = getSaveSlot(saveId)
+  const loadSaveSlot = async (saveId: string) => {
+    const slot = await getSaveSlot(saveId)
     if (slot) {
       setSaveData(slot.data)
       setCurrentSaveIdState(saveId)
@@ -116,9 +135,9 @@ export const useSaveData = () => {
    * Create a new save slot and set it as current
    * Optionally accepts save data, otherwise uses current saveData
    */
-  const createNewSave = (name: string, data?: SaveData) => {
+  const createNewSave = async (name: string, data?: SaveData) => {
     const dataToSave = data || saveData
-    const newSlot = createSaveSlot(name, dataToSave)
+    const newSlot = await createSaveSlot(name, dataToSave)
     setSaveData(dataToSave)
     setCurrentSaveIdState(newSlot.id)
     setCurrentSaveId(newSlot.id)
@@ -128,10 +147,10 @@ export const useSaveData = () => {
   /**
    * Clear current save data (reset to initial state)
    */
-  const clearCurrentSave = () => {
+  const clearCurrentSave = async () => {
     setSaveData(initialSaveData)
     if (currentSaveId) {
-      updateSaveSlot(currentSaveId, initialSaveData)
+      await updateSaveSlot(currentSaveId, initialSaveData)
     }
     // Clear the current save ID so the app knows there's no active save
     clearCurrentSaveId()
@@ -186,6 +205,7 @@ export const useSaveData = () => {
     aiSchools: saveData.aiSchools,
     roundRobinData: saveData.roundRobinData,
     currentSaveId,
+    isLoading,
     updateManager,
     updateSchool,
     updatePlayers,

@@ -227,26 +227,33 @@ npm run lint -- --fix
    - Confirm edge cases and expected behavior
    - Take more liberties with styling
 
-2. **Read Documentation**:
+2. **No Backward Compatibility During Initial Development**:
+   - **Do NOT add migration code or backward compatibility layers**
+   - The game is in initial development with no active players
+   - Adding compatibility code adds unnecessary complexity
+   - If storage systems change, just use the new system directly
+   - If data structures change, update them directly without migration paths
+
+3. **Read Documentation**:
    - Read `agent.md` (this file)
    - Read `README.md`
    - Read relevant styling guide (`src/styles/STYLING_GUIDE.md`)
    - Check existing similar features for patterns
 
-3. **Assess Existing Code** (when reading files):
+4. **Assess Existing Code** (when reading files):
    - **Before modifying any file, assess its code quality**
    - Look for cleanup opportunities (see Code Quality Guidelines)
    - **Offer to clean up existing code before adding new features**
    - Explain how cleanup will improve maintainability
    - Get approval to proceed with cleanup + new feature
 
-4. **Implement the Feature**:
+5. **Implement the Feature**:
    - Follow folder structure conventions
    - Use styled components (not inline styles)
    - Follow TypeScript and React conventions
    - Write clean, maintainable code
 
-5. **After Code Generation**:
+6. **After Code Generation**:
    - **ALWAYS run**: `npm run lint -- --fix`
    - Fix any remaining linting errors manually
    - Verify TypeScript compilation succeeds
@@ -254,7 +261,7 @@ npm run lint -- --fix
    - Test the feature if possible
    - **Offer to refactor** after functionality is confirmed working
 
-6. **Update Documentation**:
+7. **Update Documentation**:
    - Update `agent.md` if you discover new patterns
    - Update `README.md` if you add new features
    - Keep documentation in sync with code

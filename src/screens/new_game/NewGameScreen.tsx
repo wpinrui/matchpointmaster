@@ -101,7 +101,7 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     }
   }
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     const validation = validateSchoolData(schoolData)
     if (validation.isValid) {
       saveManagerStateToContext()
@@ -152,7 +152,7 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
       combinedData.aiSchools = aiSchools
 
-      createNewSave(saveName, combinedData)
+      await createNewSave(saveName, combinedData)
       changeScreen(Screens.HOME)
     } else {
       setSchoolErrors(validation.errors)
@@ -180,7 +180,7 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     }
   }
 
-  const handleDebugFill = () => {
+  const handleDebugFill = async () => {
     // Generate default images
     const defaultManagerImage = generateRandomFace('debug-manager-default', Gender.MALE)
     const defaultSchoolCrest = generateCrestSvg(
@@ -291,7 +291,7 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
     combinedData.aiSchools = aiSchools
 
-    createNewSave(saveName, combinedData)
+    await createNewSave(saveName, combinedData)
     changeScreen(Screens.HOME)
   }
 
