@@ -26,7 +26,7 @@ export const SeasonTimelineSection: React.FC<SeasonTimelineSectionProps> = ({
         padding: theme.spacing.lg,
         display: 'flex',
         flexDirection: 'column',
-        maxWidth: isDraftPhase || isTrainingPhase ? 'none' : '400px',
+        maxWidth: isDraftPhase || isTrainingPhase ? 'none' : '480px',
         height: '100%',
         maxHeight: '100%',
         overflow: 'hidden'
