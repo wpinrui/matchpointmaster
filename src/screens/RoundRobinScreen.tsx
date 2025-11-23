@@ -313,8 +313,6 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          padding: theme.spacing.lg,
-          gap: theme.spacing.lg,
           overflow: 'hidden'
         }}
       >
@@ -344,8 +342,6 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        padding: theme.spacing.lg,
-        gap: theme.spacing.lg,
         overflow: 'hidden'
       }}
     >
@@ -354,25 +350,29 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: theme.spacing.md
+          alignItems: 'flex-start',
+          marginBottom: theme.spacing.xl,
+          gap: theme.spacing.lg
         }}
       >
-        <h1
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize['3xl'],
-            fontWeight: theme.typography.fontWeight.extrabold,
-            background: theme.gradients.primary,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            margin: 0
-          }}
-        >
-          Intra-Team Round-Robin Tournament - {currentTeam}
-        </h1>
+        <div style={{ flex: 1 }}>
+          <h1
+            style={{
+              fontFamily: theme.typography.fontFamily.heading,
+              fontSize: theme.typography.fontSize['4xl'],
+              fontWeight: theme.typography.fontWeight.extrabold,
+              background: theme.gradients.primary,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: 0,
+              marginBottom: theme.spacing.sm,
+              textAlign: 'left'
+            }}
+          >
+            Intra-Team Round-Robin Tournament - {currentTeam}
+          </h1>
+        </div>
         <GameButton variant="secondary" onClick={() => changeScreen(Screens.HOME)}>
           Back to Home
         </GameButton>
