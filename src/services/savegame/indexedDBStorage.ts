@@ -34,6 +34,22 @@ async function requestPersistentStorage(): Promise<void> {
 }
 
 /**
+ * Check if persistent storage is currently granted
+ * Useful for debugging or showing status to users
+ */
+export async function isPersistentStorageGranted(): Promise<boolean> {
+  if ('storage' in navigator && 'persisted' in navigator.storage) {
+    try {
+      return await navigator.storage.persisted()
+    } catch (error) {
+      console.warn('Error checking persistent storage status:', error)
+      return false
+    }
+  }
+  return false
+}
+
+/**
  * Open or get the IndexedDB database
  * Reuses existing connection promise if already opening
  * Requests persistent storage on first open
