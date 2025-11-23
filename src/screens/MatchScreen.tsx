@@ -121,20 +121,26 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   )
 
   // Use match simulation hook
-  const { matchState, logEvents, skipToNextPoint, skipToNextService, skipToEndOfSet } =
-    useMatchSimulation({
-      player1: matchPlayers?.[0],
-      player2: matchPlayers?.[1],
-      isPlaying,
-      speed,
-      onComplete: () => {
-        setIsPlaying(false)
-        // Save result when match completes
-        if (matchState) {
-          saveMatchResult(matchState)
-        }
+  const {
+    matchState,
+    logEvents,
+    skipToNextPoint,
+    skipToNextService,
+    skipToEndOfSet,
+    resetMatch
+  } = useMatchSimulation({
+    player1: matchPlayers?.[0],
+    player2: matchPlayers?.[1],
+    isPlaying,
+    speed,
+    onComplete: () => {
+      setIsPlaying(false)
+      // Save result when match completes
+      if (matchState) {
+        saveMatchResult(matchState)
       }
-    })
+    }
+  })
 
   // Save result when match state becomes complete (even if onComplete didn't fire)
   useEffect(() => {
@@ -227,12 +233,26 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             </span>
           )}
         </h1>
-        <GameButton
-          variant="secondary"
-          onClick={() => changeScreen(returnScreen || Screens.HOME)}
-        >
-          {returnScreen === Screens.ROUND_ROBIN ? 'Back to Tournament' : 'Back to Home'}
-        </GameButton>
+        <div style={{ display: 'flex', gap: theme.spacing.md }}>
+          <GameButton
+            variant="danger"
+            onClick={() => {
+              if (window.confirm('Restart match? This will reset the score and clear all match progress.')) {
+                resetMatch()
+                setIsPlaying(false)
+              }
+            }}
+            size="md"
+          >
+            🔄 Restart Match
+          </GameButton>
+          <GameButton
+            variant="secondary"
+            onClick={() => changeScreen(returnScreen || Screens.HOME)}
+          >
+            {returnScreen === Screens.ROUND_ROBIN ? 'Back to Tournament' : 'Back to Home'}
+          </GameButton>
+        </div>
       </div>
 
       {/* Main Match View */}

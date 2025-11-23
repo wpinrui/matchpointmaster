@@ -104,6 +104,13 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const handleStartGame = async () => {
     const validation = validateSchoolData(schoolData)
     if (validation.isValid) {
+      // Clear any existing match state from previous games
+      sessionStorage.removeItem('matchpointMaster_matchState')
+      sessionStorage.removeItem('matchpointMaster_matchLogEvents')
+      sessionStorage.removeItem('roundRobinMatch')
+      sessionStorage.removeItem('roundRobinMatchResult')
+      sessionStorage.removeItem('roundRobinMatchCompleted')
+
       saveManagerStateToContext()
       saveSchoolStateToContext()
       // Create a new save slot with the school name or a default name

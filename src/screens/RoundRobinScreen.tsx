@@ -553,6 +553,8 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           players={eligiblePlayers}
           currentMatchIndex={currentTeamResults.currentMatchIndex}
           matchesToWatch={currentTeamResults.matchesToWatch || []}
+          season={season}
+          currentTeam={currentTeam}
           onMatchComplete={(matchResult, newIndex) => {
             // Use functional update to ensure we have the latest state
             // This prevents race conditions when multiple matches are simulated quickly
@@ -928,6 +930,8 @@ interface TournamentSimulationViewProps {
   onSkipToNextWatched: (nextIndex: number) => void
   onSkipToEnd: () => void
   changeScreen: (screen: Screens) => void
+  season: { year: number; month: number }
+  currentTeam: RoundRobinTeamType
 }
 
 const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
@@ -940,7 +944,9 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
   onMatchComplete,
   onSkipToNextWatched,
   onSkipToEnd,
-  changeScreen
+  changeScreen,
+  season,
+  currentTeam
 }) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
@@ -1200,17 +1206,33 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
               variant="primary"
               size="md"
               onClick={() => {
-                // Navigate to match screen to watch
-                sessionStorage.setItem(
-                  'roundRobinMatch',
-                  JSON.stringify({
-                    player1Id: player1.id,
-                    player2Id: player2.id,
-                    matchKey: currentMatchup.matchKey,
-                    returnTo: Screens.ROUND_ROBIN,
-                    currentMatchIndex
-                  })
-                )
+                // Clear any existing match state before starting a new match
+                sessionStorage.removeItem('matchpointMaster_matchState')
+                sessionStorage.removeItem('matchpointMaster_matchLogEvents')
+                sessionStorage.removeItem('roundRobinMatchCompleted')
+                sessionStorage.removeItem('roundRobinMatchResult')
+                
+                // Set match data and context together
+                const matchData = {
+                  player1Id: player1.id,
+                  player2Id: player2.id,
+                  matchKey: currentMatchup.matchKey,
+                  returnTo: Screens.ROUND_ROBIN,
+                  currentMatchIndex,
+                  // Tournament context to prevent cross-tournament state resumption
+                  tournamentType: 'round-robin',
+                  seasonYear: season.year,
+                  tournamentId: `round-robin-${season.year}-${currentTeam}`
+                }
+                
+                sessionStorage.setItem('roundRobinMatch', JSON.stringify(matchData))
+                
+                // Set match context immediately so restoration can validate
+                sessionStorage.setItem('matchContext', JSON.stringify({
+                  tournamentId: matchData.tournamentId,
+                  matchKey: matchData.matchKey
+                }))
+                
                 changeScreen(Screens.MATCH)
               }}
             >

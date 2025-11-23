@@ -156,6 +156,12 @@ export const useSaveData = () => {
     // Clear the current save ID so the app knows there's no active save
     clearCurrentSaveId()
     setCurrentSaveIdState(null)
+    // Clear match state from sessionStorage
+    sessionStorage.removeItem('matchpointMaster_matchState')
+    sessionStorage.removeItem('matchpointMaster_matchLogEvents')
+    sessionStorage.removeItem('roundRobinMatch')
+    sessionStorage.removeItem('roundRobinMatchResult')
+    sessionStorage.removeItem('roundRobinMatchCompleted')
   }
 
   /**
@@ -166,6 +172,12 @@ export const useSaveData = () => {
     setSaveData(initialSaveData)
     clearCurrentSaveId()
     setCurrentSaveIdState(null)
+    // Clear match state from sessionStorage
+    sessionStorage.removeItem('matchpointMaster_matchState')
+    sessionStorage.removeItem('matchpointMaster_matchLogEvents')
+    sessionStorage.removeItem('roundRobinMatch')
+    sessionStorage.removeItem('roundRobinMatchResult')
+    sessionStorage.removeItem('roundRobinMatchCompleted')
   }
 
   /**
@@ -175,6 +187,12 @@ export const useSaveData = () => {
     setSaveData(initialSaveData)
     setCurrentSaveIdState(null)
     setCurrentSaveId(null)
+    // Clear match state from sessionStorage
+    sessionStorage.removeItem('matchpointMaster_matchState')
+    sessionStorage.removeItem('matchpointMaster_matchLogEvents')
+    sessionStorage.removeItem('roundRobinMatch')
+    sessionStorage.removeItem('roundRobinMatchResult')
+    sessionStorage.removeItem('roundRobinMatchCompleted')
   }
 
   const updateSeason = createSeasonUpdates(setSaveData)
