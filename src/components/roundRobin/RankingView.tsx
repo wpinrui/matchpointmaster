@@ -300,7 +300,7 @@ export const RankingView: React.FC<RankingViewProps> = ({
                       color: theme.colors.text.secondary
                     }}
                   >
-                    {stats.wins}W-{stats.losses}L | Auto Rank: #{autoRank}
+                    {stats.wins}-{stats.losses} | Round-robin result: #{autoRank}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: theme.spacing.xs }}>
@@ -387,8 +387,8 @@ export const RankingView: React.FC<RankingViewProps> = ({
                         textAlign: 'left'
                       }}
                     >
-                      {player.shortName || player.firstName} (Auto Rank: #
-                      {stats.automaticRanking}, {stats.wins}W-{stats.losses}L)
+                      {player.shortName || player.firstName} (Round-robin result: #
+                      {stats.automaticRanking}, {stats.wins}-{stats.losses})
                     </button>
                   )
                 })}
