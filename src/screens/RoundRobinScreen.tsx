@@ -441,6 +441,7 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           playerMap={playerMap}
           matchesToWatch={currentTeamResults.matchesToWatch || []}
           maxMatchesToWatch={getMaxGamesToWatch()}
+          tournamentStarted={currentTeamResults.tournamentStarted || false}
           onUpdateMatchesToWatch={(matches) => {
             if (!roundRobinData) return
             const updatedData: RoundRobinData = {
@@ -698,6 +699,7 @@ interface MatchSelectionViewProps {
   maxMatchesToWatch: number
   onUpdateMatchesToWatch: (matches: string[]) => void
   onStartTournament: () => void
+  tournamentStarted: boolean
 }
 
 const MatchSelectionView: React.FC<MatchSelectionViewProps> = ({
@@ -706,7 +708,8 @@ const MatchSelectionView: React.FC<MatchSelectionViewProps> = ({
   matchesToWatch,
   maxMatchesToWatch,
   onUpdateMatchesToWatch,
-  onStartTournament
+  onStartTournament,
+  tournamentStarted
 }) => {
   const handleToggleMatch = (matchKey: string) => {
     if (matchesToWatch.includes(matchKey)) {
@@ -756,7 +759,7 @@ const MatchSelectionView: React.FC<MatchSelectionViewProps> = ({
           }}
         >
           <GameButton variant="primary" size="lg" onClick={onStartTournament}>
-            Start Tournament
+            {tournamentStarted ? 'Continue Tournament' : 'Start Tournament'}
           </GameButton>
         </div>
       </GameCard>
@@ -782,13 +785,7 @@ const MatchSelectionView: React.FC<MatchSelectionViewProps> = ({
               key={matchup.matchKey}
               style={{
                 padding: theme.spacing.md,
-                cursor: 'pointer',
-                border: `2px solid ${
-                  isSelected ? theme.colors.primary.main : 'transparent'
-                }`,
-                backgroundColor: isSelected
-                  ? theme.colors.primary.light + '20'
-                  : undefined
+                cursor: 'pointer'
               }}
               onClick={() => handleToggleMatch(matchup.matchKey)}
             >
@@ -1148,7 +1145,9 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
                 changeScreen(Screens.MATCH)
               }}
             >
-              Watch Match
+              {sessionStorage.getItem('matchpointMaster_matchState')
+                ? 'Continue Match'
+                : 'Watch Match'}
             </GameButton>
           )}
 
@@ -1343,7 +1342,7 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
                           fontWeight: theme.typography.fontWeight.bold
                         }}
                       >
-                        {isCurrentMatchWatched ? 'Waiting to watch...' : 'Simulating...'}
+                        {isCurrentMatchWatched ? 'Match in progress' : 'Simulating...'}
                       </span>
                     ) : (
                       <span
