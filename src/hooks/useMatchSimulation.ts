@@ -68,13 +68,25 @@ export function useMatchSimulation({
           // Check if game is won (first to 11, win by 2, or first to 15)
           let gameWon = false
           let gameWinner: number | null = null
-          const winnerScore = newGameScore[rally.winner]
-          const loserScore = newGameScore[1 - rally.winner]
-          if (winnerScore >= 11) {
-            const lead = winnerScore - loserScore
-            if (lead >= 2 || winnerScore >= 15) {
+
+          // Check both players' scores to determine if game is won
+          const player0Score = newGameScore[0]
+          const player1Score = newGameScore[1]
+
+          // Game is won if:
+          // 1. A player reaches 11 points with at least 2-point lead, OR
+          // 2. A player reaches 15 points (regardless of lead)
+          // Must check both players since either could be the winner
+          if (player0Score >= 11 || player1Score >= 11) {
+            const scoreDiff = Math.abs(player0Score - player1Score)
+            const maxScore = Math.max(player0Score, player1Score)
+            const leadingPlayer = player0Score > player1Score ? 0 : 1
+
+            // Game is won if someone has 15+ OR if someone has 11+ with 2+ point lead
+            if (maxScore >= 15 || (maxScore >= 11 && scoreDiff >= 2)) {
               gameWon = true
-              gameWinner = rally.winner
+              // Winner is the player with the higher score
+              gameWinner = leadingPlayer
             }
           }
 

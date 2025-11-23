@@ -282,8 +282,8 @@ export type RoundRobinMatchResult = {
  */
 export type RoundRobinTeamResults = {
   teamType: RoundRobinTeamType
-  selectedPlayerIds: string[] // Up to 12 players selected for the tournament
-  matchResults: RoundRobinMatchResult[] // All matches played
+  selectedPlayerIds: string[] // All eligible players (automatically included)
+  matchResults: RoundRobinMatchResult[] // All matches played (empty until tournament runs)
   playerStats: Record<
     string,
     {
@@ -294,8 +294,10 @@ export type RoundRobinTeamResults = {
       automaticRanking: number // Ranking based on results (1 = best)
     }
   >
-  coachRankings: string[] | null // Coach-assigned rankings (player IDs in order, 1st = index 0)
-  gamesWatched: number // Number of games the coach has watched (max 3)
+  coachRankings: string[] | null // Coach-assigned rankings (player IDs in order, 1st = index 0, max 12)
+  matchesToWatch: string[] // Match keys (e.g., "player1Id-player2Id") the coach selected to watch (max 3)
+  currentMatchIndex: number // Index of current match being simulated (0-based)
+  tournamentStarted: boolean // Whether tournament simulation has started
   completed: boolean // Whether tournament is complete
 }
 

@@ -59,8 +59,10 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
             border: '2px solid #FFFFFF',
             borderRadius: '4px',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            gap: '4px'
           }}
         >
           <span
@@ -72,6 +74,17 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
           >
             {matchState.sets[0]}
           </span>
+          {matchState.setScores[matchState.currentSet] && (
+            <span
+              style={{
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: '#CCCCCC'
+              }}
+            >
+              {matchState.setScores[matchState.currentSet][0]}
+            </span>
+          )}
         </div>
 
         {/* Player 2 Sets (Small Inner Card) */}
@@ -83,8 +96,10 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
             border: '2px solid #FFFFFF',
             borderRadius: '4px',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            gap: '4px'
           }}
         >
           <span
@@ -96,6 +111,17 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
           >
             {matchState.sets[1]}
           </span>
+          {matchState.setScores[matchState.currentSet] && (
+            <span
+              style={{
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: '#CCCCCC'
+              }}
+            >
+              {matchState.setScores[matchState.currentSet][1]}
+            </span>
+          )}
         </div>
 
         {/* Player 2 Current Game (Large Outer Card) */}

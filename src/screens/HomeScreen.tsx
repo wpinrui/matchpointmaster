@@ -9,6 +9,7 @@ import { PlayerInsightsCard } from '../components/home/PlayerInsightsCard'
 import { TopProspectsCard } from '../components/home/TopProspectsCard'
 import { TrainingInsightsCard } from '../components/home/TrainingInsightsCard'
 import { TrainingProgressCard } from '../components/home/TrainingProgressCard'
+import { RoundRobinResultsCard } from '../components/home/RoundRobinResultsCard'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { Email } from '../services/savegame/types'
@@ -38,7 +39,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     skillSnapshots,
     updateSkillSnapshots,
     updateAISchools,
-    addEmail
+    addEmail,
+    roundRobinData
   } = useSaveDataContext()
   const [showDraftDialog, setShowDraftDialog] = useState(false)
   const [showTimeProgressionDialog, setShowTimeProgressionDialog] = useState(false)
@@ -289,6 +291,12 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                 />
               </>
             )}
+
+            {/* Round-Robin Results Card - After tournament completion */}
+            {roundRobinData &&
+              Object.values(roundRobinData.teamResults).some(
+                (r) => r !== null && r !== undefined && r.completed === true
+              ) && <RoundRobinResultsCard changeScreen={changeScreen} />}
 
             {/* Season Timeline Card - Always visible, narrower */}
             <SeasonTimelineSection

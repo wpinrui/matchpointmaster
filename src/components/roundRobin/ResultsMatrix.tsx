@@ -99,10 +99,11 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                     padding: theme.spacing.sm,
                     textAlign: 'left',
                     borderBottom: `2px solid ${theme.colors.neutral.gray400}`,
-                    backgroundColor: theme.colors.neutral.gray100,
+                    backgroundColor: theme.colors.background.nested,
                     position: 'sticky',
                     left: 0,
-                    zIndex: 10
+                    zIndex: 10,
+                    color: theme.colors.text.primary
                   }}
                 >
                   Player
@@ -114,8 +115,9 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                       padding: theme.spacing.sm,
                       textAlign: 'center',
                       borderBottom: `2px solid ${theme.colors.neutral.gray400}`,
-                      backgroundColor: theme.colors.neutral.gray100,
-                      minWidth: '80px'
+                      backgroundColor: theme.colors.background.nested,
+                      minWidth: '80px',
+                      color: theme.colors.text.primary
                     }}
                   >
                     <div
@@ -134,8 +136,9 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                     padding: theme.spacing.sm,
                     textAlign: 'center',
                     borderBottom: `2px solid ${theme.colors.neutral.gray400}`,
-                    backgroundColor: theme.colors.neutral.gray100,
-                    fontWeight: theme.typography.fontWeight.bold
+                    backgroundColor: theme.colors.background.nested,
+                    fontWeight: theme.typography.fontWeight.bold,
+                    color: theme.colors.text.primary
                   }}
                 >
                   W-L
@@ -145,8 +148,9 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                     padding: theme.spacing.sm,
                     textAlign: 'center',
                     borderBottom: `2px solid ${theme.colors.neutral.gray400}`,
-                    backgroundColor: theme.colors.neutral.gray100,
-                    fontWeight: theme.typography.fontWeight.bold
+                    backgroundColor: theme.colors.background.nested,
+                    fontWeight: theme.typography.fontWeight.bold,
+                    color: theme.colors.text.primary
                   }}
                 >
                   Games
@@ -162,11 +166,12 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                       style={{
                         padding: theme.spacing.sm,
                         borderBottom: `1px solid ${theme.colors.neutral.gray200}`,
-                        backgroundColor: theme.colors.neutral.white,
+                        backgroundColor: theme.colors.background.secondary,
                         position: 'sticky',
                         left: 0,
                         zIndex: 5,
-                        fontWeight: theme.typography.fontWeight.medium
+                        fontWeight: theme.typography.fontWeight.medium,
+                        color: theme.colors.text.primary
                       }}
                     >
                       {player1.shortName || player1.firstName}
@@ -180,7 +185,8 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                               padding: theme.spacing.sm,
                               textAlign: 'center',
                               borderBottom: `1px solid ${theme.colors.neutral.gray200}`,
-                              backgroundColor: theme.colors.neutral.gray100
+                              backgroundColor: theme.colors.background.nested,
+                              color: theme.colors.text.secondary
                             }}
                           >
                             -
@@ -198,7 +204,9 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                             style={{
                               padding: theme.spacing.sm,
                               textAlign: 'center',
-                              borderBottom: `1px solid ${theme.colors.neutral.gray200}`
+                              borderBottom: `1px solid ${theme.colors.neutral.gray200}`,
+                              backgroundColor: theme.colors.background.secondary,
+                              color: theme.colors.text.secondary
                             }}
                           >
                             -
@@ -280,7 +288,9 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                         padding: theme.spacing.sm,
                         textAlign: 'center',
                         borderBottom: `1px solid ${theme.colors.neutral.gray200}`,
-                        fontWeight: theme.typography.fontWeight.bold
+                        fontWeight: theme.typography.fontWeight.bold,
+                        backgroundColor: theme.colors.background.secondary,
+                        color: theme.colors.text.primary
                       }}
                     >
                       {stats.wins}-{stats.losses}
@@ -290,7 +300,9 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
                         padding: theme.spacing.sm,
                         textAlign: 'center',
                         borderBottom: `1px solid ${theme.colors.neutral.gray200}`,
-                        fontWeight: theme.typography.fontWeight.bold
+                        fontWeight: theme.typography.fontWeight.bold,
+                        backgroundColor: theme.colors.background.secondary,
+                        color: theme.colors.text.primary
                       }}
                     >
                       {stats.gamesWon}-{stats.gamesLost}

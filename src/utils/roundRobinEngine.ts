@@ -226,7 +226,9 @@ export function runRoundRobinTournament(
     matchResults,
     playerStats,
     coachRankings: null,
-    gamesWatched: 0,
+    matchesToWatch: [],
+    currentMatchIndex: 0,
+    tournamentStarted: false,
     completed: false
   }
 }
