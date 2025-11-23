@@ -59,10 +59,8 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
             border: '2px solid #FFFFFF',
             borderRadius: '4px',
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '4px'
+            justifyContent: 'center'
           }}
         >
           <span
@@ -74,17 +72,6 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
           >
             {matchState.sets[0]}
           </span>
-          {matchState.setScores.length > 0 && (
-            <span
-              style={{
-                fontSize: '12px',
-                fontWeight: 'bold',
-                color: '#CCCCCC'
-              }}
-            >
-              Set {matchState.setScores.length}
-            </span>
-          )}
         </div>
 
         {/* Player 2 Sets Won (Small Inner Card) */}
@@ -96,10 +83,8 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
             border: '2px solid #FFFFFF',
             borderRadius: '4px',
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '4px'
+            justifyContent: 'center'
           }}
         >
           <span
@@ -111,17 +96,6 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
           >
             {matchState.sets[1]}
           </span>
-          {matchState.setScores.length > 0 && (
-            <span
-              style={{
-                fontSize: '12px',
-                fontWeight: 'bold',
-                color: '#CCCCCC'
-              }}
-            >
-              Set {matchState.setScores.length}
-            </span>
-          )}
         </div>
 
         {/* Player 2 Current Set Points (Large Outer Card) */}
