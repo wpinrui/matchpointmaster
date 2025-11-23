@@ -174,6 +174,14 @@ img:hover {
   background: #4A4F5E;
 }
 
+/* Modal content styling - Fix white background showing through */
+.modal-content {
+  border-radius: 0.75rem !important;
+  overflow: hidden !important;
+  border: none !important;
+  background: transparent !important;
+}
+
 /* Image picker modal styling */
 .image-picker-modal-content {
   border-radius: 0.75rem !important;

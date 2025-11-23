@@ -81,6 +81,14 @@ export const GlobalStyles = () => (
         background: ${theme.colors.border.hover};
       }
 
+      /* Modal content styling - Fix white background showing through */
+      .modal-content {
+        border-radius: ${theme.borderRadius.lg} !important;
+        overflow: hidden !important;
+        border: none !important;
+        background: transparent !important;
+      }
+
       /* Image picker modal styling */
       .image-picker-modal-content {
         border-radius: ${theme.borderRadius.lg} !important;
