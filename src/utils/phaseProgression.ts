@@ -223,7 +223,12 @@ export function advanceToNextPhase(
       const updatedAISchools = params.aiSchools.map((school) => {
         // Initialize if entering training phase and don't have a plan, or if plan is for different month
         if (!school.trainingPlan || school.trainingPlan.month !== nextPhase.month) {
-          return initializeAISchoolTraining(school, newYear, nextPhase.month, nextPhase.phase)
+          return initializeAISchoolTraining(
+            school,
+            newYear,
+            nextPhase.month,
+            nextPhase.phase
+          )
         }
         return school
       })
