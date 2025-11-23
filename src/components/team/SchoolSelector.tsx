@@ -22,7 +22,9 @@ export const SchoolSelector: React.FC<SchoolSelectorProps> = ({
       <StyledLabel>School</StyledLabel>
       <StyledSelect
         value={selectedSchoolId}
-        onChange={(e) => onSelectSchool(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+          onSelectSchool(e.target.value)
+        }
       >
         {schools.map((s) => (
           <option key={s.id} value={s.id}>

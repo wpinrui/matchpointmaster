@@ -19,7 +19,9 @@ export const TeamSelector: React.FC<TeamSelectorProps> = ({
       <StyledLabel>Team</StyledLabel>
       <StyledSelect
         value={selectedTeam}
-        onChange={(e) => onSelectTeam(e.target.value as TeamType)}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+          onSelectTeam(e.target.value as TeamType)
+        }
       >
         {availableTeams.map((team) => (
           <option key={team} value={team}>

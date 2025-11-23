@@ -329,12 +329,15 @@ const getSelectArrowColor = (focused: boolean) => {
   return focused ? theme.colors.primary.main : theme.colors.text.secondary
 }
 
-export const StyledSelect = styled.select.withConfig({
-  shouldForwardProp: (prop) => prop !== '$focused' && prop !== 'error'
-})<{ error?: boolean; $focused?: boolean }>`
+interface StyledSelectProps {
+  error?: boolean
+  $focused?: boolean
+}
+
+export const StyledSelect = styled.select<StyledSelectProps>`
   background: ${theme.colors.background.secondary};
   border: ${theme.borderWidth.default} solid
-    ${({ error, $focused }) =>
+    ${({ error, $focused }: StyledSelectProps) =>
       error
         ? theme.colors.error.main
         : $focused
@@ -357,7 +360,7 @@ export const StyledSelect = styled.select.withConfig({
   background-position: right ${theme.spacing.md} center;
   background-size: 14px 14px;
 
-  background-image: ${({ $focused }) => {
+  background-image: ${({ $focused }: StyledSelectProps) => {
     const color = getSelectArrowColor($focused || false)
     return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='${encodeURIComponent(
       color
@@ -366,7 +369,7 @@ export const StyledSelect = styled.select.withConfig({
 
   &:focus {
     outline: none;
-    border-color: ${({ error }) =>
+    border-color: ${({ error }: StyledSelectProps) =>
       error ? theme.colors.error.main : theme.colors.border.selection};
   }
 

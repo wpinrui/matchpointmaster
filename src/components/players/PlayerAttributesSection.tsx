@@ -28,7 +28,9 @@ export const PlayerAttributesSection: React.FC<PlayerAttributesSectionProps> = (
         <StyledLabel>Forehand/Backhand Tendency:</StyledLabel>
         <StyledSelect
           value={player.forehandBackhandTendency}
-          onChange={(e) => onTendencyChange(e.target.value as FavourStyle)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            onTendencyChange(e.target.value as FavourStyle)
+          }
         >
           {Object.values(FavourStyle).map((tendency) => (
             <option key={tendency} value={tendency}>
@@ -42,7 +44,9 @@ export const PlayerAttributesSection: React.FC<PlayerAttributesSectionProps> = (
         <StyledLabel>Play Style:</StyledLabel>
         <StyledSelect
           value={player.playStyle}
-          onChange={(e) => onPlayStyleChange(e.target.value as PlayStyle)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            onPlayStyleChange(e.target.value as PlayStyle)
+          }
         >
           {Object.values(PlayStyle).map((style) => (
             <option key={style} value={style}>
