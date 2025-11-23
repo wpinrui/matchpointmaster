@@ -12,14 +12,42 @@ const METADATA_STORE = 'metadata'
 let dbPromise: Promise<IDBDatabase> | null = null
 
 /**
+ * Request persistent storage permission from the browser
+ * This prevents the browser from evicting IndexedDB data when storage is low
+ * Particularly important on mobile devices, but good practice for all platforms
+ */
+async function requestPersistentStorage(): Promise<void> {
+  if ('storage' in navigator && 'persist' in navigator.storage) {
+    try {
+      const isPersistent = await navigator.storage.persist()
+      if (isPersistent) {
+        console.log('Persistent storage granted - save data will not be evicted')
+      } else {
+        console.warn(
+          'Persistent storage denied - save data may be evicted if storage is low'
+        )
+      }
+    } catch (error) {
+      console.warn('Error requesting persistent storage:', error)
+    }
+  }
+}
+
+/**
  * Open or get the IndexedDB database
  * Reuses existing connection promise if already opening
+ * Requests persistent storage on first open
  */
 function openDB(): Promise<IDBDatabase> {
   // If we already have a promise, return it (handles concurrent requests)
   if (dbPromise) {
     return dbPromise
   }
+
+  // Request persistent storage (fire and forget - don't block on this)
+  requestPersistentStorage().catch(() => {
+    // Silently fail - persistent storage is nice-to-have, not required
+  })
 
   // Create new database connection
   dbPromise = new Promise((resolve, reject) => {
