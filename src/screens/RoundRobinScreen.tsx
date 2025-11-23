@@ -23,6 +23,7 @@ import {
 } from '../utils/roundRobinTournamentSimulation'
 import { getMaxGamesToWatch } from '../utils/roundRobinEngine'
 import { RankingView } from '../components/roundRobin/RankingView'
+import { ResultsMatrix } from '../components/roundRobin/ResultsMatrix'
 import {
   generateRoundRobinCompletionEmail,
   areAllTeamsCompleted
@@ -437,6 +438,7 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           orderedMatchups={orderedMatchups}
           playerMap={playerMap}
           teamResults={currentTeamResults}
+          players={eligiblePlayers}
           currentMatchIndex={currentTeamResults.currentMatchIndex}
           matchesToWatch={currentTeamResults.matchesToWatch || []}
           onMatchComplete={(matchResult, newIndex) => {
@@ -811,6 +813,7 @@ interface TournamentSimulationViewProps {
   orderedMatchups: ReturnType<typeof generateOrderedMatchups>
   playerMap: Map<string, Player>
   teamResults: any
+  players: Player[]
   currentMatchIndex: number
   matchesToWatch: string[]
   onMatchComplete: (matchResult: RoundRobinMatchResult, newIndex: number) => void
@@ -823,6 +826,7 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
   orderedMatchups,
   playerMap,
   teamResults,
+  players,
   currentMatchIndex,
   matchesToWatch,
   onMatchComplete,
@@ -832,6 +836,7 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [speed, setSpeed] = useState(1)
+  const [viewMode, setViewMode] = useState<'matchOrder' | 'matrix'>('matchOrder')
 
   const currentMatchup = orderedMatchups[currentMatchIndex]
   const isComplete = currentMatchIndex >= orderedMatchups.length
@@ -1154,135 +1159,177 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
         </div>
       </GameCard>
 
-      {/* Match List */}
+      {/* View Toggle */}
       <GameCard
         style={{
-          padding: theme.spacing.md,
-          flex: 1,
-          overflow: 'auto'
+          padding: theme.spacing.md
         }}
       >
-        <h3
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize.lg,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            marginBottom: theme.spacing.md
-          }}
-        >
-          Match Schedule
-        </h3>
         <div
           style={{
             display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.xs
+            gap: theme.spacing.sm,
+            justifyContent: 'center'
           }}
         >
-          {orderedMatchups.map((matchup, index) => {
-            const p1 = playerMap.get(matchup.player1Id)
-            const p2 = playerMap.get(matchup.player2Id)
-            if (!p1 || !p2) return null
-
-            const isPast = index < currentMatchIndex
-            const isCurrent = index === currentMatchIndex
-            const isFuture = index > currentMatchIndex
-            const matchResult = teamResults.matchResults[index]
-            const isWatched = matchesToWatch.includes(matchup.matchKey)
-
-            return (
-              <div
-                key={matchup.matchKey}
-                style={{
-                  padding: theme.spacing.sm,
-                  borderRadius: theme.borderRadius.md,
-                  backgroundColor: isCurrent
-                    ? theme.colors.primary.light + '30'
-                    : isPast
-                      ? theme.colors.background.nested
-                      : theme.colors.background.secondary,
-                  border: `2px solid ${
-                    isCurrent
-                      ? theme.colors.primary.main
-                      : isPast
-                        ? theme.colors.success.main
-                        : 'transparent'
-                  }`,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <div>
-                  <span
-                    style={{
-                      fontSize: theme.typography.fontSize.sm,
-                      color: theme.colors.text.secondary,
-                      marginRight: theme.spacing.sm
-                    }}
-                  >
-                    #{index + 1}
-                  </span>
-                  <span
-                    style={{
-                      fontWeight: isCurrent
-                        ? theme.typography.fontWeight.bold
-                        : theme.typography.fontWeight.normal,
-                      color: theme.colors.text.primary
-                    }}
-                  >
-                    {p1.shortName || p1.firstName} vs {p2.shortName || p2.firstName}
-                  </span>
-                  {isWatched && (
-                    <span
-                      style={{
-                        marginLeft: theme.spacing.sm,
-                        fontSize: theme.typography.fontSize.xs,
-                        color: theme.colors.primary.main
-                      }}
-                    >
-                      👁
-                    </span>
-                  )}
-                </div>
-                <div>
-                  {matchResult ? (
-                    <span
-                      style={{
-                        fontSize: theme.typography.fontSize.sm,
-                        color: theme.colors.text.secondary
-                      }}
-                    >
-                      {matchResult.player1GamesWon}-{matchResult.player2GamesWon} (
-                      {playerMap.get(matchResult.winnerId)?.shortName || 'Winner'} wins)
-                    </span>
-                  ) : isCurrent ? (
-                    <span
-                      style={{
-                        fontSize: theme.typography.fontSize.sm,
-                        color: theme.colors.primary.main,
-                        fontWeight: theme.typography.fontWeight.bold
-                      }}
-                    >
-                      {isCurrentMatchWatched ? 'Waiting to watch...' : 'Simulating...'}
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: theme.typography.fontSize.sm,
-                        color: theme.colors.text.light
-                      }}
-                    >
-                      Pending
-                    </span>
-                  )}
-                </div>
-              </div>
-            )
-          })}
+          <GameButton
+            variant={viewMode === 'matchOrder' ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => setViewMode('matchOrder')}
+          >
+            Match Order
+          </GameButton>
+          <GameButton
+            variant={viewMode === 'matrix' ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => setViewMode('matrix')}
+          >
+            Results Matrix
+          </GameButton>
         </div>
       </GameCard>
+
+      {/* Match List View */}
+      {viewMode === 'matchOrder' && (
+        <GameCard
+          style={{
+            padding: theme.spacing.md,
+            flex: 1,
+            overflow: 'auto'
+          }}
+        >
+          <h3
+            style={{
+              fontFamily: theme.typography.fontFamily.heading,
+              fontSize: theme.typography.fontSize.lg,
+              fontWeight: theme.typography.fontWeight.bold,
+              color: theme.colors.text.primary,
+              marginBottom: theme.spacing.md
+            }}
+          >
+            Match Schedule
+          </h3>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: theme.spacing.xs
+            }}
+          >
+            {orderedMatchups.map((matchup, index) => {
+              const p1 = playerMap.get(matchup.player1Id)
+              const p2 = playerMap.get(matchup.player2Id)
+              if (!p1 || !p2) return null
+
+              const isPast = index < currentMatchIndex
+              const isCurrent = index === currentMatchIndex
+              const isFuture = index > currentMatchIndex
+              const matchResult = teamResults.matchResults[index]
+              const isWatched = matchesToWatch.includes(matchup.matchKey)
+
+              return (
+                <div
+                  key={matchup.matchKey}
+                  style={{
+                    padding: theme.spacing.sm,
+                    borderRadius: theme.borderRadius.md,
+                    backgroundColor: isCurrent
+                      ? theme.colors.primary.light + '30'
+                      : isPast
+                        ? theme.colors.background.nested
+                        : theme.colors.background.secondary,
+                    border: `2px solid ${
+                      isCurrent
+                        ? theme.colors.primary.main
+                        : isPast
+                          ? theme.colors.success.main
+                          : 'transparent'
+                    }`,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div>
+                    <span
+                      style={{
+                        fontSize: theme.typography.fontSize.sm,
+                        color: theme.colors.text.secondary,
+                        marginRight: theme.spacing.sm
+                      }}
+                    >
+                      #{index + 1}
+                    </span>
+                    <span
+                      style={{
+                        fontWeight: isCurrent
+                          ? theme.typography.fontWeight.bold
+                          : theme.typography.fontWeight.normal,
+                        color: theme.colors.text.primary
+                      }}
+                    >
+                      {p1.shortName || p1.firstName} vs {p2.shortName || p2.firstName}
+                    </span>
+                    {isWatched && (
+                      <span
+                        style={{
+                          marginLeft: theme.spacing.sm,
+                          fontSize: theme.typography.fontSize.xs,
+                          color: theme.colors.primary.main
+                        }}
+                      >
+                        👁
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    {matchResult ? (
+                      <span
+                        style={{
+                          fontSize: theme.typography.fontSize.sm,
+                          color: theme.colors.text.secondary
+                        }}
+                      >
+                        {matchResult.player1GamesWon}-{matchResult.player2GamesWon} (
+                        {playerMap.get(matchResult.winnerId)?.shortName || 'Winner'} wins)
+                      </span>
+                    ) : isCurrent ? (
+                      <span
+                        style={{
+                          fontSize: theme.typography.fontSize.sm,
+                          color: theme.colors.primary.main,
+                          fontWeight: theme.typography.fontWeight.bold
+                        }}
+                      >
+                        {isCurrentMatchWatched ? 'Waiting to watch...' : 'Simulating...'}
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: theme.typography.fontSize.sm,
+                          color: theme.colors.text.light
+                        }}
+                      >
+                        Pending
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </GameCard>
+      )}
+
+      {/* Results Matrix View */}
+      {viewMode === 'matrix' && (
+        <ResultsMatrix
+          teamResults={teamResults}
+          players={players}
+          gamesWatched={matchesToWatch.length}
+          maxGamesToWatch={getMaxGamesToWatch()}
+        />
+      )}
     </div>
   )
 }
