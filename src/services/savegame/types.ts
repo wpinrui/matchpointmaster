@@ -266,15 +266,18 @@ export type TrainingPlan = {
 export type RoundRobinTeamType = 'C boys' | 'C girls' | 'B boys' | 'B girls'
 
 /**
- * Result of a single match in round-robin (best of 5)
+ * Result of a single match in round-robin (best of 5 sets)
+ * Note: In table tennis, "games" and "sets" are the same thing
+ * player1GamesWon/player2GamesWon actually represent sets won (0-3, first to 3 wins)
+ * gameResults contains point scores for each set: [[11, 0], [11, 0], ...]
  */
 export type RoundRobinMatchResult = {
   player1Id: string
   player2Id: string
-  player1GamesWon: number // Games won by player 1 (0-3)
-  player2GamesWon: number // Games won by player 2 (0-3)
+  player1GamesWon: number // Sets won by player 1 (0-3, first to 3 wins match)
+  player2GamesWon: number // Sets won by player 2 (0-3, first to 3 wins match)
   winnerId: string // ID of the winning player
-  gameResults: number[][] // Array of game scores: [[player1Score, player2Score], ...]
+  gameResults: number[][] // Array of set point scores: [[player1Points, player2Points], ...] e.g., [[11, 0], [11, 0], [11, 0]]
 }
 
 /**

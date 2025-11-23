@@ -41,12 +41,14 @@ export type RallyEvent = {
 
 /**
  * Match state
+ * In table tennis: Match = best of 5 sets, Set = first to 11 points (win by 2, or first to 15)
+ * There are NO "games" - sets and games are the same thing in table tennis
  */
 export type MatchState = {
-  sets: number[] // [player1Sets, player2Sets]
-  currentSet: number // 0-4
-  setScores: number[][] // [[p1, p2], ...] for each set
-  currentGameScore: number[] // [p1, p2] for current game
+  sets: number[] // [player1SetsWon, player2SetsWon] - number of sets won (0-3, first to 3 wins match)
+  currentSet: number // 0-4 (which set we're currently playing)
+  setScores: number[][] // [[p1Points, p2Points], ...] - final point scores for each completed set, e.g., [[11, 0], [11, 0], [11, 0]]
+  currentSetScore: number[] // [p1Points, p2Points] - points in the current set being played
   servingPlayer: number // 0 or 1
   playerPositions: [PlayerPosition, PlayerPosition]
   rallyEvents: RallyEvent[]

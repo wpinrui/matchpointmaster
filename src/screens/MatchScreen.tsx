@@ -76,30 +76,22 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         matchPlayers
       ) {
         // Extract match result from matchState
-        // In MatchState, sets[0] = player1 sets won, sets[1] = player2 sets won
-        // setScores contains game scores for each set: [[p1Games, p2Games], ...]
-        const player1GamesWon = matchState.sets[0]
-        const player2GamesWon = matchState.sets[1]
+        // In table tennis: Match = best of 5 sets, Set = first to 11 points
+        // sets[0] = player1 sets won, sets[1] = player2 sets won
+        // setScores contains point scores for each completed set: [[p1Points, p2Points], ...]
+        const player1SetsWon = matchState.sets[0]
+        const player2SetsWon = matchState.sets[1]
         const winnerId = matchState.winner === 0 ? matchPlayers[0].id : matchPlayers[1].id
 
-        // Extract game results - in best-of-5 match format, each set has games
-        // setScores contains [player1Games, player2Games] for each set (best of 5 sets)
-        // We need to extract individual game scores. Since we track sets won, we can
-        // reconstruct approximate game results from the set scores.
+        // Extract set results - setScores contains [player1Points, player2Points] for each completed set
+        // For round-robin, we store the point scores for each set
         const gameResults: number[][] = []
 
-        // Extract completed sets only
-        for (
-          let i = 0;
-          i <= matchState.currentSet && i < matchState.setScores.length;
-          i++
-        ) {
-          if (matchState.setScores[i]) {
-            const setScore = matchState.setScores[i]
-            // Each set score represents games won in that set
-            // For round-robin, we store the final set scores as game results
-            gameResults.push([setScore[0], setScore[1]])
-          }
+        // Extract all completed sets
+        for (let i = 0; i < matchState.setScores.length; i++) {
+          const setScore = matchState.setScores[i]
+          // Each set score represents points in that set (e.g., [11, 0])
+          gameResults.push([setScore[0], setScore[1]])
         }
 
         // Get match data from session storage (it should still be there)
@@ -109,15 +101,18 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             const matchData = JSON.parse(matchDataStr)
 
             // Store match result in RoundRobinMatchResult format
+            // Note: RoundRobinMatchResult uses "GamesWon" but in table tennis these are actually sets
+            // player1GamesWon/player2GamesWon represent sets won (0-3)
+            // gameResults contains point scores for each set: [[11, 0], [11, 0], ...]
             sessionStorage.setItem(
               'roundRobinMatchResult',
               JSON.stringify({
                 player1Id: matchPlayers[0].id,
                 player2Id: matchPlayers[1].id,
-                player1GamesWon,
-                player2GamesWon,
+                player1GamesWon: player1SetsWon, // Actually sets won, but field name is GamesWon
+                player2GamesWon: player2SetsWon, // Actually sets won, but field name is GamesWon
                 winnerId,
-                gameResults, // Array of [player1Games, player2Games] per set
+                gameResults, // Array of [player1Points, player2Points] per set
                 matchKey: matchData.matchKey,
                 currentMatchIndex: matchData.currentMatchIndex
               })

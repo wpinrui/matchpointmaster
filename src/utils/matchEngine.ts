@@ -421,8 +421,8 @@ export function initializeMatch(player1: Player, player2: Player): MatchState {
   return {
     sets: [0, 0],
     currentSet: 0,
-    setScores: [[0, 0]],
-    currentGameScore: [0, 0],
+    setScores: [], // Will be populated as sets are completed
+    currentSetScore: [0, 0], // Points in current set
     servingPlayer: Math.random() > 0.5 ? 0 : 1,
     playerPositions: [
       { horizontal: position1.horizontal, vertical: position1.vertical },

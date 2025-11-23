@@ -26,7 +26,7 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
           gap: theme.spacing.md
         }}
       >
-        {/* Player 1 Current Game (Large Outer Card) */}
+        {/* Player 1 Current Set Points (Large Outer Card) */}
         <div
           style={{
             width: '120px',
@@ -43,14 +43,14 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
             style={{
               fontSize: '64px',
               fontWeight: 'bold',
-              color: matchState.currentGameScore[0] >= 11 ? '#FF3333' : '#FFFFFF'
+              color: matchState.currentSetScore[0] >= 11 ? '#FF3333' : '#FFFFFF'
             }}
           >
-            {matchState.currentGameScore[0]}
+            {matchState.currentSetScore[0]}
           </span>
         </div>
 
-        {/* Player 1 Sets (Small Inner Card) */}
+        {/* Player 1 Sets Won (Small Inner Card) */}
         <div
           style={{
             width: '70px',
@@ -74,20 +74,20 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
           >
             {matchState.sets[0]}
           </span>
-          {matchState.setScores[matchState.currentSet] && (
+          {matchState.setScores.length > 0 && (
             <span
               style={{
-                fontSize: '16px',
+                fontSize: '12px',
                 fontWeight: 'bold',
                 color: '#CCCCCC'
               }}
             >
-              {matchState.setScores[matchState.currentSet][0]}
+              Set {matchState.setScores.length}
             </span>
           )}
         </div>
 
-        {/* Player 2 Sets (Small Inner Card) */}
+        {/* Player 2 Sets Won (Small Inner Card) */}
         <div
           style={{
             width: '70px',
@@ -111,20 +111,20 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
           >
             {matchState.sets[1]}
           </span>
-          {matchState.setScores[matchState.currentSet] && (
+          {matchState.setScores.length > 0 && (
             <span
               style={{
-                fontSize: '16px',
+                fontSize: '12px',
                 fontWeight: 'bold',
                 color: '#CCCCCC'
               }}
             >
-              {matchState.setScores[matchState.currentSet][1]}
+              Set {matchState.setScores.length}
             </span>
           )}
         </div>
 
-        {/* Player 2 Current Game (Large Outer Card) */}
+        {/* Player 2 Current Set Points (Large Outer Card) */}
         <div
           style={{
             width: '120px',
@@ -141,10 +141,10 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ matchState }) => {
             style={{
               fontSize: '64px',
               fontWeight: 'bold',
-              color: matchState.currentGameScore[1] >= 11 ? '#FF3333' : '#FFFFFF'
+              color: matchState.currentSetScore[1] >= 11 ? '#FF3333' : '#FFFFFF'
             }}
           >
-            {matchState.currentGameScore[1]}
+            {matchState.currentSetScore[1]}
           </span>
         </div>
       </div>
