@@ -159,7 +159,13 @@ export const ResultsMatrix: React.FC<ResultsMatrixProps> = ({
             </thead>
             <tbody>
               {selectedPlayers.map((player1) => {
-                const stats = teamResults.playerStats[player1.id]
+                const stats = teamResults.playerStats[player1.id] || {
+                  wins: 0,
+                  losses: 0,
+                  gamesWon: 0,
+                  gamesLost: 0,
+                  automaticRanking: 0
+                }
                 return (
                   <tr key={player1.id}>
                     <td
