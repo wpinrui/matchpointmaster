@@ -15,7 +15,7 @@ export function runMatchSimulation(
   let pointsSimulated = 0
 
   while (pointsSimulated < numPoints) {
-    const isServe = state.currentGameScore[0] + state.currentGameScore[1] === 0
+    const isServe = state.currentSetScore[0] + state.currentSetScore[1] === 0
     const rally = simulateRally(
       player1,
       player2,
@@ -31,20 +31,20 @@ export function runMatchSimulation(
       player2Points++
     }
 
-    // Update game score
-    const newGameScore = [...state.currentGameScore]
-    newGameScore[rally.winner]++
+    // Update set score (points in current set)
+    const newSetScore = [...state.currentSetScore]
+    newSetScore[rally.winner]++
 
-    // Check if game is won
-    let gameWon = false
-    let gameWinner: number | null = null
-    const winnerScore = newGameScore[rally.winner]
-    const loserScore = newGameScore[1 - rally.winner]
+    // Check if set is won (first to 11, win by 2, or first to 15)
+    let setWon = false
+    let setWinner: number | null = null
+    const winnerScore = newSetScore[rally.winner]
+    const loserScore = newSetScore[1 - rally.winner]
     if (winnerScore >= 11) {
       const lead = winnerScore - loserScore
       if (lead >= 2 || winnerScore >= 15) {
-        gameWon = true
-        gameWinner = rally.winner
+        setWon = true
+        setWinner = rally.winner
       }
     }
 
@@ -54,29 +54,32 @@ export function runMatchSimulation(
     let newCurrentSet = state.currentSet
     let newServingPlayer = state.servingPlayer
 
-    if (gameWon && gameWinner !== null) {
-      const currentSetScore = [...newSetScores[newCurrentSet]]
-      currentSetScore[gameWinner]++
-      newSetScores[newCurrentSet] = currentSetScore
+    if (setWon && setWinner !== null) {
+      // Save the final score of this set
+      newSetScores.push([...newSetScore])
 
-      if (currentSetScore[gameWinner] >= 3) {
-        newSets[gameWinner]++
+      // Update sets won
+      newSets[setWinner]++
+
+      // Check if match is won (first to 3 sets)
+      if (newSets[setWinner] >= 3) {
+        // Match complete - but we're just simulating points, so continue
+        // Reset for next simulation if needed
+        newCurrentSet = 0
+        newSetScores = []
+        newSets = [0, 0]
+      } else {
+        // Move to next set
         newCurrentSet++
-        if (newCurrentSet >= 5) {
-          // Reset to first set if we've gone through all 5
-          newCurrentSet = 0
-          newSetScores = [[0, 0]]
-          newSets = [0, 0]
-        } else {
-          newSetScores.push([0, 0])
-        }
       }
 
-      newGameScore[0] = 0
-      newGameScore[1] = 0
+      // Reset set score and switch server
+      newSetScore[0] = 0
+      newSetScore[1] = 0
       newServingPlayer = 1 - newServingPlayer
     } else {
-      const totalPoints = newGameScore[0] + newGameScore[1]
+      // Switch server every 2 points
+      const totalPoints = newSetScore[0] + newSetScore[1]
       if (totalPoints > 0 && totalPoints % 2 === 0) {
         newServingPlayer = 1 - newServingPlayer
       }
@@ -87,7 +90,7 @@ export function runMatchSimulation(
       sets: newSets,
       currentSet: newCurrentSet,
       setScores: newSetScores,
-      currentGameScore: newGameScore,
+      currentSetScore: newSetScore,
       servingPlayer: newServingPlayer,
       playerPositions: rally.newPositions,
       rallyEvents: [...state.rallyEvents, ...rally.events],

@@ -51,20 +51,21 @@ export function simulateBestOf5Match(
 }
 
 /**
- * Simulate a single game (first to 11 points, win by 2, or first to 15)
+ * Simulate a single set (first to 11 points, win by 2, or first to 15)
+ * In table tennis, "game" and "set" are the same thing
  */
 function simulateGame(player1: Player, player2: Player): [number, number] {
   const matchState = initializeMatch(player1, player2)
   let currentState: MatchState = { ...matchState }
 
-  // Simulate rallies until game is won
+  // Simulate rallies until set is won
   const maxRallies = 100 // Safety limit to prevent infinite loops
   let rallyCount = 0
 
   while (rallyCount < maxRallies) {
     const isServe =
-      currentState.currentGameScore[0] + currentState.currentGameScore[1] === 0 ||
-      (currentState.currentGameScore[0] + currentState.currentGameScore[1]) % 2 === 0
+      currentState.currentSetScore[0] + currentState.currentSetScore[1] === 0 ||
+      (currentState.currentSetScore[0] + currentState.currentSetScore[1]) % 2 === 0
 
     const rally = simulateRally(
       player1,
@@ -74,28 +75,28 @@ function simulateGame(player1: Player, player2: Player): [number, number] {
       isServe
     )
 
-    // Update game score
-    const newGameScore = [...currentState.currentGameScore]
-    newGameScore[rally.winner]++
+    // Update set score (points in current set)
+    const newSetScore = [...currentState.currentSetScore]
+    newSetScore[rally.winner]++
 
-    // Check if game is won (first to 11, win by 2, or first to 15)
-    const winnerScore = newGameScore[rally.winner]
-    const loserScore = newGameScore[1 - rally.winner]
+    // Check if set is won (first to 11, win by 2, or first to 15)
+    const winnerScore = newSetScore[rally.winner]
+    const loserScore = newSetScore[1 - rally.winner]
 
     if (winnerScore >= 11) {
       const lead = winnerScore - loserScore
       if (lead >= 2 || winnerScore >= 15) {
-        // Game won
-        return [newGameScore[0], newGameScore[1]]
+        // Set won
+        return [newSetScore[0], newSetScore[1]]
       }
     }
 
     // Update state for next rally
     currentState = {
       ...currentState,
-      currentGameScore: newGameScore,
+      currentSetScore: newSetScore,
       servingPlayer:
-        (newGameScore[0] + newGameScore[1]) % 2 === 0
+        (newSetScore[0] + newSetScore[1]) % 2 === 0
           ? 1 - currentState.servingPlayer
           : currentState.servingPlayer,
       playerPositions: rally.newPositions
@@ -104,7 +105,7 @@ function simulateGame(player1: Player, player2: Player): [number, number] {
   }
 
   // Fallback: return current score if max rallies reached (shouldn't happen)
-  return [currentState.currentGameScore[0], currentState.currentGameScore[1]]
+  return [currentState.currentSetScore[0], currentState.currentSetScore[1]]
 }
 
 /**
