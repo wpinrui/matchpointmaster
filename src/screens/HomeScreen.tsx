@@ -87,10 +87,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   const handleEmailClick = (email: Email) => {
     // Store the email ID in sessionStorage so EmailScreen can open it directly
+    // EmailScreen will handle marking it as read when it's actually viewed
     sessionStorage.setItem('selectedEmailId', email.id)
-    if (!email.read) {
-      markEmailAsRead(email.id)
-    }
     changeScreen(Screens.EMAIL)
   }
 

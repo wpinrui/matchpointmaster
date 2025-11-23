@@ -18,17 +18,26 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     return [...emails].sort((a, b) => b.timestamp - a.timestamp)
   }, [emails])
 
-  // Initialize with oldest unread email, or newest email if all are read
-  // Also check if an email ID was passed from navigation (e.g., clicking email card on home screen)
-  const getInitialEmailId = () => {
-    // Check if an email ID was passed from navigation
+  // Read navigation email ID once and store it (before useState, so it's available for both useState and useEffect)
+  const getNavigationEmailId = (): string | null => {
     const passedEmailId = sessionStorage.getItem('selectedEmailId')
     if (passedEmailId) {
-      sessionStorage.removeItem('selectedEmailId') // Clear it after reading
+      sessionStorage.removeItem('selectedEmailId')
       const emailExists = emails.find((e) => e.id === passedEmailId)
       if (emailExists) {
         return passedEmailId
       }
+    }
+    return null
+  }
+
+  // Store navigation email ID in a ref so it persists across renders
+  const navigationEmailIdRef = React.useRef<string | null>(getNavigationEmailId())
+
+  const [selectedEmailId, setSelectedEmailId] = useState<string | null>(() => {
+    // First, check if an email ID was passed from navigation
+    if (navigationEmailIdRef.current) {
+      return navigationEmailIdRef.current
     }
 
     // Otherwise, default to oldest unread email, or newest email if all are read
@@ -38,19 +47,26 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     }
     const sorted = [...emails].sort((a, b) => b.timestamp - a.timestamp)
     return sorted.length > 0 ? sorted[0].id : null
-  }
+  })
 
-  const [selectedEmailId, setSelectedEmailId] = useState<string | null>(getInitialEmailId)
-
-  // Mark initial email as read when component mounts if it was passed from navigation
+  // Mark initial email as read ONLY if it was passed from navigation (on mount only)
+  // Don't mark default-selected emails as read automatically - user must click them
   React.useEffect(() => {
-    if (selectedEmailId) {
+    // Only mark as read if:
+    // 1. An email was passed from navigation
+    // 2. The selected email matches the navigation email
+    // 3. The email hasn't been marked as read yet (HomeScreen might have already marked it)
+    if (
+      navigationEmailIdRef.current &&
+      selectedEmailId === navigationEmailIdRef.current
+    ) {
       const email = emails.find((e) => e.id === selectedEmailId)
       if (email && !email.read) {
         markEmailAsRead(selectedEmailId)
       }
     }
-  }, [selectedEmailId, emails, markEmailAsRead])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount
 
   const selectedEmail = useMemo(() => {
     return emails.find((e) => e.id === selectedEmailId) || null
