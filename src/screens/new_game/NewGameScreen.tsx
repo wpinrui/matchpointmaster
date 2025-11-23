@@ -297,22 +297,47 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   return (
     <div
-      style={CommonStyles.containerStyle}
+      style={{
+        ...CommonStyles.containerStyle,
+        height: '100vh',
+        minHeight: '100vh',
+        maxHeight: '100vh',
+        overflow: 'hidden',
+        padding: theme.spacing.lg
+      }}
       className="d-flex justify-content-center align-items-center"
     >
       <img
         src={BackgroundImage}
         alt="Background image"
-        className="position-absolute w-100 h-100"
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0
+        }}
       />
-      <div style={CommonStyles.blurStyle} className="position-absolute w-100 h-100" />
-      <div style={CommonStyles.dialogStyle} className="rounded p-4 position-relative">
+      <div style={CommonStyles.blurStyle} />
+      <div
+        style={{
+          ...CommonStyles.dialogStyle,
+          maxHeight: 'calc(100vh - 2rem)',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: theme.spacing.xl
+            marginBottom: theme.spacing.xl,
+            flexShrink: 0
           }}
         >
           <h1
@@ -340,32 +365,35 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             style={{
               marginLeft: theme.spacing.md,
               fontSize: theme.typography.fontSize.sm,
-              padding: `${theme.spacing.xs} ${theme.spacing.sm}`
+              padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+              flexShrink: 0
             }}
           >
             🐛 Debug Fill
           </GameButton>
         </div>
-        {step === Step.Manager ? (
-          <ManagerForm
-            data={managerData}
-            onChange={handleManagerDataChange}
-            onNext={handleNextStep}
-            onCancel={() => changeScreen(Screens.SAVE_MANAGER)}
-            errors={managerErrors}
-          />
-        ) : (
-          <SchoolForm
-            data={schoolData}
-            onChange={handleSchoolDataChange}
-            onStartGame={handleStartGame}
-            onBack={() => {
-              setStep(Step.Manager)
-              setSchoolErrors({}) // Clear errors when going back
-            }}
-            errors={schoolErrors}
-          />
-        )}
+        <div style={{ flex: 1, minHeight: 0 }}>
+          {step === Step.Manager ? (
+            <ManagerForm
+              data={managerData}
+              onChange={handleManagerDataChange}
+              onNext={handleNextStep}
+              onCancel={() => changeScreen(Screens.SAVE_MANAGER)}
+              errors={managerErrors}
+            />
+          ) : (
+            <SchoolForm
+              data={schoolData}
+              onChange={handleSchoolDataChange}
+              onStartGame={handleStartGame}
+              onBack={() => {
+                setStep(Step.Manager)
+                setSchoolErrors({}) // Clear errors when going back
+              }}
+              errors={schoolErrors}
+            />
+          )}
+        </div>
       </div>
     </div>
   )
