@@ -3,9 +3,9 @@ import GameButton from '../components/buttons/GameButton'
 import GameCard from '../components/cards/GameCard'
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
 import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
-import { EmailCard } from '../components/emails/EmailCard'
+import { EmailPreviewSection } from '../components/home/EmailPreviewSection'
+import { SeasonTimelineSection } from '../components/home/SeasonTimelineSection'
 import { PlayerInsightsCard } from '../components/home/PlayerInsightsCard'
-import { TimelineItem } from '../components/home/TimelineItem'
 import { TopProspectsCard } from '../components/home/TopProspectsCard'
 import { TrainingInsightsCard } from '../components/home/TrainingInsightsCard'
 import { TrainingProgressCard } from '../components/home/TrainingProgressCard'
@@ -321,132 +321,13 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         }}
       >
         {/* Left Column - Email Preview (moved to left, widened) */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.lg,
-            overflow: 'hidden',
-            borderRight: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
-            paddingRight: theme.spacing.lg
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-          >
-            <h2
-              style={{
-                fontFamily: theme.typography.fontFamily.heading,
-                fontSize: theme.typography.fontSize['2xl'],
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                margin: 0
-              }}
-            >
-              Inbox
-              {unreadEmails.length > 0 && (
-                <span
-                  style={{
-                    marginLeft: theme.spacing.sm,
-                    fontSize: theme.typography.fontSize.base,
-                    color: theme.colors.primary.main,
-                    fontWeight: theme.typography.fontWeight.bold
-                  }}
-                >
-                  ({unreadEmails.length})
-                </span>
-              )}
-            </h2>
-            <GameButton
-              variant="secondary"
-              size="sm"
-              onClick={() => changeScreen(Screens.EMAIL)}
-              type="button"
-            >
-              View All
-            </GameButton>
-          </div>
-
-          {unreadEmails.length > 0 ? (
-            <div
-              style={{
-                overflowY: 'auto',
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: theme.spacing.sm
-              }}
-            >
-              {unreadEmails.slice(0, 5).map((email) => (
-                <EmailCard
-                  key={email.id}
-                  email={email}
-                  onClick={() => handleEmailClick(email)}
-                  currentSeasonYear={season.year}
-                  currentSeasonMonth={season.month}
-                />
-              ))}
-              {unreadEmails.length > 5 && (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: theme.spacing.md,
-                    color: theme.colors.text.secondary,
-                    fontSize: theme.typography.fontSize.sm
-                  }}
-                >
-                  +{unreadEmails.length - 5} more unread email
-                  {unreadEmails.length - 5 !== 1 ? 's' : ''}
-                </div>
-              )}
-            </div>
-          ) : (
-            <GameCard
-              style={{
-                padding: theme.spacing.xl,
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <p
-                style={{
-                  fontSize: theme.typography.fontSize.base,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.md
-                }}
-              >
-                No unread emails
-              </p>
-              <p
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  margin: 0,
-                  marginBottom: theme.spacing.lg
-                }}
-              >
-                Check your inbox for updates about the game world, tournaments, and
-                important announcements.
-              </p>
-              <GameButton
-                variant="primary"
-                size="sm"
-                onClick={() => changeScreen(Screens.EMAIL)}
-                type="button"
-              >
-                Open Inbox
-              </GameButton>
-            </GameCard>
-          )}
-        </div>
+        <EmailPreviewSection
+          unreadEmails={unreadEmails}
+          currentSeasonYear={season.year}
+          currentSeasonMonth={season.month}
+          onEmailClick={handleEmailClick}
+          onChangeScreen={changeScreen}
+        />
 
         {/* Right Column - Main Content Cards */}
         <div
@@ -545,103 +426,12 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             )}
 
             {/* Season Timeline Card - Always visible, narrower */}
-            <GameCard
-              style={{
-                padding: theme.spacing.lg,
-                display: 'flex',
-                flexDirection: 'column',
-                maxWidth: isDraftPhase || isTrainingPhase ? 'none' : '400px',
-                height: '100%',
-                maxHeight: '100%',
-                overflow: 'hidden'
-              }}
-            >
-              <h2
-                style={{
-                  fontFamily: theme.typography.fontFamily.heading,
-                  fontSize: theme.typography.fontSize.xl,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.text.primary,
-                  marginBottom: theme.spacing.md,
-                  marginTop: 0,
-                  flexShrink: 0
-                }}
-              >
-                Season Timeline
-              </h2>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: theme.spacing.sm,
-                  flex: 1,
-                  overflow: 'auto',
-                  minHeight: 0
-                }}
-              >
-                <TimelineItem
-                  month={1}
-                  label="Player Draft"
-                  currentMonth={season.month}
-                  completed={draftCompleted}
-                />
-                <TimelineItem
-                  month={2}
-                  label="Training Phase"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={3}
-                  label="Training Phase"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={4}
-                  label="Training Phase"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={5}
-                  label="Intra-Club Round-Robin"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={6}
-                  label="Zonal School Tournament"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={7}
-                  label="National Championships"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={8}
-                  label="Training Phase"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={9}
-                  label="Training Phase"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={10}
-                  label="Training Phase"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={11}
-                  label="National Singles Tournament"
-                  currentMonth={season.month}
-                />
-                <TimelineItem
-                  month={12}
-                  label="Graduation & Celebrations"
-                  currentMonth={season.month}
-                />
-              </div>
-            </GameCard>
+            <SeasonTimelineSection
+              currentMonth={season.month}
+              draftCompleted={draftCompleted}
+              isDraftPhase={isDraftPhase}
+              isTrainingPhase={isTrainingPhase}
+            />
           </div>
         </div>
       </div>
