@@ -25,7 +25,8 @@ export const MatchLog: React.FC<MatchLogProps> = ({ logEvents }) => {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        minHeight: 0
+        minHeight: 0,
+        height: '100%'
       }}
     >
       <div
@@ -36,11 +37,23 @@ export const MatchLog: React.FC<MatchLogProps> = ({ logEvents }) => {
           padding: theme.spacing.md,
           fontFamily: theme.typography.fontFamily.primary,
           fontSize: theme.typography.fontSize.sm,
-          color: theme.colors.text.secondary
+          color: theme.colors.text.secondary,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100%'
         }}
       >
         {logEvents.length === 0 ? (
-          <div style={{ color: theme.colors.text.light, fontStyle: 'italic' }}>
+          <div
+            style={{
+              color: theme.colors.text.light,
+              fontStyle: 'italic',
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
             Match log will appear here...
           </div>
         ) : (

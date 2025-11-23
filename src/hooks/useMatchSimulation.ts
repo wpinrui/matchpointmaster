@@ -222,9 +222,177 @@ export function useMatchSimulation({
     sessionStorage.removeItem(MATCH_LOG_STORAGE_KEY)
   }, [player1, player2])
 
+  // Helper function to update match state after a rally
+  const updateMatchStateAfterRally = useCallback(
+    (
+      currentState: MatchState,
+      rally: { winner: number; events: RallyEvent[]; newPositions: [any, any] }
+    ): MatchState => {
+      const newSetScore = [...currentState.currentSetScore]
+      newSetScore[rally.winner]++
+
+      // Check if set is won
+      let setWon = false
+      let setWinner: number | null = null
+
+      const player0Score = newSetScore[0]
+      const player1Score = newSetScore[1]
+
+      if (player0Score >= 11 || player1Score >= 11) {
+        const scoreDiff = Math.abs(player0Score - player1Score)
+        const maxScore = Math.max(player0Score, player1Score)
+        const leadingPlayer = player0Score > player1Score ? 0 : 1
+
+        if (maxScore >= 15 || (maxScore >= 11 && scoreDiff >= 2)) {
+          setWon = true
+          setWinner = leadingPlayer
+        }
+      }
+
+      const newSetScores = [...currentState.setScores]
+      const newSets = [...currentState.sets]
+      let newCurrentSet = currentState.currentSet
+      let newServingPlayer = currentState.servingPlayer
+      let newIsComplete: boolean = currentState.isComplete
+      let newWinner: number | null = currentState.winner
+
+      if (setWon && setWinner !== null) {
+        newSetScores.push([...newSetScore])
+        newSets[setWinner]++
+
+        if (newSets[setWinner] >= 3) {
+          newIsComplete = true
+          newWinner = setWinner
+          if (onComplete) onComplete()
+        } else {
+          newCurrentSet++
+        }
+
+        newSetScore[0] = 0
+        newSetScore[1] = 0
+        newServingPlayer = 1 - newServingPlayer
+      } else {
+        const totalPoints = newSetScore[0] + newSetScore[1]
+        if (totalPoints > 0 && totalPoints % 2 === 0) {
+          newServingPlayer = 1 - newServingPlayer
+        }
+      }
+
+      return {
+        ...currentState,
+        sets: newSets,
+        currentSet: newCurrentSet,
+        setScores: newSetScores,
+        currentSetScore: newSetScore,
+        servingPlayer: newServingPlayer,
+        playerPositions: rally.newPositions,
+        rallyEvents: [...currentState.rallyEvents, ...rally.events],
+        isComplete: newIsComplete,
+        winner: newWinner
+      }
+    },
+    [onComplete]
+  )
+
+  const skipToNextPoint = useCallback(() => {
+    if (!matchState || matchState.isComplete || !player1 || !player2) return
+
+    setMatchState((currentState) => {
+      if (!currentState || currentState.isComplete || !player1 || !player2)
+        return currentState
+
+      const isServe =
+        currentState.currentSetScore[0] + currentState.currentSetScore[1] === 0
+      const rally = simulateRally(
+        player1,
+        player2,
+        currentState.servingPlayer,
+        currentState.playerPositions,
+        isServe
+      )
+
+      setLogEvents((prev) => [...prev, ...rally.events])
+
+      return updateMatchStateAfterRally(currentState, rally)
+    })
+  }, [matchState, player1, player2, updateMatchStateAfterRally])
+
+  const skipToNextService = useCallback(() => {
+    if (!matchState || matchState.isComplete || !player1 || !player2) return
+
+    setMatchState((currentState) => {
+      if (!currentState || currentState.isComplete || !player1 || !player2)
+        return currentState
+
+      let state = { ...currentState }
+      const initialServingPlayer = state.servingPlayer
+      const initialTotalPoints = state.currentSetScore[0] + state.currentSetScore[1]
+
+      // Simulate rallies until service changes (every 2 points) or set ends
+      while (!state.isComplete && state.servingPlayer === initialServingPlayer) {
+        const isServe = state.currentSetScore[0] + state.currentSetScore[1] === 0
+        const rally = simulateRally(
+          player1,
+          player2,
+          state.servingPlayer,
+          state.playerPositions,
+          isServe
+        )
+
+        setLogEvents((prev) => [...prev, ...rally.events])
+        state = updateMatchStateAfterRally(state, rally)
+
+        // Check if service changed (every 2 points) or if we're in a new set
+        const newTotalPoints = state.currentSetScore[0] + state.currentSetScore[1]
+        if (
+          newTotalPoints === 0 ||
+          (newTotalPoints > initialTotalPoints &&
+            (newTotalPoints - initialTotalPoints) % 2 === 0 &&
+            newTotalPoints > 0)
+        ) {
+          break
+        }
+      }
+
+      return state
+    })
+  }, [matchState, player1, player2, updateMatchStateAfterRally])
+
+  const skipToEndOfSet = useCallback(() => {
+    if (!matchState || matchState.isComplete || !player1 || !player2) return
+
+    setMatchState((currentState) => {
+      if (!currentState || currentState.isComplete || !player1 || !player2)
+        return currentState
+
+      let state = { ...currentState }
+      const initialSet = state.currentSet
+
+      // Simulate rallies until set ends
+      while (!state.isComplete && state.currentSet === initialSet) {
+        const isServe = state.currentSetScore[0] + state.currentSetScore[1] === 0
+        const rally = simulateRally(
+          player1,
+          player2,
+          state.servingPlayer,
+          state.playerPositions,
+          isServe
+        )
+
+        setLogEvents((prev) => [...prev, ...rally.events])
+        state = updateMatchStateAfterRally(state, rally)
+      }
+
+      return state
+    })
+  }, [matchState, player1, player2, updateMatchStateAfterRally])
+
   return {
     matchState,
     logEvents,
-    resetMatch
+    resetMatch,
+    skipToNextPoint,
+    skipToNextService,
+    skipToEndOfSet
   }
 }

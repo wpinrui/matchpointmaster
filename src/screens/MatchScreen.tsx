@@ -1,7 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import SkipNextIcon from '@mui/icons-material/SkipNext'
+import FastForwardIcon from '@mui/icons-material/FastForward'
+import FlagIcon from '@mui/icons-material/Flag'
 import GameButton from '../components/buttons/GameButton'
 import { MatchLog } from '../components/match/MatchLog'
 import { Scoreboard } from '../components/match/Scoreboard'
+import { CommentaryBox } from '../components/match/CommentaryBox'
+import { MatchInsights } from '../components/match/MatchInsights'
 import { PlayerCard } from '../components/players/PlayerCard'
 import { useMatchSimulation } from '../hooks/useMatchSimulation'
 import { ScreenProps, Screens } from '../screen_manager/screens'
@@ -116,19 +121,20 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   )
 
   // Use match simulation hook
-  const { matchState, logEvents } = useMatchSimulation({
-    player1: matchPlayers?.[0],
-    player2: matchPlayers?.[1],
-    isPlaying,
-    speed,
-    onComplete: () => {
-      setIsPlaying(false)
-      // Save result when match completes
-      if (matchState) {
-        saveMatchResult(matchState)
+  const { matchState, logEvents, skipToNextPoint, skipToNextService, skipToEndOfSet } =
+    useMatchSimulation({
+      player1: matchPlayers?.[0],
+      player2: matchPlayers?.[1],
+      isPlaying,
+      speed,
+      onComplete: () => {
+        setIsPlaying(false)
+        // Save result when match completes
+        if (matchState) {
+          saveMatchResult(matchState)
+        }
       }
-    }
-  })
+    })
 
   // Save result when match state becomes complete (even if onComplete didn't fire)
   useEffect(() => {
@@ -289,7 +295,49 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             >
               ⏩ Speed Up ({speed}x)
             </GameButton>
+            <GameButton
+              variant="secondary"
+              onClick={skipToNextPoint}
+              size="md"
+              disabled={matchState.isComplete || isPlaying}
+            >
+              <span
+                style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}
+              >
+                <SkipNextIcon style={{ fontSize: '18px' }} />
+                <span>Next Point</span>
+              </span>
+            </GameButton>
+            <GameButton
+              variant="secondary"
+              onClick={skipToNextService}
+              size="md"
+              disabled={matchState.isComplete || isPlaying}
+            >
+              <span
+                style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}
+              >
+                <FastForwardIcon style={{ fontSize: '18px' }} />
+                <span>Next Service</span>
+              </span>
+            </GameButton>
+            <GameButton
+              variant="secondary"
+              onClick={skipToEndOfSet}
+              size="md"
+              disabled={matchState.isComplete || isPlaying}
+            >
+              <span
+                style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}
+              >
+                <FlagIcon style={{ fontSize: '18px' }} />
+                <span>End of Set</span>
+              </span>
+            </GameButton>
           </div>
+
+          {/* Commentary Box */}
+          <CommentaryBox logEvents={logEvents} />
         </div>
 
         {/* Player 2 Card */}
@@ -298,8 +346,51 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         </div>
       </div>
 
-      {/* Output Log */}
-      <MatchLog logEvents={logEvents} />
+      {/* Bottom Section: Log and Insights */}
+      <div
+        style={{
+          display: 'flex',
+          gap: theme.spacing.lg,
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden'
+        }}
+      >
+        {/* Match Log - Narrower */}
+        <div
+          style={{
+            flex: '0 0 300px',
+            minWidth: 0,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%'
+          }}
+        >
+          <MatchLog logEvents={logEvents} />
+        </div>
+
+        {/* Match Insights */}
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%'
+          }}
+        >
+          {matchPlayers && (
+            <MatchInsights
+              matchState={matchState}
+              logEvents={logEvents}
+              player1={matchPlayers[0]}
+              player2={matchPlayers[1]}
+            />
+          )}
+        </div>
+      </div>
     </div>
   )
 }
