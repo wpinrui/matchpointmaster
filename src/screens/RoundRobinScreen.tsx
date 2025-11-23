@@ -450,7 +450,8 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       {(!currentTeamResults.tournamentStarted || currentView === 'ranking') && (
         <GameCard
           style={{
-            padding: theme.spacing.md
+            padding: theme.spacing.md,
+            marginBottom: theme.spacing.lg
           }}
         >
           <div
@@ -791,7 +792,8 @@ const MatchSelectionView: React.FC<MatchSelectionViewProps> = ({
     <>
       <GameCard
         style={{
-          padding: theme.spacing.lg
+          padding: theme.spacing.lg,
+          marginBottom: theme.spacing.lg
         }}
       >
         <h2
@@ -851,7 +853,8 @@ const MatchSelectionView: React.FC<MatchSelectionViewProps> = ({
               key={matchup.matchKey}
               style={{
                 padding: theme.spacing.md,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                marginBottom: theme.spacing.md
               }}
               onClick={() => handleToggleMatch(matchup.matchKey)}
             >
