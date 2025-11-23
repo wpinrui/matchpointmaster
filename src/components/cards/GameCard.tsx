@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react'
-import { theme } from '../../theme/theme'
+import { StyledCard, StyledHeading } from '../../styles'
 
 interface GameCardProps {
   children: React.ReactNode
@@ -18,34 +18,13 @@ const GameCard: React.FC<GameCardProps> = ({
   style,
   onClick
 }) => {
-  const cardStyle: CSSProperties = {
-    background: style?.background || theme.gradients.card,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.xl,
-    border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`,
-    transition: `all ${theme.transitions.normal}`,
-    ...style
-  }
-
   return (
-    <div
-      className={`game-card ${className}`}
-      style={cardStyle}
-      onMouseEnter={(e) => {
-        if (glow) {
-          e.currentTarget.style.borderColor = theme.colors.border.selection
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (glow) {
-          e.currentTarget.style.borderColor = theme.colors.border.default
-        }
-      }}
-      onClick={(e) => {
-        if (onClick) {
-          onClick(e)
-        }
-      }}
+    <StyledCard
+      glow={glow}
+      clickable={!!onClick}
+      onClick={onClick}
+      className={className}
+      style={style}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={(e) => {
@@ -55,22 +34,9 @@ const GameCard: React.FC<GameCardProps> = ({
         }
       }}
     >
-      {title && (
-        <h3
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize['2xl'],
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            marginBottom: theme.spacing.lg,
-            textAlign: 'left'
-          }}
-        >
-          {title}
-        </h3>
-      )}
+      {title && <StyledHeading size="h4">{title}</StyledHeading>}
       {children}
-    </div>
+    </StyledCard>
   )
 }
 

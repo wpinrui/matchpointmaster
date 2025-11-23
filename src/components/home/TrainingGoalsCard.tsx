@@ -10,6 +10,13 @@ import { theme } from '../../theme/theme'
 import { TrainingGoal } from '../../services/savegame/types'
 import { MONTH_NAMES } from '../../utils/constants'
 import { useTrainingGoals } from '../../hooks/useTrainingGoals'
+import {
+  StyledHeading,
+  StyledText,
+  StyledFlex,
+  StyledProgressBarContainer,
+  StyledProgressBarFill
+} from '../../styles'
 
 interface TrainingGoalsCardProps {
   changeScreen?: (screen: any) => void
@@ -31,38 +38,23 @@ export const TrainingGoalsCard: React.FC<TrainingGoalsCardProps> = ({ changeScre
   if (goalsWithProgress.length === 0 && !showAddGoal) {
     return (
       <GameCard
-        style={{
-          padding: theme.spacing.lg,
-          display: 'flex',
-          flexDirection: 'column'
-        }}
+        style={{ padding: theme.spacing.lg, display: 'flex', flexDirection: 'column' }}
       >
-        <h2
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            marginBottom: theme.spacing.md,
-            marginTop: 0
-          }}
-        >
+        <StyledHeading size="h5" margin={`0 0 ${theme.spacing.md} 0`}>
           Training Goals
-        </h2>
-        <p
-          style={{
-            fontSize: theme.typography.fontSize.base,
-            color: theme.colors.text.secondary,
-            marginBottom: theme.spacing.md
-          }}
+        </StyledHeading>
+        <StyledText
+          color="secondary"
+          size="base"
+          style={{ marginBottom: theme.spacing.md }}
         >
           Set training objectives to track your team&apos;s progress and stay motivated.
-        </p>
+        </StyledText>
         <GameButton
           variant="primary"
           size="sm"
           onClick={() => setShowAddGoal(true)}
-          style={{ width: '100%' }}
+          fullWidth
         >
           Set Training Goals
         </GameButton>
@@ -72,31 +64,16 @@ export const TrainingGoalsCard: React.FC<TrainingGoalsCardProps> = ({ changeScre
 
   return (
     <GameCard
-      style={{
-        padding: theme.spacing.lg,
-        display: 'flex',
-        flexDirection: 'column'
-      }}
+      style={{ padding: theme.spacing.lg, display: 'flex', flexDirection: 'column' }}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: theme.spacing.md
-        }}
+      <StyledFlex
+        justify="space-between"
+        align="center"
+        style={{ marginBottom: theme.spacing.md }}
       >
-        <h2
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            margin: 0
-          }}
-        >
+        <StyledHeading size="h5" margin="0">
           Training Goals
-        </h2>
+        </StyledHeading>
         <GameButton
           variant="secondary"
           size="sm"
@@ -104,17 +81,14 @@ export const TrainingGoalsCard: React.FC<TrainingGoalsCardProps> = ({ changeScre
         >
           {showAddGoal ? 'Cancel' : 'Add Goal'}
         </GameButton>
-      </div>
+      </StyledFlex>
 
       {/* Active Goals */}
       {goalsWithProgress.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.sm,
-            marginBottom: theme.spacing.md
-          }}
+        <StyledFlex
+          direction="column"
+          gap="sm"
+          style={{ marginBottom: theme.spacing.md }}
         >
           {goalsWithProgress.map((goal) => (
             <div
@@ -130,82 +104,46 @@ export const TrainingGoalsCard: React.FC<TrainingGoalsCardProps> = ({ changeScre
                 }`
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: theme.spacing.xs
-                }}
+              <StyledFlex
+                justify="space-between"
+                align="center"
+                style={{ marginBottom: theme.spacing.xs }}
               >
-                <strong
-                  style={{
-                    color: theme.colors.text.primary,
-                    fontSize: theme.typography.fontSize.sm
-                  }}
-                >
+                <StyledText size="sm" weight="bold" color="primary">
                   {getGoalDescription(goal)}
-                </strong>
+                </StyledText>
                 {goal.completed && (
-                  <span
-                    style={{
-                      fontSize: theme.typography.fontSize.xs,
-                      color: theme.colors.success.main,
-                      fontWeight: theme.typography.fontWeight.bold
-                    }}
+                  <StyledText
+                    size="xs"
+                    weight="bold"
+                    color="primary"
+                    style={{ color: theme.colors.success.main }}
                   >
                     ✓ Achieved
-                  </span>
+                  </StyledText>
                 )}
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: theme.typography.fontSize.sm,
-                    color: theme.colors.text.secondary
-                  }}
-                >
+              </StyledFlex>
+              <StyledFlex justify="space-between" align="center">
+                <StyledText size="sm" color="secondary">
                   Progress: {goal.current} / {goal.target}
-                </span>
-                <div
-                  style={{
-                    width: '100px',
-                    height: '8px',
-                    background: theme.colors.border.default,
-                    borderRadius: theme.borderRadius.sm,
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${Math.min(100, (goal.current / goal.target) * 100)}%`,
-                      height: '100%',
-                      background: goal.completed
-                        ? theme.colors.success.main
-                        : theme.colors.primary.main,
-                      transition: 'width 0.3s'
-                    }}
+                </StyledText>
+                <StyledProgressBarContainer>
+                  <StyledProgressBarFill
+                    percentage={(goal.current / goal.target) * 100}
+                    completed={goal.completed}
                   />
-                </div>
-              </div>
-              <div
-                style={{
-                  fontSize: theme.typography.fontSize.xs,
-                  color: theme.colors.text.secondary,
-                  marginTop: theme.spacing.xs
-                }}
+                </StyledProgressBarContainer>
+              </StyledFlex>
+              <StyledText
+                size="xs"
+                color="secondary"
+                style={{ marginTop: theme.spacing.xs }}
               >
                 Target: {MONTH_NAMES[goal.month - 1]} {goal.year}
-              </div>
+              </StyledText>
             </div>
           ))}
-        </div>
+        </StyledFlex>
       )}
 
       {/* Add Goal Form */}
@@ -218,23 +156,15 @@ export const TrainingGoalsCard: React.FC<TrainingGoalsCardProps> = ({ changeScre
             marginTop: theme.spacing.md
           }}
         >
-          <p
-            style={{
-              fontSize: theme.typography.fontSize.sm,
-              color: theme.colors.text.secondary,
-              marginBottom: theme.spacing.sm
-            }}
+          <StyledText
+            size="sm"
+            color="secondary"
+            style={{ marginBottom: theme.spacing.sm }}
           >
             Suggested Goals:
-          </p>
+          </StyledText>
           {suggestions.length > 0 ? (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: theme.spacing.xs
-              }}
-            >
+            <StyledFlex direction="column" gap="xs">
               {suggestions.map((goal) => (
                 <div
                   key={goal.id}
@@ -245,36 +175,23 @@ export const TrainingGoalsCard: React.FC<TrainingGoalsCardProps> = ({ changeScre
                     border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: theme.typography.fontSize.sm,
-                      color: theme.colors.text.primary,
-                      marginBottom: theme.spacing.xs
-                    }}
+                  <StyledText
+                    size="sm"
+                    color="primary"
+                    style={{ marginBottom: theme.spacing.xs }}
                   >
                     {getGoalDescription(goal)}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: theme.typography.fontSize.xs,
-                      color: theme.colors.text.secondary
-                    }}
-                  >
+                  </StyledText>
+                  <StyledText size="xs" color="secondary">
                     Target: {goal.target} by {MONTH_NAMES[goal.month - 1]} {goal.year}
-                  </div>
+                  </StyledText>
                 </div>
               ))}
-            </div>
+            </StyledFlex>
           ) : (
-            <p
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary,
-                fontStyle: 'italic'
-              }}
-            >
+            <StyledText size="sm" color="secondary" style={{ fontStyle: 'italic' }}>
               No suggestions available. Set custom goals based on your team&apos;s needs.
-            </p>
+            </StyledText>
           )}
         </div>
       )}
