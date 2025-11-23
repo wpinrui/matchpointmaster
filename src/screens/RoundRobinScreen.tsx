@@ -238,6 +238,11 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     return generateOrderedMatchups(currentTeamResults.selectedPlayerIds)
   }, [currentTeamResults, eligiblePlayers.length])
 
+  // Get player map
+  const playerMap = useMemo(() => {
+    return new Map(players.map((p) => [p.id, p]))
+  }, [players])
+
   // Initialize team result if needed and recover missing matches
   useEffect(() => {
     if (!roundRobinData || eligiblePlayers.length < 2) return
@@ -368,11 +373,6 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     addEmail,
     updateAISchools
   ])
-
-  // Get player map
-  const playerMap = useMemo(() => {
-    return new Map(players.map((p) => [p.id, p]))
-  }, [players])
 
   if (!currentTeamResults || eligiblePlayers.length < 2) {
     return (
