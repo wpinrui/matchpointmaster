@@ -531,3 +531,141 @@ export const StyledProgressBarFill = styled.div<{
     completed ? theme.colors.success.main : theme.colors.primary.main};
   transition: width 0.3s;
 `
+
+// ============================================================================
+// Badge Components
+// ============================================================================
+
+interface RatingBadgeProps {
+  bgColor: string
+  borderColor: string
+  textColor: string
+}
+
+export const StyledRatingBadge = styled.div<RatingBadgeProps>`
+  position: absolute;
+  top: ${theme.spacing.sm};
+  left: ${theme.spacing.sm};
+  width: 50px;
+  height: 50px;
+  background: ${({ bgColor }) => bgColor};
+  border-radius: ${theme.borderRadius.md};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border: 2px solid ${({ borderColor }) => borderColor};
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+`
+
+export const StyledRatingBadgeText = styled.span<{ textColor: string }>`
+  font-size: ${theme.typography.fontSize.xl};
+  font-weight: ${theme.typography.fontWeight.extrabold};
+  color: ${({ textColor }) => textColor};
+  font-family: ${theme.typography.fontFamily.heading};
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+`
+
+// ============================================================================
+// Skill Bar Components
+// ============================================================================
+
+export const StyledSkillBarContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.spacing.xs};
+`
+
+export const StyledSkillBarLabel = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: ${theme.typography.fontSize.sm};
+`
+
+export const StyledSkillBarTrack = styled.div`
+  width: 100%;
+  height: 8px;
+  background-color: ${theme.colors.border.dark};
+  border-radius: ${theme.borderRadius.full};
+  overflow: hidden;
+`
+
+export const StyledSkillBarFill = styled.div<{ percentage: number; color: string }>`
+  width: ${({ percentage }) => Math.min(100, Math.max(0, percentage))}%;
+  height: 100%;
+  background-color: ${({ color }) => color};
+  border-radius: ${theme.borderRadius.full};
+  transition: width 0.3s ease;
+`
+
+// ============================================================================
+// Toggle Button Components
+// ============================================================================
+
+interface ToggleButtonProps {
+  active?: boolean
+}
+
+export const StyledToggleContainer = styled.div`
+  display: flex;
+  gap: ${theme.spacing.xs};
+  background: ${theme.colors.border.default}40;
+  padding: ${theme.spacing.xs};
+  border-radius: ${theme.borderRadius.sm};
+`
+
+export const StyledToggleButton = styled.button<ToggleButtonProps>`
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${theme.typography.fontWeight.medium};
+  color: ${({ active }) =>
+    active ? theme.colors.primary.main : theme.colors.text.secondary};
+  background: ${({ active }) =>
+    active ? theme.colors.background.primary : 'transparent'};
+  border: 1px solid
+    ${({ active }) => (active ? theme.colors.primary.main : theme.colors.border.default)};
+  border-radius: ${theme.borderRadius.sm};
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: ${theme.typography.fontFamily.primary};
+
+  &:hover:not(:disabled) {
+    border-color: ${({ active }) =>
+      active ? theme.colors.primary.main : theme.colors.border.hover};
+  }
+`
+
+// ============================================================================
+// Pagination Components
+// ============================================================================
+
+export const StyledPaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: ${theme.spacing.md};
+  border-top: ${theme.borderWidth.default} solid ${theme.colors.border.default};
+  flex-shrink: 0;
+`
+
+export const StyledPaginationButton = styled.button<{ disabled?: boolean }>`
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  font-size: ${theme.typography.fontSize.sm};
+  font-weight: ${theme.typography.fontWeight.medium};
+  color: ${({ disabled }) =>
+    disabled ? theme.colors.text.secondary : theme.colors.primary.main};
+  background: ${({ disabled }) =>
+    disabled ? theme.colors.border.default + '40' : theme.colors.primary.main + '20'};
+  border: 1px solid
+    ${({ disabled }) =>
+      disabled ? theme.colors.border.default : theme.colors.primary.main};
+  border-radius: ${theme.borderRadius.sm};
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  transition: all 0.2s;
+  font-family: ${theme.typography.fontFamily.primary};
+
+  &:hover:not(:disabled) {
+    border-color: ${theme.colors.primary.light};
+    background: ${theme.colors.primary.main + '30'};
+  }
+`

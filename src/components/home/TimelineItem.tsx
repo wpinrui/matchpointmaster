@@ -1,5 +1,6 @@
 import React from 'react'
 import { theme } from '../../theme/theme'
+import { StyledFlex, StyledText } from '../../styles'
 
 interface TimelineItemProps {
   month: number
@@ -18,11 +19,10 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   const isPast = month < currentMonth || completed
 
   return (
-    <div
+    <StyledFlex
+      align="center"
+      gap="md"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: theme.spacing.md,
         padding: theme.spacing.sm,
         borderRadius: theme.borderRadius.md,
         background: isCurrent
@@ -35,11 +35,11 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
           : 'none'
       }}
     >
-      <div
+      <StyledText
+        size="sm"
+        weight="semibold"
         style={{
           minWidth: '80px',
-          fontSize: theme.typography.fontSize.sm,
-          fontWeight: theme.typography.fontWeight.semibold,
           color: isCurrent
             ? theme.colors.primary.main
             : isPast
@@ -48,11 +48,11 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
         }}
       >
         Month {month}
-      </div>
-      <div
+      </StyledText>
+      <StyledText
+        size="base"
         style={{
           flex: 1,
-          fontSize: theme.typography.fontSize.base,
           color: isCurrent
             ? theme.colors.text.primary
             : isPast
@@ -63,29 +63,17 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
         }}
       >
         {label}
-      </div>
+      </StyledText>
       {isCurrent && (
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.sm,
-            color: theme.colors.primary.main,
-            fontWeight: theme.typography.fontWeight.bold
-          }}
-        >
+        <StyledText size="sm" weight="bold" style={{ color: theme.colors.primary.main }}>
           Current
-        </span>
+        </StyledText>
       )}
       {completed && month === currentMonth && (
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.sm,
-            color: theme.colors.success.main,
-            fontWeight: theme.typography.fontWeight.bold
-          }}
-        >
+        <StyledText size="sm" weight="bold" style={{ color: theme.colors.success.main }}>
           ✓ Completed
-        </span>
+        </StyledText>
       )}
-    </div>
+    </StyledFlex>
   )
 }

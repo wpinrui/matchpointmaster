@@ -9,6 +9,18 @@ import {
   getCardTier,
   getCardTierStyle
 } from '../../utils/cardTiers'
+import {
+  StyledFlex,
+  StyledGrid,
+  StyledHeading,
+  StyledText,
+  StyledRatingBadge,
+  StyledRatingBadgeText,
+  StyledSkillBarContainer,
+  StyledSkillBarLabel,
+  StyledSkillBarTrack,
+  StyledSkillBarFill
+} from '../../styles'
 
 interface PlayerCardProps {
   player: Player
@@ -26,35 +38,15 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
   return (
     <div style={{ position: 'relative' }}>
       {/* Overall Rating Badge - Top Left (FIFA style) */}
-      <div
-        style={{
-          position: 'absolute',
-          top: theme.spacing.sm,
-          left: theme.spacing.sm,
-          width: '50px',
-          height: '50px',
-          background: tierStyle.overallBg,
-          borderRadius: theme.borderRadius.md,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10,
-          border: `2px solid ${tierStyle.borderColor}`,
-          boxShadow: `0 2px 8px rgba(0, 0, 0, 0.5)`
-        }}
+      <StyledRatingBadge
+        bgColor={tierStyle.overallBg}
+        borderColor={tierStyle.borderColor}
+        textColor={tierStyle.overallText}
       >
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.extrabold,
-            color: tierStyle.overallText,
-            fontFamily: theme.typography.fontFamily.heading,
-            textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
-          }}
-        >
+        <StyledRatingBadgeText textColor={tierStyle.overallText}>
           {overall}
-        </span>
-      </div>
+        </StyledRatingBadgeText>
+      </StyledRatingBadge>
 
       <GameCard
         style={{
@@ -62,22 +54,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
           paddingTop: theme.spacing['2xl']
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: theme.spacing.md,
-            width: '100%'
-          }}
-        >
+        <StyledFlex direction="column" gap="md" style={{ width: '100%' }}>
           {/* Header with avatar and basic info */}
-          <div
-            style={{
-              display: 'flex',
-              gap: theme.spacing.md,
-              alignItems: 'center'
-            }}
-          >
+          <StyledFlex gap="md" align="center">
             {player.imagePath && (
               <img
                 src={player.imagePath}
@@ -92,52 +71,34 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
               />
             )}
             <div style={{ flex: 1 }}>
-              <h3
-                style={{
-                  fontFamily: theme.typography.fontFamily.heading,
-                  fontSize: theme.typography.fontSize.lg,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.text.primary,
-                  margin: 0,
-                  marginBottom: theme.spacing.xs
-                }}
-              >
+              <StyledHeading size="h6" margin={`0 0 ${theme.spacing.xs} 0`}>
                 {fullName}
-              </h3>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary,
-                  lineHeight: 1.3
-                }}
+              </StyledHeading>
+              <StyledFlex
+                direction="column"
+                style={{ fontSize: theme.typography.fontSize.sm, lineHeight: 1.3 }}
               >
-                <span
+                <StyledText
+                  size="sm"
+                  weight="semibold"
                   style={{
                     color:
                       player.gender === Gender.FEMALE
                         ? theme.colors.gender.female
-                        : theme.colors.gender.male,
-                    fontWeight: theme.typography.fontWeight.semibold
+                        : theme.colors.gender.male
                   }}
                 >
                   {player.gender}
-                </span>
-                <span>Secondary {player.year}</span>
-              </div>
+                </StyledText>
+                <StyledText size="sm" color="secondary">
+                  Secondary {player.year}
+                </StyledText>
+              </StyledFlex>
             </div>
-          </div>
+          </StyledFlex>
 
           {/* Skills Grid */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: theme.spacing.sm,
-              marginTop: theme.spacing.sm
-            }}
-          >
+          <StyledGrid columns={2} gap="sm" style={{ marginTop: theme.spacing.sm }}>
             <SkillBar label="Forehand" value={player.skills.forehand} />
             <SkillBar label="Backhand" value={player.skills.backhand} />
             <SkillBar label="Footwork" value={player.skills.footwork} />
@@ -146,47 +107,31 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
             <SkillBar label="Spin" value={player.skills.spin} />
             <SkillBar label="Placement" value={player.skills.placement} />
             <SkillBar label="Consistency" value={player.skills.consistency} />
-          </div>
+          </StyledGrid>
 
           {/* Equipment and Style */}
-          <div
+          <StyledFlex
+            direction="column"
+            gap="xs"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: theme.spacing.xs,
               marginTop: theme.spacing.sm,
               paddingTop: theme.spacing.sm,
               borderTop: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
             }}
           >
-            <div
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary
-              }}
-            >
+            <StyledText size="sm" color="secondary">
               <strong style={{ color: theme.colors.text.primary }}>Style:</strong>{' '}
               {player.playStyle}
-            </div>
-            <div
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary
-              }}
-            >
+            </StyledText>
+            <StyledText size="sm" color="secondary">
               <strong style={{ color: theme.colors.text.primary }}>Equipment:</strong>{' '}
               {player.gripStyle} • {player.forehandRubber} / {player.backhandRubber}
-            </div>
-            <div
-              style={{
-                fontSize: theme.typography.fontSize.sm,
-                color: theme.colors.text.secondary
-              }}
-            >
+            </StyledText>
+            <StyledText size="sm" color="secondary">
               <strong style={{ color: theme.colors.text.primary }}>Tendency:</strong>{' '}
               {player.forehandBackhandTendency} • {player.handedness} handed
-            </div>
-          </div>
+            </StyledText>
+          </StyledFlex>
 
           {/* Action Button */}
           {actionButton && (
@@ -200,7 +145,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({ player, actionButton }) 
               {actionButton}
             </div>
           )}
-        </div>
+        </StyledFlex>
       </GameCard>
     </div>
   )
@@ -217,49 +162,18 @@ const SkillBar: React.FC<SkillBarProps> = ({ label, value }) => {
   const color = getStatColor(percentage)
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: theme.spacing.xs
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          fontSize: theme.typography.fontSize.sm
-        }}
-      >
-        <span style={{ color: theme.colors.text.secondary }}>{label}</span>
-        <span
-          style={{
-            color: theme.colors.text.primary,
-            fontWeight: theme.typography.fontWeight.medium
-          }}
-        >
+    <StyledSkillBarContainer>
+      <StyledSkillBarLabel>
+        <StyledText size="sm" color="secondary">
+          {label}
+        </StyledText>
+        <StyledText size="sm" weight="medium" color="primary">
           {Math.floor(value)}
-        </span>
-      </div>
-      <div
-        style={{
-          width: '100%',
-          height: '8px',
-          backgroundColor: theme.colors.border.dark,
-          borderRadius: theme.borderRadius.full,
-          overflow: 'hidden'
-        }}
-      >
-        <div
-          style={{
-            width: `${percentage}%`,
-            height: '100%',
-            backgroundColor: color,
-            borderRadius: theme.borderRadius.full,
-            transition: 'width 0.3s ease'
-          }}
-        />
-      </div>
-    </div>
+        </StyledText>
+      </StyledSkillBarLabel>
+      <StyledSkillBarTrack>
+        <StyledSkillBarFill percentage={percentage} color={color} />
+      </StyledSkillBarTrack>
+    </StyledSkillBarContainer>
   )
 }

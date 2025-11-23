@@ -2,6 +2,7 @@ import React from 'react'
 import { theme } from '../../theme/theme'
 import { TrainingPlan } from '../../services/savegame/types'
 import { getTrainingFocusDisplayName } from '../../utils/trainingPlans'
+import { StyledFlex, StyledText } from '../../styles'
 
 interface TeamImprovementSummaryProps {
   teamTotalImprovement: number
@@ -24,58 +25,30 @@ export const TeamImprovementSummary: React.FC<TeamImprovementSummaryProps> = ({
         border: `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: theme.spacing.xs
-        }}
+      <StyledFlex
+        justify="space-between"
+        align="center"
+        style={{ marginBottom: theme.spacing.xs }}
       >
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.base,
-            color: theme.colors.text.secondary
-          }}
-        >
+        <StyledText size="base" color="secondary">
           Team Total Improvement:
-        </span>
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.xl,
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.success.main
-          }}
-        >
+        </StyledText>
+        <StyledText size="xl" weight="bold" style={{ color: theme.colors.success.main }}>
           +{teamTotalImprovement}
-        </span>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: theme.spacing.xs
-        }}
+        </StyledText>
+      </StyledFlex>
+      <StyledFlex
+        justify="space-between"
+        align="center"
+        style={{ marginBottom: theme.spacing.xs }}
       >
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.base,
-            color: theme.colors.text.secondary
-          }}
-        >
+        <StyledText size="base" color="secondary">
           Average per Player:
-        </span>
-        <span
-          style={{
-            fontSize: theme.typography.fontSize.base,
-            fontWeight: theme.typography.fontWeight.medium,
-            color: theme.colors.text.primary
-          }}
-        >
+        </StyledText>
+        <StyledText size="base" weight="medium" color="primary">
           +{teamAvgImprovement} per skill
-        </span>
-      </div>
+        </StyledText>
+      </StyledFlex>
       {/* Training Feedback */}
       {trainingPlan?.teamFocus && (
         <div

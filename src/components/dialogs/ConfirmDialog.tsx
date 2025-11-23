@@ -2,6 +2,7 @@ import React from 'react'
 import { Modal } from 'react-bootstrap'
 import { theme } from '../../theme/theme'
 import GameButton from '../buttons/GameButton'
+import { StyledHeading, StyledText, StyledFlex } from '../../styles'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -46,50 +47,42 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           padding: theme.spacing.lg
         }}
       >
-        <Modal.Title
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontWeight: theme.typography.fontWeight.bold,
-            fontSize: theme.typography.fontSize.xl
-          }}
-        >
+        <Modal.Title as={StyledHeading} size="h5">
           {title}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body
         style={{
           background: theme.colors.background.primary,
-          padding: theme.spacing.xl,
-          fontSize: theme.typography.fontSize.base,
-          color: theme.colors.text.primary,
-          lineHeight: 1.6
+          padding: theme.spacing.xl
         }}
       >
-        {message}
+        <StyledText size="base" color="primary" style={{ lineHeight: 1.6 }}>
+          {message}
+        </StyledText>
       </Modal.Body>
       <Modal.Footer
         style={{
           background: theme.colors.background.primary,
           borderTop: `1px solid ${theme.colors.neutral.gray300}`,
           borderRadius: `0 0 ${theme.borderRadius.lg} ${theme.borderRadius.lg}`,
-          padding: theme.spacing.lg,
-          display: 'flex',
-          gap: theme.spacing.md,
-          justifyContent: 'flex-end'
+          padding: theme.spacing.lg
         }}
       >
-        {cancelText !== null && (
-          <GameButton variant="secondary" onClick={onCancel} type="button">
-            {cancelText}
+        <StyledFlex gap="md" justify="flex-end">
+          {cancelText !== null && (
+            <GameButton variant="secondary" onClick={onCancel} type="button">
+              {cancelText}
+            </GameButton>
+          )}
+          <GameButton
+            variant={variant === 'danger' ? 'danger' : 'primary'}
+            onClick={onConfirm}
+            type="button"
+          >
+            {confirmText}
           </GameButton>
-        )}
-        <GameButton
-          variant={variant === 'danger' ? 'danger' : 'primary'}
-          onClick={onConfirm}
-          type="button"
-        >
-          {confirmText}
-        </GameButton>
+        </StyledFlex>
       </Modal.Footer>
     </Modal>
   )

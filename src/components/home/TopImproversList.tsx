@@ -3,6 +3,7 @@ import { theme } from '../../theme/theme'
 import { Player, SkillSnapshot } from '../../services/savegame/types'
 import { getPlayerFullName } from '../../utils/playerGeneration'
 import { getMostImprovedSkill } from '../../utils/trainingInsights'
+import { StyledFlex, StyledHeading, StyledText } from '../../styles'
 
 interface TopImproversListProps {
   topImprovers: Array<{
@@ -18,38 +19,17 @@ export const TopImproversList: React.FC<TopImproversListProps> = ({
 }) => {
   if (topImprovers.length === 0) {
     return (
-      <p
-        style={{
-          fontSize: theme.typography.fontSize.base,
-          color: theme.colors.text.secondary,
-          margin: 0
-        }}
-      >
+      <StyledText size="base" color="secondary" style={{ margin: 0 }}>
         No progress data available yet.
-      </p>
+      </StyledText>
     )
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: theme.spacing.sm
-      }}
-    >
-      <h3
-        style={{
-          fontFamily: theme.typography.fontFamily.heading,
-          fontSize: theme.typography.fontSize.base,
-          fontWeight: theme.typography.fontWeight.bold,
-          color: theme.colors.text.primary,
-          margin: 0,
-          marginBottom: theme.spacing.xs
-        }}
-      >
+    <StyledFlex direction="column" gap="sm">
+      <StyledHeading size="h6" margin={`0 0 ${theme.spacing.xs} 0`}>
         Top Improvers:
-      </h3>
+      </StyledHeading>
       {topImprovers.map(({ player, totalImprovement }) => {
         const oldSnapshot = oldSnapshots.find((s) => s.playerId === player.id)
         const mostImproved =
@@ -65,46 +45,30 @@ export const TopImproversList: React.FC<TopImproversListProps> = ({
               border: `${theme.borderWidth.default} solid ${theme.colors.border.default}`
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: theme.spacing.xs
-              }}
+            <StyledFlex
+              justify="space-between"
+              align="center"
+              style={{ marginBottom: theme.spacing.xs }}
             >
-              <strong
-                style={{
-                  color: theme.colors.text.primary,
-                  fontSize: theme.typography.fontSize.sm
-                }}
-              >
+              <StyledText size="sm" weight="bold" color="primary">
                 {getPlayerFullName(player)}
-              </strong>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.success.main
-                }}
+              </StyledText>
+              <StyledText
+                size="sm"
+                weight="bold"
+                style={{ color: theme.colors.success.main }}
               >
                 +{totalImprovement} total
-              </span>
-            </div>
+              </StyledText>
+            </StyledFlex>
             {mostImproved && (
-              <p
-                style={{
-                  fontSize: theme.typography.fontSize.xs,
-                  color: theme.colors.text.secondary,
-                  margin: 0
-                }}
-              >
+              <StyledText size="xs" color="secondary" style={{ margin: 0 }}>
                 Most improved: {mostImproved.label} (+{mostImproved.improvement})
-              </p>
+              </StyledText>
             )}
           </div>
         )
       })}
-    </div>
+    </StyledFlex>
   )
 }

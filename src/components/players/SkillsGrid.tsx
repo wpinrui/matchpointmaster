@@ -2,6 +2,7 @@ import React from 'react'
 import { PlayerSkills } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import { EditableSkillBar } from './EditableSkillBar'
+import { StyledGrid } from '../../styles'
 
 interface SkillsGridProps {
   skills: PlayerSkills
@@ -21,14 +22,7 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({ skills, onSkillChange })
   ]
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: theme.spacing.sm,
-        marginTop: theme.spacing.sm
-      }}
-    >
+    <StyledGrid columns={2} gap="sm" style={{ marginTop: theme.spacing.sm }}>
       {skillEntries.map(({ key, label }) => (
         <EditableSkillBar
           key={key}
@@ -37,6 +31,6 @@ export const SkillsGrid: React.FC<SkillsGridProps> = ({ skills, onSkillChange })
           onChange={(value) => onSkillChange(key, value)}
         />
       ))}
-    </div>
+    </StyledGrid>
   )
 }
