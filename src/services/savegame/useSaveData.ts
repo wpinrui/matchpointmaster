@@ -11,6 +11,7 @@ import {
   exportSaveSlotToJson,
   getSaveSlot
 } from './saveManager'
+import { clearAllSaveSlots } from './indexedDBStorage'
 import { downloadJsonFile, sanitizeFilename } from '../../utils/fileDownload'
 import { createManagerUpdates } from './updateHelpers/managerUpdates'
 import { createSchoolUpdates } from './updateHelpers/schoolUpdates'
@@ -158,6 +159,16 @@ export const useSaveData = () => {
   }
 
   /**
+   * Clear all save slots (delete all saves)
+   */
+  const clearAllSaves = async () => {
+    await clearAllSaveSlots()
+    setSaveData(initialSaveData)
+    clearCurrentSaveId()
+    setCurrentSaveIdState(null)
+  }
+
+  /**
    * Reset to initial save data and clear current save ID
    */
   const resetSaveData = () => {
@@ -222,6 +233,7 @@ export const useSaveData = () => {
     loadSaveSlot,
     createNewSave,
     clearCurrentSave,
+    clearAllSaves,
     resetSaveData
   }
 }

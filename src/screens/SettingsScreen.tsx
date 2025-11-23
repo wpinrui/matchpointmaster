@@ -7,7 +7,8 @@ import GameButton from '../components/buttons/GameButton'
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
 
 const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
-  const { exportToJson, clearCurrentSave } = useSaveDataContext()
+  const { exportToJson, clearAllSaves } = useSaveDataContext()
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [showMessageDialog, setShowMessageDialog] = useState(false)
   const [messageDialogTitle, setMessageDialogTitle] = useState('')
   const [messageDialogMessage, setMessageDialogMessage] = useState('')
@@ -24,14 +25,25 @@ const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   }
 
   const handleClear = async () => {
-    if (
-      window.confirm(
-        'Are you sure you want to clear all current save data? This will reset your game to the initial state. This action cannot be undone.'
-      )
-    ) {
-      await clearCurrentSave()
+    setShowClearConfirm(true)
+  }
+
+  const handleClearConfirm = async () => {
+    try {
+      await clearAllSaves()
+      setMessageDialogTitle('Success')
+      setMessageDialogMessage('All save data has been cleared successfully.')
+      setMessageDialogVariant('primary')
+      setShowMessageDialog(true)
+      setShowClearConfirm(false)
       // Navigate to LOAD screen to show the cleared state
       changeScreen(Screens.LOAD)
+    } catch (error) {
+      setMessageDialogTitle('Error')
+      setMessageDialogMessage('Failed to clear all save data. Please try again.')
+      setMessageDialogVariant('danger')
+      setShowMessageDialog(true)
+      setShowClearConfirm(false)
     }
   }
 
@@ -102,6 +114,17 @@ const SettingsScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        title="Clear All Save Data"
+        message="Are you sure you want to delete ALL save data? This will permanently delete all save slots and cannot be undone. This action will reset your game to the initial state."
+        confirmText="Delete All"
+        cancelText="Cancel"
+        onConfirm={handleClearConfirm}
+        onCancel={() => setShowClearConfirm(false)}
+        variant="danger"
+      />
 
       <ConfirmDialog
         isOpen={showMessageDialog}
