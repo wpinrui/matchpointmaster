@@ -7,6 +7,7 @@ import GameCard from '../cards/GameCard'
 import GameButton from '../buttons/GameButton'
 import { PlayerCard } from '../players/PlayerCard'
 import { ResultsMatrix } from './ResultsMatrix'
+import { InfoDialog } from '../dialogs/InfoDialog'
 import { Player, RoundRobinTeamResults } from '../../services/savegame/types'
 import { theme } from '../../theme/theme'
 import { getMaxGamesToWatch } from '../../utils/roundRobinEngine'
@@ -48,9 +49,7 @@ export const RankingView: React.FC<RankingViewProps> = ({
     // Only save top 12 rankings
     const top12Rankings = rankings.slice(0, 12)
     onUpdateRankings(top12Rankings)
-    alert(
-      'Rankings saved! The top 12 players will be registered for the zonal tournament.'
-    )
+    setShowSuccessDialog(true)
   }
 
   const handleMoveUp = (index: number) => {
@@ -81,7 +80,7 @@ export const RankingView: React.FC<RankingViewProps> = ({
   const handleAddPlayer = (playerId: string) => {
     if (rankings.includes(playerId)) return
     if (rankings.length >= 12) {
-      alert('Maximum 12 players can be ranked.')
+      setShowMaxPlayersDialog(true)
       return
     }
     setRankings([...rankings, playerId])
@@ -90,6 +89,9 @@ export const RankingView: React.FC<RankingViewProps> = ({
   const unrankedPlayers = useMemo(() => {
     return selectedPlayers.filter((p) => !rankings.includes(p.id))
   }, [selectedPlayers, rankings])
+
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [showMaxPlayersDialog, setShowMaxPlayersDialog] = useState(false)
 
   return (
     <div
@@ -404,6 +406,22 @@ export const RankingView: React.FC<RankingViewProps> = ({
           Save Rankings
         </GameButton>
       </div>
+
+      <InfoDialog
+        isOpen={showSuccessDialog}
+        title="Rankings Saved"
+        message="The top 12 players will be registered for the zonal tournament."
+        onClose={() => setShowSuccessDialog(false)}
+        variant="success"
+      />
+
+      <InfoDialog
+        isOpen={showMaxPlayersDialog}
+        title="Maximum Players Reached"
+        message="Maximum 12 players can be ranked."
+        onClose={() => setShowMaxPlayersDialog(false)}
+        variant="info"
+      />
     </div>
   )
 }

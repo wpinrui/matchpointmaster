@@ -175,6 +175,13 @@ const customCard = css`
 - **ESLint** configured: React hooks rules, import ordering
 - Maximum line length: 90 characters
 
+### User Interaction:
+- **NEVER use browser native prompts** (`alert()`, `confirm()`, `prompt()`)
+- **ALWAYS use dialog components** from `src/components/dialogs/`
+- Use `ConfirmDialog` for confirmations (with cancel option)
+- Use `InfoDialog` for informational messages (OK only)
+- Check existing dialog components before creating new ones
+
 ### Comments:
 - **Avoid excessive comments** - Code should be self-documenting
 - Only add comments when logic is complex or non-obvious
