@@ -164,11 +164,21 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
                     manager,
                     trainingPlan,
                     skillSnapshots,
-                    aiSchools,
-                    updateAISchools
+                    aiSchools
                   },
-                  updateSeason,
-                  addEmail
+                  {
+                    updateSeason,
+                    updatePlayers: { set: () => {} },
+                    updateTrainingPlan: {
+                      setCompleted: () => {},
+                      setMonthAndYear: () => {}
+                    },
+                    updateSkillSnapshots: {
+                      addMany: () => {}
+                    },
+                    updateAISchools,
+                    addEmail
+                  }
                 )
               }
             }
