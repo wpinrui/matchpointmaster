@@ -238,7 +238,7 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     return generateOrderedMatchups(currentTeamResults.selectedPlayerIds)
   }, [currentTeamResults, eligiblePlayers.length])
 
-  // Initialize team result if needed
+  // Initialize team result if needed and recover missing matches
   useEffect(() => {
     if (!roundRobinData || eligiblePlayers.length < 2) return
 
@@ -268,6 +268,73 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         }
       }
       updateRoundRobinData.set(updatedData)
+    } else if (
+      currentTeamResult &&
+      currentTeamResult.tournamentStarted &&
+      !currentTeamResult.completed
+    ) {
+      // Check for missing matches and recover them
+      const playerIds = currentTeamResult.selectedPlayerIds
+      const expectedMatchups = generateOrderedMatchups(playerIds)
+      const existingMatchKeys = new Set(
+        currentTeamResult.matchResults.map((r) => getMatchKey(r.player1Id, r.player2Id))
+      )
+
+      // Find matches that should exist but don't
+      const missingMatches: RoundRobinMatchResult[] = []
+      for (
+        let i = 0;
+        i < currentTeamResult.currentMatchIndex && i < expectedMatchups.length;
+        i++
+      ) {
+        const matchup = expectedMatchups[i]
+        const matchKey = matchup.matchKey
+        if (!existingMatchKeys.has(matchKey)) {
+          // This match should have been played but is missing
+          const player1 = playerMap.get(matchup.player1Id)
+          const player2 = playerMap.get(matchup.player2Id)
+          if (player1 && player2) {
+            // Simulate the missing match
+            const matchResult = simulateMatch(player1, player2)
+            missingMatches.push(matchResult)
+          }
+        }
+      }
+
+      // If we found missing matches, add them
+      if (missingMatches.length > 0) {
+        console.warn(`Found ${missingMatches.length} missing matches, recovering...`)
+        const updatedMatchResults = [...currentTeamResult.matchResults, ...missingMatches]
+        const updatedStats = calculatePlayerStats(playerIds, updatedMatchResults)
+
+        updateRoundRobinData.set((prevData) => {
+          if (!prevData) return prevData
+          const prevTeamResult = prevData.teamResults[currentTeam]
+          if (!prevTeamResult) return prevData
+
+          return {
+            ...prevData,
+            teamResults: {
+              ...prevData.teamResults,
+              [currentTeam]: {
+                ...prevTeamResult,
+                matchResults: updatedMatchResults,
+                playerStats: updatedStats
+              }
+            }
+          }
+        })
+      }
+
+      // Set view based on tournament state
+      if (currentTeamResult.completed) {
+        // Tournament complete - show ranking view
+        setCurrentView('ranking')
+      } else {
+        setCurrentView('tournament')
+        // Note: Match result processing is handled by the dedicated useEffect above
+        // to ensure it runs on every mount, not just when this effect runs
+      }
     } else if (currentTeamResult) {
       // Set view based on tournament state
       if (currentTeamResult.completed) {
@@ -286,6 +353,7 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     currentTeam,
     eligiblePlayers,
     players,
+    playerMap,
     updateRoundRobinData,
     changeScreen,
     orderedMatchups,
@@ -485,88 +553,86 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           currentMatchIndex={currentTeamResults.currentMatchIndex}
           matchesToWatch={currentTeamResults.matchesToWatch || []}
           onMatchComplete={(matchResult, newIndex) => {
-            if (!roundRobinData) return
-            const updatedMatchResults = [...currentTeamResults.matchResults, matchResult]
-            const updatedStats = calculatePlayerStats(
-              currentTeamResults.selectedPlayerIds,
-              updatedMatchResults
-            )
+            // Use functional update to ensure we have the latest state
+            // This prevents race conditions when multiple matches are simulated quickly
+            // or when the page is refreshed during simulation
+            updateRoundRobinData.set((prevData) => {
+              if (!prevData) return prevData
 
-            const isComplete = newIndex >= orderedMatchups.length
+              const prevTeamResult = prevData.teamResults[currentTeam]
+              if (!prevTeamResult) return prevData
 
-            const updatedData: RoundRobinData = {
-              ...roundRobinData,
-              teamResults: {
-                ...roundRobinData.teamResults,
-                [currentTeam]: {
-                  ...currentTeamResults,
-                  matchResults: updatedMatchResults,
-                  playerStats: updatedStats,
-                  currentMatchIndex: newIndex,
-                  completed: isComplete
-                }
-              }
-            }
-            updateRoundRobinData.set(updatedData)
+              const updatedMatchResults = [...prevTeamResult.matchResults, matchResult]
+              const updatedStats = calculatePlayerStats(
+                prevTeamResult.selectedPlayerIds,
+                updatedMatchResults
+              )
 
-            // Check if all teams are now complete
-            if (isComplete) {
-              const updatedAllTeamsData = {
-                ...updatedData,
+              const isComplete = newIndex >= orderedMatchups.length
+
+              const updatedData: RoundRobinData = {
+                ...prevData,
                 teamResults: {
-                  ...updatedData.teamResults,
+                  ...prevData.teamResults,
                   [currentTeam]: {
-                    ...currentTeamResults,
+                    ...prevTeamResult,
                     matchResults: updatedMatchResults,
                     playerStats: updatedStats,
                     currentMatchIndex: newIndex,
-                    completed: true
+                    completed: isComplete
                   }
                 }
               }
 
-              // Check if all teams are complete
-              if (areAllTeamsCompleted(updatedAllTeamsData)) {
-                // All teams complete - advance phase and send email
-                const completionEmail = generateRoundRobinCompletionEmail(
-                  manager.fullName || 'Coach',
-                  school.name || 'the school',
-                  updatedAllTeamsData
-                )
-                addEmail(completionEmail)
+              // Check if all teams are now complete
+              if (isComplete) {
+                if (areAllTeamsCompleted(updatedData)) {
+                  // All teams complete - advance phase and send email
+                  const completionEmail = generateRoundRobinCompletionEmail(
+                    manager.fullName || 'Coach',
+                    school.name || 'the school',
+                    updatedData
+                  )
+                  addEmail(completionEmail)
 
-                // Advance to next phase (June - Zonal)
-                advanceToNextPhase(
-                  {
-                    currentMonth: season.month,
-                    currentYear: season.year,
-                    currentPhase: GamePhase.INTRA_CLUB,
-                    players,
-                    teamRoster,
-                    manager,
-                    school,
-                    trainingPlan,
-                    skillSnapshots,
-                    aiSchools
-                  },
-                  {
-                    updateSeason,
-                    updatePlayers: { set: () => {} }, // Not needed for phase advancement
-                    updateTrainingPlan: {
-                      setCompleted: () => {},
-                      setMonthAndYear: () => {}
+                  // Advance to next phase (June - Zonal)
+                  advanceToNextPhase(
+                    {
+                      currentMonth: season.month,
+                      currentYear: season.year,
+                      currentPhase: GamePhase.INTRA_CLUB,
+                      players,
+                      teamRoster,
+                      manager,
+                      school,
+                      trainingPlan,
+                      skillSnapshots,
+                      aiSchools
                     },
-                    updateSkillSnapshots: {
-                      addMany: () => {}
-                    },
-                    updateAISchools,
-                    addEmail
-                  }
-                )
+                    {
+                      updateSeason,
+                      updatePlayers: { set: () => {} }, // Not needed for phase advancement
+                      updateTrainingPlan: {
+                        setCompleted: () => {},
+                        setMonthAndYear: () => {}
+                      },
+                      updateSkillSnapshots: {
+                        addMany: () => {}
+                      },
+                      updateAISchools,
+                      addEmail
+                    }
+                  )
+
+                  // Navigate to home after a brief delay to allow state updates
+                  setTimeout(() => {
+                    changeScreen(Screens.HOME)
+                  }, 100)
+                }
               }
 
-              changeScreen(Screens.HOME)
-            }
+              return updatedData
+            })
           }}
           onSkipToNextWatched={(nextIndex) => {
             if (!roundRobinData) return
@@ -1176,10 +1242,13 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
                   const p2 = playerMap.get(matchup.player2Id)
                   if (p1 && p2) {
                     const matchResult = simulateMatch(p1, p2)
+                    // Call onMatchComplete for each match - it now uses functional updates
+                    // so each call will use the latest state from the previous update
                     onMatchComplete(matchResult, index + 1)
                   }
                   index++
                 }
+                // Then skip to the next watched match index
                 onSkipToNextWatched(nextWatchedMatchIndex)
               }}
               size="md"

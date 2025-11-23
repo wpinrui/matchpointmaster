@@ -5,11 +5,19 @@ export function createRoundRobinUpdates(
   setSaveData: React.Dispatch<React.SetStateAction<SaveData>>
 ) {
   return {
-    set: (data: RoundRobinData | null) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        roundRobinData: data
-      }))
+    set: (
+      data:
+        | RoundRobinData
+        | null
+        | ((prev: RoundRobinData | null) => RoundRobinData | null)
+    ) => {
+      setSaveData((prevData) => {
+        const newData = typeof data === 'function' ? data(prevData.roundRobinData) : data
+        return {
+          ...prevData,
+          roundRobinData: newData
+        }
+      })
     }
   }
 }
