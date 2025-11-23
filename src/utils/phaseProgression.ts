@@ -3,33 +3,33 @@
  * Extracted to reduce duplication across screens
  */
 
-import { GamePhase, getNextPhase } from './gamePhases'
+import type {
+  AISchool,
+  Email,
+  Player,
+  SaveData,
+  SkillSnapshot,
+  TrainingPlan
+} from '../services/savegame/types'
+import { Gender } from '../services/savegame/types'
+import {
+  applyAISchoolTraining,
+  generateAISchoolDraftPlayers,
+  initializeAISchoolTraining
+} from './aiSchools'
+import { createSkillSnapshots, processPlayerProgression } from './applyProgression'
+import { calculateOverallRating } from './cardTiers'
 import {
   generatePhaseProgressionEmail,
   generateTrainingMotivationEmail,
   generateTrainingResultsEmail
 } from './emailGenerator'
-import { createSkillSnapshots, processPlayerProgression } from './applyProgression'
-import {
-  initializeAISchoolTraining,
-  applyAISchoolTraining,
-  generateAISchoolDraftPlayers
-} from './aiSchools'
-import { calculateOverallRating } from './cardTiers'
+import { GamePhase, getNextPhase } from './gamePhases'
 import {
   calculateMaxTeamSize,
   calculatePlayerPoolSize,
   calculateSchoolAttractiveness
 } from './schoolReputation'
-import type {
-  Player,
-  SaveData,
-  TrainingPlan,
-  SkillSnapshot,
-  Email,
-  AISchool
-} from '../services/savegame/types'
-import { Gender } from '../services/savegame/types'
 
 type Manager = SaveData['manager']
 type School = SaveData['school']
@@ -151,45 +151,74 @@ export function advanceToNextPhase(
 
   const { updateSeason, updateTrainingPlan, addEmail } = callbacks
 
-  // Process training progression if leaving a training phase
+  // Process training progression if in a training phase
   processTrainingProgression(params, callbacks)
 
-  // Process AI school training
+  // Calculate next phase early so we can use it for AI school logic
+  const nextPhase = getNextPhase(currentPhase, currentMonth)
+  const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
+
+  // Process AI school training - reuse same logic as human player
+  let updatedAISchools = params.aiSchools
   if (params.aiSchools && callbacks.updateAISchools) {
-    const updatedAISchools = params.aiSchools.map((school) => {
-      // Initialize training if entering training phase
-      const nextPhase = getNextPhase(currentPhase, currentMonth)
-      if (
-        (nextPhase.phase === GamePhase.TRAINING ||
-          nextPhase.phase === GamePhase.TRAINING_2) &&
-        !school.trainingPlan
-      ) {
+    updatedAISchools = params.aiSchools.map((school) => {
+      // Initialize training plan if we're in training phase and don't have one yet (same as human player)
+      const isTrainingPhase =
+        currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2
+      
+      if (isTrainingPhase && !school.trainingPlan) {
+        console.log(
+          `[AI Training] Initializing training plan for ${school.name} (Phase: ${currentPhase}, Month: ${currentMonth})`
+        )
         return initializeAISchoolTraining(
           school,
-          nextPhase.month === 1 ? currentYear + 1 : currentYear,
-          nextPhase.month,
-          nextPhase.phase
+          currentYear,
+          currentMonth,
+          currentPhase
         )
       }
 
-      // Apply training if leaving training phase
+      // Apply training if in a training phase and have a training plan (same condition as player's school)
       if (
-        (currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2) &&
+        isTrainingPhase &&
         school.trainingPlan &&
         !school.trainingPlan.completed
       ) {
+        console.log(
+          `[AI Training] Applying training to ${school.name} (Phase: ${currentPhase}, Month: ${currentMonth})`
+        )
+        console.log(
+          `[AI Training] Training Plan: ${school.trainingPlan.teamFocus || 'None'}, Team Players: ${school.teamRoster.length}`
+        )
         const teamPlayers = school.players.filter((p) => school.teamRoster.includes(p.id))
         return applyAISchoolTraining(school, teamPlayers)
       }
 
       return school
     })
+
+    // Also handle initializing training plans for the next month if we're advancing within training phase
+    if (nextPhase.phase === GamePhase.TRAINING || nextPhase.phase === GamePhase.TRAINING_2) {
+      updatedAISchools = updatedAISchools.map((school) => {
+        // Check if we need a new training plan for the next month
+        // This handles advancing from month 2 to month 3, both in TRAINING phase
+        if (!school.trainingPlan || school.trainingPlan.month !== nextPhase.month) {
+          console.log(
+            `[AI Training] Initializing new training plan for ${school.name} - Month: ${nextPhase.month}, Year: ${newYear}`
+          )
+          return initializeAISchoolTraining(
+            school,
+            newYear,
+            nextPhase.month,
+            nextPhase.phase
+          )
+        }
+        return school
+      })
+    }
+
     callbacks.updateAISchools.set(updatedAISchools)
   }
-
-  // Calculate next phase
-  const nextPhase = getNextPhase(currentPhase, currentMonth)
-  const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
 
   // Get snapshots from the month we're leaving
   const monthSnapshots =
@@ -216,26 +245,6 @@ export function advanceToNextPhase(
       updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
       updateTrainingPlan.setCompleted(false)
     }
-  }
-
-  // Initialize AI school training for new training months
-  if (
-    params.aiSchools &&
-    callbacks.updateAISchools &&
-    (nextPhase.phase === GamePhase.TRAINING || nextPhase.phase === GamePhase.TRAINING_2)
-  ) {
-    const updatedAISchools = params.aiSchools.map((school) => {
-      if (!school.trainingPlan || school.trainingPlan.month !== nextPhase.month) {
-        return initializeAISchoolTraining(
-          school,
-          newYear,
-          nextPhase.month,
-          nextPhase.phase
-        )
-      }
-      return school
-    })
-    callbacks.updateAISchools.set(updatedAISchools)
   }
 
   // Generate and add phase progression email

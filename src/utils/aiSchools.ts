@@ -366,8 +366,16 @@ export function selectAITrainingFocus(
  */
 export function applyAISchoolTraining(school: AISchool, teammates: Player[]): AISchool {
   if (!school.trainingPlan || school.trainingPlan.completed) {
+    console.log(`[AI Training] Skipping ${school.name} - no training plan or already completed`)
     return school
   }
+
+  console.log(
+    `[AI Training] Processing ${school.name} - Team Focus: ${school.trainingPlan.teamFocus || 'None'}, Players: ${teammates.length}`
+  )
+
+  let totalImprovements = 0
+  const playerImprovements: Array<{ name: string; total: number; details: Record<string, number> }> = []
 
   const updatedPlayers = school.players.map((player) => {
     const isOnTeam = school.teamRoster.includes(player.id)
@@ -386,8 +394,45 @@ export function applyAISchoolTraining(school: AISchool, teammates: Player[]): AI
       teammates.filter((p) => p.id !== player.id)
     )
 
+    // Calculate total improvement
+    const improvementTotal = Object.values(improvements).reduce((sum, val) => sum + val, 0)
+    totalImprovements += improvementTotal
+
+    // Track individual player improvements
+    const improvementDetails: Record<string, number> = {}
+    Object.entries(improvements).forEach(([skill, value]) => {
+      if (value > 0) {
+        improvementDetails[skill] = value
+      }
+    })
+
+    if (improvementTotal > 0) {
+      playerImprovements.push({
+        name: `${player.firstName} ${player.lastName}`,
+        total: improvementTotal,
+        details: improvementDetails
+      })
+    }
+
     return applySkillImprovements(player, improvements)
   })
+
+  // Log summary
+  console.log(
+    `[AI Training] ${school.name} - Total improvement: ${totalImprovements.toFixed(2)} points across ${playerImprovements.length} players`
+  )
+  if (playerImprovements.length > 0) {
+    console.log(`[AI Training] Top improvers:`)
+    playerImprovements
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5)
+      .forEach((p) => {
+        const detailsStr = Object.entries(p.details)
+          .map(([skill, val]) => `${skill}: +${val.toFixed(2)}`)
+          .join(', ')
+        console.log(`  - ${p.name}: +${p.total.toFixed(2)} (${detailsStr})`)
+      })
+  }
 
   // Mark training as completed
   const updatedTrainingPlan: TrainingPlan = {
@@ -423,6 +468,10 @@ export function initializeAISchoolTraining(
   // AI schools don't use individual coaching for now (can be added later)
   trainingPlan.playerAssignments = []
   trainingPlan.coachingSlotsUsed = 0
+
+  console.log(
+    `[AI Training] Initialized training plan for ${school.name} - Month: ${month}, Focus: ${teamFocus || 'None'}, Team Players: ${teamPlayers.length}`
+  )
 
   return {
     ...school,
