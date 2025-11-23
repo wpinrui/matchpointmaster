@@ -114,7 +114,8 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     addEmail,
     changeScreen,
     setShowTimeProgressionDialog,
-    setPendingTimeProgression
+    setPendingTimeProgression,
+    roundRobinData
   })
 
   return (
