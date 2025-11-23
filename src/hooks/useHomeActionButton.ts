@@ -5,7 +5,8 @@ import { isPhaseImplemented } from '../utils/phaseProgression'
 import {
   isTrainingPhase as checkIsTrainingPhase,
   getDraftActionButton,
-  getTrainingActionButton
+  getTrainingActionButton,
+  getIntraClubActionButton
 } from '../utils/actionButtonHelpers'
 
 import {
@@ -77,6 +78,11 @@ export function useHomeActionButton({
     // Training phase button
     if (checkIsTrainingPhase(currentPhaseString)) {
       return getTrainingActionButton(changeScreen)
+    }
+
+    // Intra-club round-robin phase button
+    if (currentPhase === GamePhase.INTRA_CLUB) {
+      return getIntraClubActionButton(changeScreen)
     }
 
     // Continue button for other phases

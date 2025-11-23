@@ -83,7 +83,7 @@ The MVP aims to establish the core mechanics of *Matchpoint Master* by allowing 
 - [x] Implement Training System (set weekly training plans for players).
 - [x] Individual Coaching System (assign individual coaching to players based on their needs).
 - [ ] Player Intake System (manage student auditions in January).
-- [ ] Implement Intra-club Round-Robin (determine player rankings).
+- [x] Implement Intra-club Round-Robin (determine player rankings).
 - [ ] Zonal School Tournament System (group stages and knockout rounds).
 - [ ] National Championships Setup (manage seeding and immediate knockout rounds).
 - [ ] Match Format Implementation (integrate singles and doubles match formats).
@@ -135,7 +135,16 @@ Code refactored and game phases now progress automatically.
 Manager stat system implemented with reputation and coaching effectiveness tracking.  
 Training system fully implemented with team focus, individual coaching slots, and training previews.  
 Player progression system added with skill improvements based on training, traits, coaching effectiveness, and style synergy.  
-Trait system implemented - players can have traits (HARD_WORKER, LAZY, QUICK_LEARNER, etc.) that affect training effectiveness.  
+Trait system implemented - players can have traits (HARD_WORKER, LAZY, QUICK_LEARNER, etc.) that affect training effectiveness.
+
+### [Current Date]
+Intra-team round-robin tournament system implemented:
+- Player selection interface for up to 12 players per team (B/C divisions, boys/girls)
+- Round-robin tournament engine with best-of-5 singles matches between all player pairs
+- Results matrix table showing win/loss records and match outcomes
+- Watch match functionality (limit of 3 games, hardcoded for now - future enhancement: variable based on coaching attributes)
+- Ranking assignment interface allowing coaches to manually rank players or follow automatic rankings
+- Tournament results and rankings persist in save data  
 AI schools system expanded with 99 schools, player generation, and training simulation.  
 Dark theme implemented across the application.  
 FIFA-style player cards with tier system replacing ELO display.  

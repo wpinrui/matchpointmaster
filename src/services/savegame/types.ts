@@ -45,6 +45,7 @@ export type SaveData = {
   skillSnapshots: SkillSnapshot[] // Historical skill snapshots for progress tracking
   trainingGoals: TrainingGoal[] // Active training goals across all periods
   aiSchools: AISchool[] // AI competitor schools (99 schools)
+  roundRobinData: RoundRobinData | null // Intra-team round-robin tournament data
 }
 
 /**
@@ -257,4 +258,52 @@ export type TrainingPlan = {
   coachingSlotsUsed: number // How many coaching slots are in use (max 5)
   completed: boolean // Whether this month's training is complete
   goals: TrainingGoal[] // Training goals for this period
+}
+
+/**
+ * Round-robin team type
+ */
+export type RoundRobinTeamType = 'C boys' | 'C girls' | 'B boys' | 'B girls'
+
+/**
+ * Result of a single match in round-robin (best of 5)
+ */
+export type RoundRobinMatchResult = {
+  player1Id: string
+  player2Id: string
+  player1GamesWon: number // Games won by player 1 (0-3)
+  player2GamesWon: number // Games won by player 2 (0-3)
+  winnerId: string // ID of the winning player
+  gameResults: number[][] // Array of game scores: [[player1Score, player2Score], ...]
+}
+
+/**
+ * Round-robin tournament results for a single team
+ */
+export type RoundRobinTeamResults = {
+  teamType: RoundRobinTeamType
+  selectedPlayerIds: string[] // Up to 12 players selected for the tournament
+  matchResults: RoundRobinMatchResult[] // All matches played
+  playerStats: Record<
+    string,
+    {
+      wins: number
+      losses: number
+      gamesWon: number
+      gamesLost: number
+      automaticRanking: number // Ranking based on results (1 = best)
+    }
+  >
+  coachRankings: string[] | null // Coach-assigned rankings (player IDs in order, 1st = index 0)
+  gamesWatched: number // Number of games the coach has watched (max 3)
+  completed: boolean // Whether tournament is complete
+}
+
+/**
+ * Complete round-robin data for the season
+ */
+export type RoundRobinData = {
+  year: number
+  month: number // Should be 5 (May)
+  teamResults: Record<RoundRobinTeamType, RoundRobinTeamResults | null> // One entry per team type that exists
 }

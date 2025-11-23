@@ -42,7 +42,6 @@ export const TRAINING_MONTHS = {
 } as const
 
 export const UNIMPLEMENTED_PHASES: GamePhase[] = [
-  GamePhase.INTRA_CLUB,
   GamePhase.ZONAL,
   GamePhase.NATIONAL,
   GamePhase.SINGLES_SELECTION,

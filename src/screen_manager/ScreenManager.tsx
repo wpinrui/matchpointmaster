@@ -12,6 +12,7 @@ import ProfileScreen from '../screens/ProfileScreen'
 import SettingsScreen from '../screens/SettingsScreen'
 import EmailScreen from '../screens/EmailScreen'
 import MatchScreen from '../screens/MatchScreen'
+import RoundRobinScreen from '../screens/RoundRobinScreen'
 import MainLayout from '../components/layout/MainLayout'
 import { Screens } from './screens'
 
@@ -36,7 +37,8 @@ const ScreenManager: React.FC = () => {
     [Screens.PROFILE]: ProfileScreen,
     [Screens.SETTINGS]: SettingsScreen,
     [Screens.EMAIL]: EmailScreen,
-    [Screens.MATCH]: MatchScreen
+    [Screens.MATCH]: MatchScreen,
+    [Screens.ROUND_ROBIN]: RoundRobinScreen
   }
 
   const ScreenComponent = screenComponents[currentScreen]
@@ -50,7 +52,8 @@ const ScreenManager: React.FC = () => {
     Screens.SETTINGS,
     Screens.DRAFT,
     Screens.EMAIL,
-    Screens.MATCH
+    Screens.MATCH,
+    Screens.ROUND_ROBIN
   ]
 
   if (layoutScreens.includes(currentScreen)) {

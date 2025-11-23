@@ -41,6 +41,18 @@ export function getTrainingActionButton(
 }
 
 /**
+ * Get action button configuration for intra-club round-robin phase
+ */
+export function getIntraClubActionButton(
+  changeScreen: (screen: Screens) => void
+): ActionButtonConfig {
+  return {
+    text: 'Start Round-Robin',
+    action: () => changeScreen(Screens.ROUND_ROBIN)
+  }
+}
+
+/**
  * Check if phase is a training phase
  */
 export function isTrainingPhase(phase: string): boolean {

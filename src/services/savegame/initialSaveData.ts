@@ -46,5 +46,6 @@ export const initialSaveData: SaveData = {
   trainingPlan: null, // Training plan will be set during training phase
   skillSnapshots: [], // Skill snapshots for progress tracking
   trainingGoals: [], // Training goals will be set by player
-  aiSchools: [] // AI schools will be initialized when game starts
+  aiSchools: [], // AI schools will be initialized when game starts
+  roundRobinData: null // Round-robin data will be initialized during intra-club phase
 }

@@ -21,6 +21,7 @@ import { createTrainingPlanUpdates } from './updateHelpers/trainingPlanUpdates'
 import { createTrainingGoalsUpdates } from './updateHelpers/trainingGoalsUpdates'
 import { createAISchoolsUpdates } from './updateHelpers/aiSchoolsUpdates'
 import { createSkillSnapshotsUpdates } from './updateHelpers/skillSnapshotsUpdates'
+import { createRoundRobinUpdates } from './updateHelpers/roundRobinUpdates'
 
 export const useSaveData = () => {
   const [saveData, setSaveData] = useState<SaveData>(getCurrentSaveData())
@@ -168,6 +169,7 @@ export const useSaveData = () => {
   const updateTrainingPlan = createTrainingPlanUpdates(setSaveData)
   const updateTrainingGoals = createTrainingGoalsUpdates(setSaveData)
   const updateAISchools = createAISchoolsUpdates(setSaveData)
+  const updateRoundRobinData = createRoundRobinUpdates(setSaveData)
 
   return {
     saveData,
@@ -182,6 +184,7 @@ export const useSaveData = () => {
     skillSnapshots: saveData.skillSnapshots,
     trainingGoals: saveData.trainingGoals,
     aiSchools: saveData.aiSchools,
+    roundRobinData: saveData.roundRobinData,
     currentSaveId,
     updateManager,
     updateSchool,
@@ -192,6 +195,7 @@ export const useSaveData = () => {
     updateSkillSnapshots,
     updateTrainingGoals,
     updateAISchools,
+    updateRoundRobinData,
     markEmailAsRead,
     addEmail,
     exportToJson,

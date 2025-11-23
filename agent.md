@@ -467,7 +467,8 @@ This section documents codebase oddities, patterns, or important notes that futu
 - _(Document any unusual patterns, technical debt, or workarounds)_
 
 ### Architecture Decisions:
-- _(Note any important architectural choices or constraints)_
+- **Round-robin tournament watch limit**: Currently hardcoded to 3 games maximum that the coach can watch. In the future, this should be made variable based on coaching attributes or badges. See `src/utils/roundRobinEngine.ts` MAX_GAMES_WATCHED constant.
+- **Round-robin psychology effects**: When psychology simulation is added, players may gain positive or negative badges if the coach ranks them quite differently from the actual round-robin automatic ranking. This is not implemented yet but should be considered in future psychology system work.
 
 **Agents should update this section when they discover:**
 - Unusual patterns that deviate from standard conventions

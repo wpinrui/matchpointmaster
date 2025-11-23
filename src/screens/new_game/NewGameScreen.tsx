@@ -132,7 +132,8 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         trainingPlan: null,
         skillSnapshots: [],
         trainingGoals: [],
-        aiSchools: [] // Will be initialized below
+        aiSchools: [], // Will be initialized below
+        roundRobinData: null
       }
 
       // Generate initial emails with actual names and in-game dates
@@ -270,7 +271,8 @@ const NewGameScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       trainingPlan: null,
       skillSnapshots: [],
       trainingGoals: [],
-      aiSchools: [] // Will be initialized below
+      aiSchools: [], // Will be initialized below
+      roundRobinData: null
     }
 
     // Generate initial emails with actual names and in-game dates
