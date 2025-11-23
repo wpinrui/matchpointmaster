@@ -15,6 +15,9 @@ interface UseMatchSimulationOptions {
   onComplete?: () => void
 }
 
+const MATCH_STATE_STORAGE_KEY = 'matchpointMaster_matchState'
+const MATCH_LOG_STORAGE_KEY = 'matchpointMaster_matchLogEvents'
+
 export function useMatchSimulation({
   player1,
   player2,
@@ -29,11 +32,66 @@ export function useMatchSimulation({
   // Initialize match when players are available
   useEffect(() => {
     if (!matchState && player1 && player2) {
+      // Try to restore from sessionStorage first
+      const savedState = sessionStorage.getItem(MATCH_STATE_STORAGE_KEY)
+      const savedLogs = sessionStorage.getItem(MATCH_LOG_STORAGE_KEY)
+
+      if (savedState) {
+        try {
+          const parsedState = JSON.parse(savedState) as MatchState
+          // Verify it's for the same players
+          const matchData = sessionStorage.getItem('roundRobinMatch')
+          if (matchData) {
+            const parsedMatchData = JSON.parse(matchData)
+            // Check if this is the same match
+            if (
+              parsedMatchData.player1Id === player1.id &&
+              parsedMatchData.player2Id === player2.id
+            ) {
+              setMatchState(parsedState)
+              if (savedLogs) {
+                try {
+                  setLogEvents(JSON.parse(savedLogs) as RallyEvent[])
+                } catch {
+                  setLogEvents([])
+                }
+              }
+              return
+            }
+          }
+        } catch (e) {
+          console.error('Error restoring match state:', e)
+        }
+      }
+
+      // No saved state or mismatch - initialize new match
       const initialState = initializeMatch(player1, player2)
       setMatchState(initialState)
       setLogEvents([])
     }
   }, [player1, player2, matchState])
+
+  // Save match state to sessionStorage whenever it changes
+  useEffect(() => {
+    if (matchState) {
+      try {
+        sessionStorage.setItem(MATCH_STATE_STORAGE_KEY, JSON.stringify(matchState))
+      } catch (e) {
+        console.error('Error saving match state:', e)
+      }
+    }
+  }, [matchState])
+
+  // Save log events to sessionStorage whenever they change
+  useEffect(() => {
+    if (logEvents.length > 0) {
+      try {
+        sessionStorage.setItem(MATCH_LOG_STORAGE_KEY, JSON.stringify(logEvents))
+      } catch (e) {
+        console.error('Error saving match log events:', e)
+      }
+    }
+  }, [logEvents])
 
   // Auto-play functionality
   useEffect(() => {
@@ -159,6 +217,9 @@ export function useMatchSimulation({
     const initialState = initializeMatch(player1, player2)
     setMatchState(initialState)
     setLogEvents([])
+    // Clear saved state
+    sessionStorage.removeItem(MATCH_STATE_STORAGE_KEY)
+    sessionStorage.removeItem(MATCH_LOG_STORAGE_KEY)
   }, [player1, player2])
 
   return {

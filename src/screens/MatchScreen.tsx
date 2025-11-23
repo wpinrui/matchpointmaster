@@ -61,6 +61,60 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [players]) // Only depend on players - matchPlayers is set inside, so we check for it at the start
 
+  // Function to save match result
+  const saveMatchResult = useCallback(
+    (state: typeof matchState) => {
+      if (
+        returnScreen === Screens.ROUND_ROBIN &&
+        state?.isComplete &&
+        matchPlayers &&
+        state.winner !== null
+      ) {
+        // Extract match result from matchState
+        const player1SetsWon = state.sets[0]
+        const player2SetsWon = state.sets[1]
+        const winnerId = state.winner === 0 ? matchPlayers[0].id : matchPlayers[1].id
+
+        // Extract set results
+        const gameResults: number[][] = []
+        for (let i = 0; i < state.setScores.length; i++) {
+          const setScore = state.setScores[i]
+          gameResults.push([setScore[0], setScore[1]])
+        }
+
+        // Get match data from session storage
+        const matchDataStr = sessionStorage.getItem('roundRobinMatch')
+        if (matchDataStr) {
+          try {
+            const matchData = JSON.parse(matchDataStr)
+
+            // Store match result
+            sessionStorage.setItem(
+              'roundRobinMatchResult',
+              JSON.stringify({
+                player1Id: matchPlayers[0].id,
+                player2Id: matchPlayers[1].id,
+                player1GamesWon: player1SetsWon,
+                player2GamesWon: player2SetsWon,
+                winnerId,
+                gameResults,
+                matchKey: matchData.matchKey,
+                currentMatchIndex: matchData.currentMatchIndex
+              })
+            )
+            sessionStorage.setItem('roundRobinMatchCompleted', 'true')
+            // Clear match state storage
+            sessionStorage.removeItem('matchpointMaster_matchState')
+            sessionStorage.removeItem('matchpointMaster_matchLogEvents')
+          } catch (e) {
+            console.error('Error saving round-robin match result:', e)
+          }
+        }
+      }
+    },
+    [returnScreen, matchPlayers]
+  )
+
   // Use match simulation hook
   const { matchState, logEvents } = useMatchSimulation({
     player1: matchPlayers?.[0],
@@ -69,64 +123,28 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     speed,
     onComplete: () => {
       setIsPlaying(false)
-      // If this was a round-robin match, save the result
-      if (
-        returnScreen === Screens.ROUND_ROBIN &&
-        matchState?.isComplete &&
-        matchPlayers
-      ) {
-        // Extract match result from matchState
-        // In table tennis: Match = best of 5 sets, Set = first to 11 points
-        // sets[0] = player1 sets won, sets[1] = player2 sets won
-        // setScores contains point scores for each completed set: [[p1Points, p2Points], ...]
-        const player1SetsWon = matchState.sets[0]
-        const player2SetsWon = matchState.sets[1]
-        const winnerId = matchState.winner === 0 ? matchPlayers[0].id : matchPlayers[1].id
-
-        // Extract set results - setScores contains [player1Points, player2Points] for each completed set
-        // For round-robin, we store the point scores for each set
-        const gameResults: number[][] = []
-
-        // Extract all completed sets
-        for (let i = 0; i < matchState.setScores.length; i++) {
-          const setScore = matchState.setScores[i]
-          // Each set score represents points in that set (e.g., [11, 0])
-          gameResults.push([setScore[0], setScore[1]])
-        }
-
-        // Get match data from session storage (it should still be there)
-        const matchDataStr = sessionStorage.getItem('roundRobinMatch')
-        if (matchDataStr) {
-          try {
-            const matchData = JSON.parse(matchDataStr)
-
-            // Store match result in RoundRobinMatchResult format
-            // Note: RoundRobinMatchResult uses "GamesWon" but in table tennis these are actually sets
-            // player1GamesWon/player2GamesWon represent sets won (0-3)
-            // gameResults contains point scores for each set: [[11, 0], [11, 0], ...]
-            sessionStorage.setItem(
-              'roundRobinMatchResult',
-              JSON.stringify({
-                player1Id: matchPlayers[0].id,
-                player2Id: matchPlayers[1].id,
-                player1GamesWon: player1SetsWon, // Actually sets won, but field name is GamesWon
-                player2GamesWon: player2SetsWon, // Actually sets won, but field name is GamesWon
-                winnerId,
-                gameResults, // Array of [player1Points, player2Points] per set
-                matchKey: matchData.matchKey,
-                currentMatchIndex: matchData.currentMatchIndex
-              })
-            )
-            sessionStorage.setItem('roundRobinMatchCompleted', 'true')
-            // Clear the match data now that we've saved the result
-            sessionStorage.removeItem('roundRobinMatch')
-          } catch (e) {
-            console.error('Error saving round-robin match result:', e)
-          }
-        }
+      // Save result when match completes
+      if (matchState) {
+        saveMatchResult(matchState)
       }
     }
   })
+
+  // Save result when match state becomes complete (even if onComplete didn't fire)
+  useEffect(() => {
+    if (matchState?.isComplete && matchState.winner !== null) {
+      saveMatchResult(matchState)
+    }
+  }, [matchState, saveMatchResult])
+
+  // Save result on unmount if match is complete (handles navigation away)
+  useEffect(() => {
+    return () => {
+      if (matchState?.isComplete && matchState.winner !== null) {
+        saveMatchResult(matchState)
+      }
+    }
+  }, [matchState, saveMatchResult])
 
   const handlePlayPause = useCallback(() => {
     setIsPlaying(!isPlaying)

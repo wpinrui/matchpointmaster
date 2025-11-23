@@ -81,6 +81,135 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     }
   }, [roundRobinData, season, updateRoundRobinData])
 
+  // Check for completed match results on mount and whenever roundRobinData changes
+  useEffect(() => {
+    if (!roundRobinData) return
+
+    const matchCompleted = sessionStorage.getItem('roundRobinMatchCompleted')
+    const matchResultStr = sessionStorage.getItem('roundRobinMatchResult')
+
+    if (matchCompleted === 'true' && matchResultStr) {
+      try {
+        const matchResult = JSON.parse(matchResultStr)
+
+        // Find which team this match belongs to by checking all teams
+        for (const teamType of availableTeams) {
+          const teamResult = roundRobinData.teamResults[teamType]
+          if (!teamResult || !teamResult.tournamentStarted) continue
+
+          const tempOrderedMatchups = generateOrderedMatchups(
+            teamResult.selectedPlayerIds
+          )
+          const currentMatchup = tempOrderedMatchups[teamResult.currentMatchIndex]
+
+          if (currentMatchup && currentMatchup.matchKey === matchResult.matchKey) {
+            // This is the match we're looking for - process the result
+            const roundRobinMatchResult = {
+              player1Id: matchResult.player1Id,
+              player2Id: matchResult.player2Id,
+              player1GamesWon: matchResult.player1GamesWon,
+              player2GamesWon: matchResult.player2GamesWon,
+              winnerId: matchResult.winnerId,
+              gameResults: matchResult.gameResults || []
+            }
+
+            const newIndex = matchResult.currentMatchIndex + 1
+            const updatedMatchResults = [
+              ...teamResult.matchResults,
+              roundRobinMatchResult
+            ]
+            const updatedStats = calculatePlayerStats(
+              teamResult.selectedPlayerIds,
+              updatedMatchResults
+            )
+
+            const updatedData: RoundRobinData = {
+              ...roundRobinData,
+              teamResults: {
+                ...roundRobinData.teamResults,
+                [teamType]: {
+                  ...teamResult,
+                  matchResults: updatedMatchResults,
+                  playerStats: updatedStats,
+                  currentMatchIndex: newIndex,
+                  completed: newIndex >= tempOrderedMatchups.length
+                }
+              }
+            }
+            updateRoundRobinData.set(updatedData)
+
+            // Clear session storage
+            sessionStorage.removeItem('roundRobinMatchCompleted')
+            sessionStorage.removeItem('roundRobinMatchResult')
+            sessionStorage.removeItem('roundRobinMatch')
+
+            // Check if all teams are complete
+            if (newIndex >= tempOrderedMatchups.length) {
+              if (areAllTeamsCompleted(updatedData)) {
+                const completionEmail = generateRoundRobinCompletionEmail(
+                  manager.fullName || 'Coach',
+                  school.name || 'the school',
+                  updatedData
+                )
+                addEmail(completionEmail)
+
+                advanceToNextPhase(
+                  {
+                    currentMonth: season.month,
+                    currentYear: season.year,
+                    currentPhase: GamePhase.INTRA_CLUB,
+                    players,
+                    teamRoster,
+                    school,
+                    manager,
+                    trainingPlan,
+                    skillSnapshots,
+                    aiSchools,
+                    updateAISchools
+                  },
+                  updateSeason,
+                  addEmail
+                )
+              }
+            }
+
+            // Update view if needed
+            if (teamType === currentTeam) {
+              if (updatedData.teamResults[teamType]?.completed) {
+                setCurrentView('ranking')
+              } else {
+                setCurrentView('tournament')
+              }
+            }
+
+            break // Found and processed the match
+          }
+        }
+      } catch (e) {
+        console.error('Error processing match result:', e)
+        // Clear invalid data
+        sessionStorage.removeItem('roundRobinMatchCompleted')
+        sessionStorage.removeItem('roundRobinMatchResult')
+      }
+    }
+  }, [
+    roundRobinData,
+    availableTeams,
+    currentTeam,
+    players,
+    teamRoster,
+    school,
+    manager,
+    season,
+    trainingPlan,
+    skillSnapshots,
+    aiSchools,
+    updateRoundRobinData,
+    updateSeason,
+    addEmail,
+    updateAISchools
+  ])
+
   // Get players on the team roster, filtered by current team type
   const eligiblePlayers = useMemo(() => {
     const teamPlayers = players.filter((p) => teamRoster.includes(p.id))
