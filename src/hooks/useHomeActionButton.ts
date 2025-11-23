@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Screens } from '../screen_manager/screens'
-import { GamePhase, isPhaseImplemented, getNextPhase } from '../utils/gamePhases'
+import { GamePhase, getNextPhase } from '../utils/gamePhases'
+import { isPhaseImplemented } from '../utils/phaseProgression'
 import {
   isTrainingPhase as checkIsTrainingPhase,
   getDraftActionButton,

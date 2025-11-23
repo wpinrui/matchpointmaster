@@ -26,7 +26,11 @@ export function usePlayerTrainingManagement({
   // Get player training assignment
   const getPlayerTraining = (playerId: string): PlayerTraining | null => {
     if (!trainingPlan) return null
-    return trainingPlan.playerAssignments.find((a) => a.playerId === playerId) || null
+    return (
+      trainingPlan.playerAssignments.find(
+        (a: PlayerTraining) => a.playerId === playerId
+      ) || null
+    )
   }
 
   // Check if player has individual coaching

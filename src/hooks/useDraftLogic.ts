@@ -59,7 +59,7 @@ export function useDraftLogic({
 
   // Calculate max team size based on funding
   const maxTeamSize = useMemo(() => {
-    return calculateMaxTeamSize(school.funding, school.teamType)
+    return calculateMaxTeamSize(school.funding || 50, school.teamType)
   }, [school.funding, school.teamType])
 
   // Generate initial player pool ONCE when draft screen first loads

@@ -51,7 +51,7 @@ export function useTrainingCalculations({
       trainingPlan,
       manager.stats,
       manager.playStyle,
-      school.funding
+      school.funding || 50
     )
   }, [
     players,

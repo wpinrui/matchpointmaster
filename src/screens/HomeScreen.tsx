@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import GameButton from '../components/buttons/GameButton'
+import GameCard from '../components/cards/GameCard'
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
 import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
 import { EmailPreviewSection } from '../components/home/EmailPreviewSection'

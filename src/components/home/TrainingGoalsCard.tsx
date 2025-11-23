@@ -7,6 +7,7 @@ import GameCard from '../cards/GameCard'
 import GameButton from '../buttons/GameButton'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { theme } from '../../theme/theme'
+import { TrainingGoal } from '../../services/savegame/types'
 import { MONTH_NAMES } from '../../utils/constants'
 import { useTrainingGoals } from '../../hooks/useTrainingGoals'
 
