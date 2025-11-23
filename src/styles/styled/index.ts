@@ -329,7 +329,9 @@ const getSelectArrowColor = (focused: boolean) => {
   return focused ? theme.colors.primary.main : theme.colors.text.secondary
 }
 
-export const StyledSelect = styled.select<{ error?: boolean; $focused?: boolean }>`
+export const StyledSelect = styled.select.withConfig({
+  shouldForwardProp: (prop) => prop !== '$focused' && prop !== 'error'
+})<{ error?: boolean; $focused?: boolean }>`
   background: ${theme.colors.background.secondary};
   border: ${theme.borderWidth.default} solid
     ${({ error, $focused }) =>
