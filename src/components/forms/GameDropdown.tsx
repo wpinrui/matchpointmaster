@@ -57,7 +57,7 @@ const GameDropdown: React.FC<GameDropdownProps> = ({
         as={StyledSelect}
         value={selectedValue}
         onChange={(e) => onChange(e.target.value)}
-        focused={isFocused}
+        $focused={isFocused}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
       >
