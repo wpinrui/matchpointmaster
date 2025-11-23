@@ -2,6 +2,9 @@ import React, { useMemo, useState } from 'react'
 import GameButton from '../../components/buttons/GameButton'
 import GameCard from '../../components/cards/GameCard'
 import { PlayerCard } from '../../components/players/PlayerCard'
+import { SchoolSelector } from '../../components/team/SchoolSelector'
+import { TeamSelector } from '../../components/team/TeamSelector'
+import { TeamStatistics } from '../../components/team/TeamStatistics'
 import { ScreenProps } from '../../screen_manager/screens'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { Gender } from '../../services/savegame/types'
@@ -171,6 +174,7 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     if (filteredPlayers.length === 0) {
       return {
         totalPlayers: 0,
+        averageRating: 0,
         byYear: { 1: 0, 2: 0, 3: 0, 4: 0 },
         lowerSecondary: 0,
         upperSecondary: 0
@@ -332,171 +336,22 @@ const TeamOverviewScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             alignItems: 'center'
           }}
         >
-          <div style={{ flex: 1, minWidth: '200px' }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
-                color: theme.colors.text.primary,
-                marginBottom: theme.spacing.xs
-              }}
-            >
-              School
-            </label>
-            <select
-              value={selectedSchoolId}
-              onChange={(e) => setSelectedSchoolId(e.target.value)}
-              style={{
-                width: '100%',
-                padding: theme.spacing.sm,
-                fontSize: theme.typography.fontSize.base,
-                fontFamily: theme.typography.fontFamily.primary,
-                border: `1px solid ${theme.colors.neutral.gray300}`,
-                borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.colors.background.primary,
-                color: theme.colors.text.primary,
-                cursor: 'pointer'
-              }}
-            >
-              {allSchools.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: 1, minWidth: '200px' }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
-                color: theme.colors.text.primary,
-                marginBottom: theme.spacing.xs
-              }}
-            >
-              Team
-            </label>
-            <select
-              value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value as TeamType)}
-              style={{
-                width: '100%',
-                padding: theme.spacing.sm,
-                fontSize: theme.typography.fontSize.base,
-                fontFamily: theme.typography.fontFamily.primary,
-                border: `1px solid ${theme.colors.neutral.gray300}`,
-                borderRadius: theme.borderRadius.md,
-                backgroundColor: theme.colors.background.primary,
-                color: theme.colors.text.primary,
-                cursor: 'pointer'
-              }}
-            >
-              {availableTeams.map((team) => (
-                <option key={team} value={team}>
-                  {team}
-                </option>
-              ))}
-            </select>
-          </div>
+          <SchoolSelector
+            schools={allSchools}
+            selectedSchoolId={selectedSchoolId}
+            onSelectSchool={setSelectedSchoolId}
+          />
+          <TeamSelector
+            availableTeams={availableTeams}
+            selectedTeam={selectedTeam}
+            onSelectTeam={setSelectedTeam}
+          />
         </div>
       </GameCard>
 
       {/* Team Statistics */}
       {selectedSchool && (
-        <GameCard
-          style={{
-            padding: theme.spacing.md,
-            marginBottom: theme.spacing.sm
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: theme.spacing.lg,
-              alignItems: 'center'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary
-                }}
-              >
-                Team Size:
-              </span>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.lg,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.primary.main
-                }}
-              >
-                {teamStats.totalPlayers} / {maxTeamSize}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary
-                }}
-              >
-                Avg Rating:
-              </span>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.lg,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.accent.light
-                }}
-              >
-                {teamStats.averageRating || 'N/A'}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary
-                }}
-              >
-                Lower Sec:
-              </span>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.lg,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.secondary.light
-                }}
-              >
-                {teamStats.lowerSecondary}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.sm,
-                  color: theme.colors.text.secondary
-                }}
-              >
-                Upper Sec:
-              </span>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.lg,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.secondary.light
-                }}
-              >
-                {teamStats.upperSecondary}
-              </span>
-            </div>
-          </div>
-        </GameCard>
+        <TeamStatistics teamStats={teamStats} maxTeamSize={maxTeamSize} />
       )}
 
       {/* Team Roster */}

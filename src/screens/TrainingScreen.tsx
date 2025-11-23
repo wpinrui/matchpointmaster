@@ -1,27 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import GameButton from '../components/buttons/GameButton'
-import GameCard from '../components/cards/GameCard'
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
-import { PlayerCard } from '../components/players/PlayerCard'
 import { PlayerTrainingDialog } from '../components/training/PlayerTrainingDialog'
+import { TrainingPlanOverview } from '../components/training/TrainingPlanOverview'
+import { TrainingPreview } from '../components/training/TrainingPreview'
+import { TeamFocusDialog } from '../components/training/TeamFocusDialog'
+import { TrainingPlayerList } from '../components/training/TrainingPlayerList'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
-import { generatePhaseProgressionEmail } from '../utils/emailGenerator'
-import {
-  TrainingFocus,
-  PlayerTraining,
-  TrainingPlan,
-  Gender
-} from '../services/savegame/types'
+import { TrainingFocus, PlayerTraining, TrainingPlan } from '../services/savegame/types'
 
 import { theme } from '../theme/theme'
 import { MONTH_NAMES } from '../utils/constants'
 import { GamePhase } from '../utils/gamePhases'
-import { getPlayerFullName } from '../utils/playerGeneration'
 import {
-  getAllTrainingFocuses,
-  getTrainingFocusDisplayName,
-  getTrainingFocusDescription,
   initializeTrainingPlan,
   getMaxCoachingSlots,
   getRecommendedTrainingFocus,
@@ -337,333 +329,29 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       </div>
 
       {/* Training Plan Overview */}
-      <GameCard
-        style={{
-          padding: theme.spacing.lg,
-          marginBottom: theme.spacing.lg
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: theme.spacing.lg
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <h3
-              style={{
-                fontFamily: theme.typography.fontFamily.heading,
-                fontSize: theme.typography.fontSize.xl,
-                fontWeight: theme.typography.fontWeight.bold,
-                color: theme.colors.text.primary,
-                margin: 0,
-                marginBottom: theme.spacing.sm
-              }}
-            >
-              Training Plan
-            </h3>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: theme.spacing.xs
-              }}
-            >
-              <div>
-                <strong style={{ color: theme.colors.text.primary }}>Team Focus:</strong>{' '}
-                {trainingPlan.teamFocus ? (
-                  <span style={{ color: theme.colors.text.secondary }}>
-                    {getTrainingFocusDisplayName(trainingPlan.teamFocus)}
-                  </span>
-                ) : (
-                  <span
-                    style={{ color: theme.colors.text.secondary, fontStyle: 'italic' }}
-                  >
-                    Not set
-                  </span>
-                )}
-              </div>
-              <div>
-                <strong style={{ color: theme.colors.text.primary }}>
-                  Individual Coaching:
-                </strong>{' '}
-                <span style={{ color: theme.colors.text.secondary }}>
-                  {trainingPlan.coachingSlotsUsed} / {maxCoachingSlots} slots used
-                </span>
-              </div>
-              <div>
-                <strong style={{ color: theme.colors.text.primary }}>
-                  Players with Individual Plans:
-                </strong>{' '}
-                <span style={{ color: theme.colors.text.secondary }}>
-                  {trainingPlan.playerAssignments.length}
-                </span>
-              </div>
-              {trainingPlan.teamFocus && expectedSummary.totalExpectedImprovement > 0 && (
-                <div
-                  style={{
-                    marginTop: theme.spacing.xs,
-                    padding: theme.spacing.sm,
-                    background: theme.colors.primary.main + '20',
-                    borderRadius: theme.borderRadius.sm,
-                    border: `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
-                  }}
-                >
-                  <strong style={{ color: theme.colors.text.primary }}>
-                    Expected Improvement:
-                  </strong>{' '}
-                  <span style={{ color: theme.colors.success.main }}>
-                    +{expectedSummary.totalExpectedImprovement} total points
-                  </span>{' '}
-                  (~{expectedSummary.averagePerPlayer} per player)
-                </div>
-              )}
-            </div>
-          </div>
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}
-          >
-            <GameButton
-              variant="primary"
-              size="sm"
-              onClick={() => setShowSetTeamFocus(true)}
-            >
-              {trainingPlan.teamFocus ? 'Change Team Focus' : 'Set Team Focus'}
-            </GameButton>
-            {recommendedFocus && !trainingPlan.teamFocus && (
-              <GameButton
-                variant="secondary"
-                size="sm"
-                onClick={() => handleSetTeamFocus(recommendedFocus)}
-              >
-                Use Recommended ({getTrainingFocusDisplayName(recommendedFocus)})
-              </GameButton>
-            )}
-            {trainingPlan.teamFocus && (
-              <GameButton
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowPreview(!showPreview)}
-              >
-                {showPreview ? 'Hide Preview' : 'Show Expected Improvements'}
-              </GameButton>
-            )}
-          </div>
-        </div>
-      </GameCard>
+      <TrainingPlanOverview
+        trainingPlan={trainingPlan}
+        maxCoachingSlots={maxCoachingSlots}
+        recommendedFocus={recommendedFocus}
+        expectedSummary={expectedSummary}
+        onSetTeamFocus={() => setShowSetTeamFocus(true)}
+        onUseRecommended={handleSetTeamFocus}
+        onTogglePreview={() => setShowPreview(!showPreview)}
+        showPreview={showPreview}
+      />
 
       {/* Training Preview */}
       {showPreview && trainingPlan.teamFocus && expectedImprovements.length > 0 && (
-        <GameCard
-          style={{
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.lg,
-            border: `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: theme.typography.fontFamily.heading,
-              fontSize: theme.typography.fontSize.xl,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              margin: 0,
-              marginBottom: theme.spacing.md
-            }}
-          >
-            Expected Training Results
-          </h3>
-          <div
-            style={{
-              marginBottom: theme.spacing.md,
-              padding: theme.spacing.md,
-              background: theme.colors.primary.main + '20',
-              borderRadius: theme.borderRadius.sm
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: theme.spacing.xs
-              }}
-            >
-              <span style={{ color: theme.colors.text.secondary }}>
-                Total Expected Improvement:
-              </span>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.xl,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.success.main
-                }}
-              >
-                +{expectedSummary.totalExpectedImprovement} points
-              </span>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-            >
-              <span style={{ color: theme.colors.text.secondary }}>
-                Average per Player:
-              </span>
-              <span
-                style={{
-                  fontSize: theme.typography.fontSize.base,
-                  fontWeight: theme.typography.fontWeight.medium,
-                  color: theme.colors.text.primary
-                }}
-              >
-                +{expectedSummary.averagePerPlayer} points
-              </span>
-            </div>
-          </div>
-          {expectedSummary.topExpectedImprovers.length > 0 && (
-            <div style={{ marginBottom: theme.spacing.md }}>
-              <h4
-                style={{
-                  fontFamily: theme.typography.fontFamily.heading,
-                  fontSize: theme.typography.fontSize.base,
-                  fontWeight: theme.typography.fontWeight.bold,
-                  color: theme.colors.text.primary,
-                  margin: 0,
-                  marginBottom: theme.spacing.sm
-                }}
-              >
-                Top Expected Improvers:
-              </h4>
-              {expectedSummary.topExpectedImprovers.map(
-                ({ player, expectedImprovement }) => (
-                  <div
-                    key={player.id}
-                    style={{
-                      padding: theme.spacing.sm,
-                      background: theme.colors.border.default + '40',
-                      borderRadius: theme.borderRadius.sm,
-                      marginBottom: theme.spacing.xs
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <span style={{ color: theme.colors.text.primary }}>
-                        {getPlayerFullName(player)}
-                      </span>
-                      <span
-                        style={{
-                          color: theme.colors.success.main,
-                          fontWeight: theme.typography.fontWeight.bold
-                        }}
-                      >
-                        +{expectedImprovement} points
-                      </span>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          )}
-          <p
-            style={{
-              fontSize: theme.typography.fontSize.sm,
-              color: theme.colors.text.secondary,
-              fontStyle: 'italic',
-              margin: 0
-            }}
-          >
-            * These are estimates. Actual results may vary due to random factors.
-          </p>
-        </GameCard>
+        <TrainingPreview expectedSummary={expectedSummary} />
       )}
 
       {/* Set Team Focus Dialog */}
       {showSetTeamFocus && (
-        <GameCard
-          style={{
-            padding: theme.spacing.lg,
-            marginBottom: theme.spacing.lg,
-            border: `${theme.borderWidth.default} solid ${theme.colors.primary.main}`
-          }}
-        >
-          <h3
-            style={{
-              fontFamily: theme.typography.fontFamily.heading,
-              fontSize: theme.typography.fontSize.xl,
-              fontWeight: theme.typography.fontWeight.bold,
-              color: theme.colors.text.primary,
-              margin: 0,
-              marginBottom: theme.spacing.md
-            }}
-          >
-            Set Team Training Focus
-          </h3>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: theme.spacing.sm,
-              marginBottom: theme.spacing.md
-            }}
-          >
-            {getAllTrainingFocuses().map((focus) => (
-              <GameButton
-                key={focus}
-                variant={trainingPlan.teamFocus === focus ? 'primary' : 'secondary'}
-                size="sm"
-                onClick={() => handleSetTeamFocus(focus)}
-                style={{ textAlign: 'left' }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: theme.spacing.xs
-                  }}
-                >
-                  <strong>{getTrainingFocusDisplayName(focus)}</strong>
-                  <span
-                    style={{
-                      fontSize: theme.typography.fontSize.xs,
-                      opacity: 0.8
-                    }}
-                  >
-                    {getTrainingFocusDescription(focus)}
-                  </span>
-                </div>
-              </GameButton>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: theme.spacing.sm }}>
-            <GameButton
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                handleSetTeamFocus(null)
-                setShowSetTeamFocus(false)
-              }}
-            >
-              Clear Team Focus
-            </GameButton>
-            <GameButton
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowSetTeamFocus(false)}
-            >
-              Cancel
-            </GameButton>
-          </div>
-        </GameCard>
+        <TeamFocusDialog
+          trainingPlan={trainingPlan}
+          onSetFocus={handleSetTeamFocus}
+          onClose={() => setShowSetTeamFocus(false)}
+        />
       )}
 
       {/* Individual Player Training Assignment */}
@@ -691,93 +379,22 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       )}
 
       {/* Players List */}
-      <div>
-        <h2
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize['2xl'],
-            fontWeight: theme.typography.fontWeight.bold,
-            color: theme.colors.text.primary,
-            marginBottom: theme.spacing.lg
-          }}
-        >
-          Team Roster ({teamPlayers.length})
-        </h2>
-        {teamPlayers.length === 0 ? (
-          <GameCard
-            style={{
-              padding: theme.spacing.xl,
-              textAlign: 'center'
-            }}
-          >
-            <p
-              style={{
-                fontSize: theme.typography.fontSize.base,
-                color: theme.colors.text.secondary
-              }}
-            >
-              No players on the team yet.
-            </p>
-          </GameCard>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: theme.spacing.md
-            }}
-          >
-            {teamPlayers.map((player) => {
-              const playerFocus = getPlayerFocus(player.id)
-              const playerAssignment = getPlayerTraining(player.id)
-              const hasCoaching = hasIndividualCoaching(player.id)
-
-              return (
-                <div key={player.id} style={{ position: 'relative' }}>
-                  <PlayerCard
-                    player={player}
-                    actionButton={
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: theme.spacing.xs
-                        }}
-                      >
-                        {playerFocus && (
-                          <div
-                            style={{
-                              padding: theme.spacing.xs,
-                              background: hasCoaching
-                                ? theme.colors.primary.light + '40'
-                                : theme.colors.border.default + '40',
-                              borderRadius: theme.borderRadius.sm,
-                              fontSize: theme.typography.fontSize.sm,
-                              color: theme.colors.text.secondary,
-                              textAlign: 'center'
-                            }}
-                          >
-                            {hasCoaching ? '🎯' : '👥'}{' '}
-                            {getTrainingFocusDisplayName(playerFocus)}
-                          </div>
-                        )}
-                        <GameButton
-                          variant="primary"
-                          size="sm"
-                          onClick={() => setSelectedPlayerForTraining(player.id)}
-                          style={{ width: '100%' }}
-                        >
-                          {playerAssignment ? 'Change Training' : 'Set Training'}
-                        </GameButton>
-                      </div>
-                    }
-                  />
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      <TrainingPlayerList
+        teamPlayers={teamPlayers}
+        trainingPlan={trainingPlan}
+        getPlayerFocus={getPlayerFocus}
+        getPlayerTraining={(playerId) => {
+          const assignment = getPlayerTraining(playerId)
+          return assignment
+            ? {
+                focus: assignment.focus,
+                isIndividualCoaching: assignment.isIndividualCoaching
+              }
+            : null
+        }}
+        hasIndividualCoaching={hasIndividualCoaching}
+        onSelectPlayer={setSelectedPlayerForTraining}
+      />
 
       {/* Advance Month Confirmation Dialog */}
       <ConfirmDialog
