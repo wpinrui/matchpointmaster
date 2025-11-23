@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import GameButton from '../components/buttons/GameButton'
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
 import { PlayerTrainingDialog } from '../components/training/PlayerTrainingDialog'
@@ -8,26 +8,18 @@ import { TeamFocusDialog } from '../components/training/TeamFocusDialog'
 import { TrainingPlayerList } from '../components/training/TrainingPlayerList'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
-import { TrainingFocus, PlayerTraining, TrainingPlan } from '../services/savegame/types'
-
+import { TrainingFocus } from '../services/savegame/types'
 import { theme } from '../theme/theme'
 import { MONTH_NAMES } from '../utils/constants'
 import { GamePhase } from '../utils/gamePhases'
-import {
-  initializeTrainingPlan,
-  getMaxCoachingSlots,
-  getRecommendedTrainingFocus,
-  isTournamentPrepPhase
-} from '../utils/trainingPlans'
 import {
   advanceToNextPhase,
   type PhaseProgressionParams,
   type PhaseProgressionCallbacks
 } from '../utils/phaseProgression'
-import {
-  calculateTeamExpectedImprovements,
-  calculateTeamExpectedSummary
-} from '../utils/trainingPreview'
+import { useTrainingPlanInit } from '../hooks/useTrainingPlanInit'
+import { useTrainingCalculations } from '../hooks/useTrainingCalculations'
+import { usePlayerTrainingManagement } from '../hooks/usePlayerTrainingManagement'
 
 const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const {
@@ -47,9 +39,6 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     updateAISchools
   } = useSaveDataContext()
 
-  const [selectedPlayerForTraining, setSelectedPlayerForTraining] = useState<
-    string | null
-  >(null)
   const [showSetTeamFocus, setShowSetTeamFocus] = useState(false)
   const [showAdvanceMonthDialog, setShowAdvanceMonthDialog] = useState(false)
   const [pendingAdvanceAction, setPendingAdvanceAction] = useState<(() => void) | null>(
@@ -57,139 +46,59 @@ const TrainingScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   )
   const [showCoachingSlotsDialog, setShowCoachingSlotsDialog] = useState(false)
   const [coachingSlotsMessage, setCoachingSlotsMessage] = useState('')
+  const [showPreview, setShowPreview] = useState(false)
 
-  // Initialize training plan if we're in training phase and don't have one yet
-  useEffect(() => {
-    const isTrainingPhase =
-      season.phase === GamePhase.TRAINING || season.phase === GamePhase.TRAINING_2
-
-    if (isTrainingPhase && !trainingPlan) {
-      const newPlan = initializeTrainingPlan(season.year, season.month)
-      updateTrainingPlan.set(newPlan)
-    }
-
-    // Check for recommended focus from TrainingInsightsCard
-    const recommendedFocus = sessionStorage.getItem('recommendedTrainingFocus')
-    if (recommendedFocus && trainingPlan && !trainingPlan.teamFocus) {
-      const focus = recommendedFocus as TrainingFocus
-      updateTrainingPlan.setTeamFocus(focus)
-      sessionStorage.removeItem('recommendedTrainingFocus')
-    }
-  }, [season, trainingPlan, updateTrainingPlan])
+  // Initialize training plan
+  useTrainingPlanInit({
+    season,
+    trainingPlan,
+    updateTrainingPlan
+  })
 
   // Get players currently on the team
   const teamPlayers = useMemo(() => {
     const allTeamPlayers = players.filter((p) => teamRoster.includes(p.id))
-    // Filter by team type if needed (same logic as draft screen)
     return allTeamPlayers
   }, [players, teamRoster])
 
-  // Get max coaching slots
-  const maxCoachingSlots = useMemo(() => {
-    if (!manager.stats) return 5
-    return getMaxCoachingSlots(manager.stats.coachingEffectiveness)
-  }, [manager.stats])
-
-  // Get recommended focus for current phase
-  const recommendedFocus = useMemo(() => {
-    return getRecommendedTrainingFocus(season.phase, season.month)
-  }, [season.phase, season.month])
-
-  // Check if we're in tournament prep phase
-  const isTournamentPrep = useMemo(() => {
-    return isTournamentPrepPhase(season.phase, season.month)
-  }, [season.phase, season.month])
-
-  // Calculate expected improvements for preview
-  const expectedImprovements = useMemo(() => {
-    if (!trainingPlan) return []
-    return calculateTeamExpectedImprovements(
-      players,
-      teamRoster,
-      trainingPlan,
-      manager.stats,
-      manager.playStyle,
-      school.funding
-    )
-  }, [
+  // Training calculations
+  const {
+    maxCoachingSlots,
+    recommendedFocus,
+    isTournamentPrep,
+    expectedImprovements,
+    expectedSummary
+  } = useTrainingCalculations({
     players,
     teamRoster,
     trainingPlan,
-    manager.stats,
-    manager.playStyle,
-    school.funding
-  ])
+    manager,
+    school,
+    season
+  })
 
-  const expectedSummary = useMemo(() => {
-    return calculateTeamExpectedSummary(expectedImprovements)
-  }, [expectedImprovements])
-
-  const [showPreview, setShowPreview] = useState(false)
-
-  // Get player training assignment
-  const getPlayerTraining = (playerId: string): PlayerTraining | null => {
-    if (!trainingPlan) return null
-    return trainingPlan.playerAssignments.find((a) => a.playerId === playerId) || null
-  }
-
-  // Check if player has individual coaching
-  const hasIndividualCoaching = (playerId: string): boolean => {
-    const assignment = getPlayerTraining(playerId)
-    return assignment?.isIndividualCoaching ?? false
-  }
-
-  // Get training focus for a player (individual or team)
-  const getPlayerFocus = (playerId: string): TrainingFocus | null => {
-    if (!trainingPlan) return null
-    const assignment = getPlayerTraining(playerId)
-    if (assignment?.focus) return assignment.focus
-    return trainingPlan.teamFocus
-  }
+  // Player training management
+  const {
+    selectedPlayerForTraining,
+    setSelectedPlayerForTraining,
+    getPlayerTraining,
+    hasIndividualCoaching,
+    getPlayerFocus,
+    handleSetPlayerTraining,
+    handleRemovePlayerTraining
+  } = usePlayerTrainingManagement({
+    trainingPlan,
+    maxCoachingSlots,
+    updateTrainingPlan,
+    setShowCoachingSlotsDialog,
+    setCoachingSlotsMessage
+  })
 
   // Handle setting team focus
   const handleSetTeamFocus = (focus: TrainingFocus | null) => {
     if (!trainingPlan) return
     updateTrainingPlan.setTeamFocus(focus)
     setShowSetTeamFocus(false)
-  }
-
-  // Handle setting individual player training
-  const handleSetPlayerTraining = (
-    playerId: string,
-    focus: TrainingFocus | null,
-    isIndividualCoaching: boolean
-  ) => {
-    if (!trainingPlan) return
-
-    // Check coaching slots
-    const currentSlotsUsed = trainingPlan.coachingSlotsUsed
-    const hasCoaching = hasIndividualCoaching(playerId)
-
-    // If adding coaching and no slots available, don't allow
-    if (isIndividualCoaching && !hasCoaching && currentSlotsUsed >= maxCoachingSlots) {
-      setCoachingSlotsMessage(`No coaching slots available. Maximum: ${maxCoachingSlots}`)
-      setShowCoachingSlotsDialog(true)
-      return
-    }
-
-    if (focus === null) {
-      // Remove individual assignment, player follows team training
-      updateTrainingPlan.removePlayerAssignment(playerId)
-    } else {
-      // Add or update individual assignment
-      const assignment: PlayerTraining = {
-        playerId,
-        focus,
-        isIndividualCoaching
-      }
-      updateTrainingPlan.addPlayerAssignment(assignment)
-    }
-    setSelectedPlayerForTraining(null)
-  }
-
-  // Handle removing individual training (player follows team)
-  const handleRemovePlayerTraining = (playerId: string) => {
-    updateTrainingPlan.removePlayerAssignment(playerId)
   }
 
   if (!trainingPlan) {

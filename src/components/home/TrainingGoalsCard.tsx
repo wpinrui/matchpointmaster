@@ -2,14 +2,13 @@
  * Training Goals Card
  * Shows and manages training objectives
  */
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import GameCard from '../cards/GameCard'
 import GameButton from '../buttons/GameButton'
 import { useSaveDataContext } from '../../services/savegame/SaveDataContext'
 import { theme } from '../../theme/theme'
-import { TrainingGoal } from '../../services/savegame/types'
-import { getSuggestedGoals, updateGoalProgress } from '../../utils/trainingGoals'
 import { MONTH_NAMES } from '../../utils/constants'
+import { useTrainingGoals } from '../../hooks/useTrainingGoals'
 
 interface TrainingGoalsCardProps {
   changeScreen?: (screen: any) => void
@@ -20,27 +19,13 @@ export const TrainingGoalsCard: React.FC<TrainingGoalsCardProps> = ({ changeScre
     useSaveDataContext()
   const [showAddGoal, setShowAddGoal] = useState(false)
 
-  // Get active goals for current period
-  const activeGoals = useMemo(() => {
-    return trainingGoals.filter(
-      (goal) => !goal.completed && goal.year === season.year && goal.month >= season.month
-    )
-  }, [trainingGoals, season])
-
-  // Update goal progress
-  const goalsWithProgress = useMemo(() => {
-    const previousMonthSnapshots = skillSnapshots.filter(
-      (s) => s.month === season.month - 1 && s.year === season.year
-    )
-    return activeGoals.map((goal) =>
-      updateGoalProgress(goal, players, teamRoster, previousMonthSnapshots)
-    )
-  }, [activeGoals, players, teamRoster, skillSnapshots, season])
-
-  // Get suggested goals
-  const suggestions = useMemo(() => {
-    return getSuggestedGoals(players, teamRoster, season.month, season.year)
-  }, [players, teamRoster, season])
+  const { goalsWithProgress, suggestions } = useTrainingGoals({
+    trainingGoals,
+    season,
+    players,
+    teamRoster,
+    skillSnapshots
+  })
 
   if (goalsWithProgress.length === 0 && !showAddGoal) {
     return (

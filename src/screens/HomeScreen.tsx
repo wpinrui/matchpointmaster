@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import GameButton from '../components/buttons/GameButton'
-import GameCard from '../components/cards/GameCard'
 import { ConfirmDialog } from '../components/dialogs/ConfirmDialog'
 import { DraftInfoDialog } from '../components/dialogs/DraftInfoDialog'
 import { EmailPreviewSection } from '../components/home/EmailPreviewSection'
@@ -11,29 +10,14 @@ import { TrainingInsightsCard } from '../components/home/TrainingInsightsCard'
 import { TrainingProgressCard } from '../components/home/TrainingProgressCard'
 import { ScreenProps, Screens } from '../screen_manager/screens'
 import { useSaveDataContext } from '../services/savegame/SaveDataContext'
-import { Email, Gender } from '../services/savegame/types'
+import { Email } from '../services/savegame/types'
 import { theme } from '../theme/theme'
-import {
-  isTrainingPhase as checkIsTrainingPhase,
-  getDraftActionButton,
-  getTrainingActionButton
-} from '../utils/actionButtonHelpers'
+import { isTrainingPhase as checkIsTrainingPhase } from '../utils/actionButtonHelpers'
 import { MONTH_NAMES } from '../utils/constants'
-import { GamePhase, getNextPhase, getPhaseDisplayName } from '../utils/gamePhases'
-import {
-  advanceToNextPhase,
-  isFirstTrainingMonth,
-  isPhaseImplemented,
-  type PhaseProgressionCallbacks,
-  type PhaseProgressionParams
-} from '../utils/phaseProgression'
-import { generatePlayer, IntakeQuality } from '../utils/playerGeneration'
-import {
-  attractivenessToIntakeQuality,
-  calculatePlayerPoolSize,
-  calculateSchoolAttractiveness,
-  calculateSchoolReputation
-} from '../utils/schoolReputation'
+import { GamePhase, getPhaseDisplayName } from '../utils/gamePhases'
+import { isFirstTrainingMonth } from '../utils/phaseProgression'
+import { useHomeDraftPool } from '../hooks/useHomeDraftPool'
+import { useHomeActionButton } from '../hooks/useHomeActionButton'
 
 const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const {
@@ -60,7 +44,6 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const [pendingTimeProgression, setPendingTimeProgression] = useState<
     (() => void) | null
   >(null)
-  const hasInitializedDraftPoolRef = useRef<boolean>(false)
 
   const phaseDisplayName = getPhaseDisplayName(season.phase as GamePhase, season.month)
 
@@ -89,91 +72,15 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     return emails.filter((e) => !e.read).sort((a, b) => b.timestamp - a.timestamp)
   }, [emails])
 
-  // Calculate school reputation and attractiveness for draft pool initialization
-  const calculatedSchoolReputation = useMemo(() => {
-    return calculateSchoolReputation(school.reputationHistory || [])
-  }, [school.reputationHistory])
-
-  const schoolAttractiveness = useMemo(() => {
-    if (!manager.stats) return 50 // Default
-    return calculateSchoolAttractiveness(
-      calculatedSchoolReputation,
-      school.funding || 50,
-      manager.stats.reputation
-    )
-  }, [calculatedSchoolReputation, school.funding, manager.stats])
-
-  const intakeInfo = useMemo(() => {
-    return attractivenessToIntakeQuality(schoolAttractiveness)
-  }, [schoolAttractiveness])
-
-  // Initialize draft player pool when entering draft phase
-  useEffect(() => {
-    // Only run during draft phase and if draft hasn't been completed
-    if (season.phase !== GamePhase.DRAFT || draftCompleted) {
-      // Reset the flag when leaving draft phase so it can initialize again next year
-      if (season.phase !== GamePhase.DRAFT) {
-        hasInitializedDraftPoolRef.current = false
-      }
-      return
-    }
-
-    // Only generate if we haven't already generated and there are no players
-    if (hasInitializedDraftPoolRef.current || players.length > 0) {
-      return
-    }
-
-    // Only generate if we have manager stats
-    if (!manager.stats) {
-      return
-    }
-
-    // Helper to pick a random element from an array
-    const randomFromArray = <T,>(array: T[]): T => {
-      return array[Math.floor(Math.random() * array.length)]
-    }
-
-    // Calculate pool size (7-15) based on school attractiveness
-    const poolSize = calculatePlayerPoolSize(schoolAttractiveness)
-
-    // Get player quality based on attractiveness
-    const intakeQualityMap: Record<string, IntakeQuality> = {
-      poor: IntakeQuality.POOR,
-      below_average: IntakeQuality.BELOW_AVERAGE,
-      average: IntakeQuality.AVERAGE,
-      above_average: IntakeQuality.ABOVE_AVERAGE,
-      excellent: IntakeQuality.EXCELLENT
-    }
-    const playerQuality = intakeQualityMap[intakeInfo.quality] || IntakeQuality.AVERAGE
-
-    // Determine which gender(s) to generate based on team type
-    const gendersToGenerate: Gender[] =
-      school.teamType === 'boys'
-        ? [Gender.MALE]
-        : school.teamType === 'girls'
-          ? [Gender.FEMALE]
-          : [Gender.MALE, Gender.FEMALE]
-
-    // Generate all players at once
-    const newPlayers = Array.from({ length: poolSize }, () => {
-      const gender = randomFromArray(gendersToGenerate)
-      return generatePlayer(playerQuality, 1, gender)
-    })
-
-    // Mark as generated BEFORE updating to prevent double generation
-    hasInitializedDraftPoolRef.current = true
-
-    // Update players - this initializes the draft pool
-    updatePlayers.set([...players, ...newPlayers])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    season.phase,
+  // Initialize draft pool
+  useHomeDraftPool({
+    season,
     draftCompleted,
-    schoolAttractiveness,
-    intakeInfo,
-    school.teamType,
-    manager.stats
-  ])
+    players,
+    manager,
+    school,
+    updatePlayers
+  })
 
   const handleEmailClick = (email: Email) => {
     // Store the email ID in sessionStorage so EmailScreen can open it directly
@@ -184,71 +91,28 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     changeScreen(Screens.EMAIL)
   }
 
-  // Get action button text and action based on phase
-  const getActionButton = () => {
-    const currentPhase = season.phase as GamePhase
-    const currentPhaseString = season.phase
-
-    // If there are unread emails, show "Unread messages" button that goes to email screen
-    if (unreadEmails.length > 0) {
-      return {
-        text: 'Unread messages',
-        action: () => changeScreen(Screens.EMAIL)
-      }
-    }
-
-    // Draft phase button
-    const draftButton = getDraftActionButton(draftCompleted, changeScreen)
-    if (draftButton) return draftButton
-
-    // Training phase button
-    if (checkIsTrainingPhase(currentPhaseString)) {
-      return getTrainingActionButton(changeScreen)
-    }
-
-    // Continue button for other phases
-    const phaseIsImplemented = isPhaseImplemented(currentPhase)
-    const nextPhase = getNextPhase(currentPhase, season.month)
-
-    return {
-      text: 'Continue',
-      disabled: !phaseIsImplemented,
-      action: () => {
-        if (!phaseIsImplemented) return
-
-        const progressionAction = () => {
-          const params: PhaseProgressionParams = {
-            currentMonth: season.month,
-            currentYear: season.year,
-            currentPhase: currentPhaseString as GamePhase,
-            players,
-            teamRoster,
-            manager,
-            school,
-            trainingPlan,
-            skillSnapshots,
-            aiSchools
-          }
-
-          const callbacks: PhaseProgressionCallbacks = {
-            updateSeason,
-            updatePlayers,
-            updateTrainingPlan,
-            updateSkillSnapshots,
-            updateAISchools,
-            addEmail
-          }
-
-          advanceToNextPhase(params, callbacks)
-        }
-
-        setPendingTimeProgression(progressionAction)
-        setShowTimeProgressionDialog(true)
-      }
-    }
-  }
-
-  const actionButton = getActionButton()
+  // Get action button
+  const actionButton = useHomeActionButton({
+    season,
+    draftCompleted,
+    unreadEmails,
+    players,
+    teamRoster,
+    trainingPlan,
+    skillSnapshots,
+    aiSchools,
+    manager,
+    school,
+    updateSeason,
+    updatePlayers,
+    updateTrainingPlan,
+    updateSkillSnapshots,
+    updateAISchools,
+    addEmail,
+    changeScreen,
+    setShowTimeProgressionDialog,
+    setPendingTimeProgression
+  })
 
   return (
     <div

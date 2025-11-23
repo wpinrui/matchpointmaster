@@ -1,18 +1,6 @@
 import { useEffect, useState } from 'react'
 import { initialSaveData } from './initialSaveData'
-import {
-  FavourStyle,
-  Gender,
-  GripStyle,
-  Handedness,
-  PlayStyle,
-  RubberType,
-  SaveData,
-  TrainingFocus,
-  PlayerTraining,
-  TrainingGoal,
-  Player
-} from './types'
+import { SaveData } from './types'
 import {
   getCurrentSaveData,
   getCurrentSaveId,
@@ -24,6 +12,15 @@ import {
   getSaveSlot
 } from './saveManager'
 import { downloadJsonFile, sanitizeFilename } from '../../utils/fileDownload'
+import { createManagerUpdates } from './updateHelpers/managerUpdates'
+import { createSchoolUpdates } from './updateHelpers/schoolUpdates'
+import { createPlayerUpdates } from './updateHelpers/playerUpdates'
+import { createTeamRosterUpdates } from './updateHelpers/teamRosterUpdates'
+import { createSeasonUpdates } from './updateHelpers/seasonUpdates'
+import { createTrainingPlanUpdates } from './updateHelpers/trainingPlanUpdates'
+import { createTrainingGoalsUpdates } from './updateHelpers/trainingGoalsUpdates'
+import { createAISchoolsUpdates } from './updateHelpers/aiSchoolsUpdates'
+import { createSkillSnapshotsUpdates } from './updateHelpers/skillSnapshotsUpdates'
 
 export const useSaveData = () => {
   const [saveData, setSaveData] = useState<SaveData>(getCurrentSaveData())
@@ -62,103 +59,10 @@ export const useSaveData = () => {
     })
   }
 
-  const updateManager = {
-    fullName: (newName: string) => updateAttribute('manager', 'fullName', newName),
-    shortName: (newShortName: string) =>
-      updateAttribute('manager', 'shortName', newShortName),
-    gender: (newGender: Gender) => updateAttribute('manager', 'gender', newGender),
-    imagePath: (newImagePath: string) =>
-      updateAttribute('manager', 'imagePath', newImagePath),
-    handedness: (newHandedness: Handedness) =>
-      updateAttribute('manager', 'handedness', newHandedness),
-    forehandRubber: (newRubber: RubberType) =>
-      updateAttribute('manager', 'forehandRubber', newRubber),
-    backhandRubber: (newRubber: RubberType) =>
-      updateAttribute('manager', 'backhandRubber', newRubber),
-    gripStyle: (newGripStyle: GripStyle) =>
-      updateAttribute('manager', 'gripStyle', newGripStyle),
-    forehandBackhandTendency: (newTendency: FavourStyle) =>
-      updateAttribute('manager', 'forehandBackhandTendency', newTendency),
-    playStyle: (newPlayStyle: PlayStyle) =>
-      updateAttribute('manager', 'playStyle', newPlayStyle),
-    stats: (newStats: SaveData['manager']['stats']) =>
-      updateAttribute('manager', 'stats', newStats)
-  }
-
-  const updateSchool = {
-    name: (newName: string) => updateAttribute('school', 'name', newName),
-    crestPath: (crestPath: string) => updateAttribute('school', 'crestPath', crestPath),
-    primaryColor: (color: string) => updateAttribute('school', 'primaryColor', color),
-    secondaryColor: (color: string) => updateAttribute('school', 'secondaryColor', color),
-    accentColor: (color: string) => updateAttribute('school', 'accentColor', color),
-    reputation: (reputation: number) =>
-      updateAttribute('school', 'reputation', reputation),
-    teamType: (teamType: 'boys' | 'girls' | 'both') =>
-      updateAttribute('school', 'teamType', teamType)
-  }
-
-  const updatePlayers = {
-    add: (player: SaveData['players'][0]) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        players: [...prevData.players, player]
-      }))
-    },
-    remove: (playerId: string) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        players: prevData.players.filter((p) => p.id !== playerId),
-        teamRoster: prevData.teamRoster.filter((id) => id !== playerId)
-      }))
-    },
-    set: (players: SaveData['players']) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        players
-      }))
-    },
-    update: (playerId: string, updates: Partial<SaveData['players'][0]>) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        players: prevData.players.map((p) =>
-          p.id === playerId ? { ...p, ...updates } : p
-        )
-      }))
-    }
-  }
-
-  const updateTeamRoster = {
-    add: (playerId: string) => {
-      setSaveData((prevData) => {
-        // Don't add if already on team
-        if (prevData.teamRoster.includes(playerId)) {
-          return prevData
-        }
-        return {
-          ...prevData,
-          teamRoster: [...prevData.teamRoster, playerId]
-        }
-      })
-    },
-    remove: (playerId: string) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        teamRoster: prevData.teamRoster.filter((id) => id !== playerId)
-      }))
-    },
-    set: (playerIds: string[]) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        teamRoster: playerIds
-      }))
-    },
-    clear: () => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        teamRoster: []
-      }))
-    }
-  }
+  const updateManager = createManagerUpdates(updateAttribute)
+  const updateSchool = createSchoolUpdates(updateAttribute)
+  const updatePlayers = createPlayerUpdates(setSaveData)
+  const updateTeamRoster = createTeamRosterUpdates(setSaveData)
 
   /**
    * Export current save to JSON file (manual download)
@@ -242,31 +146,7 @@ export const useSaveData = () => {
     setCurrentSaveId(null)
   }
 
-  // Helper to update season properties
-  const updateSeasonProperty = <K extends keyof SaveData['season']>(
-    key: K,
-    value: SaveData['season'][K]
-  ) => {
-    setSaveData((prevData) => ({
-      ...prevData,
-      season: {
-        ...prevData.season,
-        [key]: value
-      }
-    }))
-  }
-
-  const updateSeason = {
-    setPhase: (phase: string) => updateSeasonProperty('phase', phase),
-    setMonth: (month: number) => updateSeasonProperty('month', month),
-    setYear: (year: number) => updateSeasonProperty('year', year),
-    setDraftCompleted: (completed: boolean) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        draftCompleted: completed
-      }))
-    }
-  }
+  const updateSeason = createSeasonUpdates(setSaveData)
 
   const markEmailAsRead = (emailId: string) => {
     setSaveData((prevData) => ({
@@ -284,164 +164,10 @@ export const useSaveData = () => {
     }))
   }
 
-  const updateSkillSnapshots = {
-    add: (snapshot: SaveData['skillSnapshots'][0]) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        skillSnapshots: [...prevData.skillSnapshots, snapshot]
-      }))
-    },
-    addMany: (snapshots: SaveData['skillSnapshots']) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        skillSnapshots: [...prevData.skillSnapshots, ...snapshots]
-      }))
-    },
-    clear: () => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        skillSnapshots: []
-      }))
-    }
-  }
-
-  const updateTrainingPlan = {
-    set: (plan: SaveData['trainingPlan']) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        trainingPlan: plan
-      }))
-    },
-    setTeamFocus: (focus: TrainingFocus | null) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        trainingPlan: prevData.trainingPlan
-          ? { ...prevData.trainingPlan, teamFocus: focus }
-          : null
-      }))
-    },
-    addPlayerAssignment: (assignment: PlayerTraining) => {
-      setSaveData((prevData) => {
-        if (!prevData.trainingPlan) return prevData
-        const existingIndex = prevData.trainingPlan.playerAssignments.findIndex(
-          (a) => a.playerId === assignment.playerId
-        )
-        const newAssignments =
-          existingIndex >= 0
-            ? prevData.trainingPlan.playerAssignments.map((a, i) =>
-                i === existingIndex ? assignment : a
-              )
-            : [...prevData.trainingPlan.playerAssignments, assignment]
-
-        const slotsUsed = newAssignments.filter((a) => a.isIndividualCoaching).length
-
-        return {
-          ...prevData,
-          trainingPlan: {
-            ...prevData.trainingPlan,
-            playerAssignments: newAssignments,
-            coachingSlotsUsed: slotsUsed
-          }
-        }
-      })
-    },
-    removePlayerAssignment: (playerId: string) => {
-      setSaveData((prevData) => {
-        if (!prevData.trainingPlan) return prevData
-        const newAssignments = prevData.trainingPlan.playerAssignments.filter(
-          (a) => a.playerId !== playerId
-        )
-        const slotsUsed = newAssignments.filter((a) => a.isIndividualCoaching).length
-
-        return {
-          ...prevData,
-          trainingPlan: {
-            ...prevData.trainingPlan,
-            playerAssignments: newAssignments,
-            coachingSlotsUsed: slotsUsed
-          }
-        }
-      })
-    },
-    setCompleted: (completed: boolean) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        trainingPlan: prevData.trainingPlan
-          ? { ...prevData.trainingPlan, completed }
-          : null
-      }))
-    },
-    setMonthAndYear: (month: number, year: number) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        trainingPlan: prevData.trainingPlan
-          ? { ...prevData.trainingPlan, month, year }
-          : null
-      }))
-    }
-  }
-
-  const updateTrainingGoals = {
-    add: (goal: SaveData['trainingGoals'][0]) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        trainingGoals: [...prevData.trainingGoals, goal]
-      }))
-    },
-    remove: (goalId: string) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        trainingGoals: prevData.trainingGoals.filter((g) => g.id !== goalId)
-      }))
-    },
-    update: (goalId: string, updates: Partial<SaveData['trainingGoals'][0]>) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        trainingGoals: prevData.trainingGoals.map((g) =>
-          g.id === goalId ? { ...g, ...updates } : g
-        )
-      }))
-    },
-    set: (goals: SaveData['trainingGoals']) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        trainingGoals: goals
-      }))
-    }
-  }
-
-  const updateAISchools = {
-    set: (schools: SaveData['aiSchools']) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        aiSchools: schools
-      }))
-    },
-    update: (schoolId: number, updates: Partial<SaveData['aiSchools'][0]>) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        aiSchools: prevData.aiSchools.map((school) =>
-          school.id === schoolId ? { ...school, ...updates } : school
-        )
-      }))
-    },
-    updateSchoolPlayers: (schoolId: number, players: Player[]) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        aiSchools: prevData.aiSchools.map((school) =>
-          school.id === schoolId ? { ...school, players } : school
-        )
-      }))
-    },
-    updateSchoolRoster: (schoolId: number, roster: string[]) => {
-      setSaveData((prevData) => ({
-        ...prevData,
-        aiSchools: prevData.aiSchools.map((school) =>
-          school.id === schoolId ? { ...school, teamRoster: roster } : school
-        )
-      }))
-    }
-  }
+  const updateSkillSnapshots = createSkillSnapshotsUpdates(setSaveData)
+  const updateTrainingPlan = createTrainingPlanUpdates(setSaveData)
+  const updateTrainingGoals = createTrainingGoalsUpdates(setSaveData)
+  const updateAISchools = createAISchoolsUpdates(setSaveData)
 
   return {
     saveData,

@@ -6,7 +6,6 @@ import {
   Player,
   PlayerSkills,
   SkillSnapshot,
-  PlayerTrait,
   PlayStyle,
   TrainingFocus
 } from '../services/savegame/types'
@@ -17,20 +16,13 @@ import {
   calculateDiminishingReturns
 } from './playerProgression'
 import { getPlayerFullName } from './playerGeneration'
-
-/**
- * Convert funding rank to facilities multiplier
- * Lower funding rank = better funding = better facilities
- */
-function fundingToFacilitiesMultiplier(funding: number): number {
-  // Funding is rank (lower is better)
-  // Best funding (rank 1) = 1.2 multiplier
-  // Worst funding (rank 100) = 0.8 multiplier
-  // Scale linearly
-  const normalized = (funding - 1) / 99 // 0 to 1
-  return 1.2 - normalized * 0.4 // 1.2 to 0.8
-}
 import { calculateSkillImprovement } from './trainingInsights'
+import { SKILL_LABELS } from './trainingAnalytics/constants'
+import {
+  fundingToFacilitiesMultiplier,
+  analyzeHighImprovementReasons,
+  analyzeLowImprovementReasons
+} from './trainingAnalytics/improvementReasons'
 
 /**
  * Analytic insight explaining an improvement
@@ -72,22 +64,12 @@ function getPlayerImprovementData(
   newValue: number
 }> {
   const improvements = calculateSkillImprovement(oldSkills, newSkills)
-  const skillLabels: Record<keyof PlayerSkills, string> = {
-    forehand: 'Forehand',
-    backhand: 'Backhand',
-    footwork: 'Footwork',
-    serve: 'Serve',
-    receive: 'Receive',
-    spin: 'Spin',
-    placement: 'Placement',
-    consistency: 'Consistency'
-  }
 
   return Object.keys(improvements).map((key) => {
     const skillKey = key as keyof PlayerSkills
     return {
       skill: skillKey,
-      skillLabel: skillLabels[skillKey],
+      skillLabel: SKILL_LABELS[skillKey],
       improvement: improvements[skillKey] || 0,
       oldValue: Math.floor(oldSkills[skillKey]),
       newValue: Math.floor(newSkills[skillKey])
@@ -110,17 +92,6 @@ function analyzeImprovementReason(
   isIndividualCoaching: boolean,
   teammates: Player[]
 ): ImprovementInsight {
-  const skillLabels: Record<keyof PlayerSkills, string> = {
-    forehand: 'Forehand',
-    backhand: 'Backhand',
-    footwork: 'Footwork',
-    serve: 'Serve',
-    receive: 'Receive',
-    spin: 'Spin',
-    placement: 'Placement',
-    consistency: 'Consistency'
-  }
-
   const reasons: string[] = []
   const isMax = improvement > 0
 
@@ -134,174 +105,34 @@ function analyzeImprovementReason(
 
   // Analyze reasons for high improvement
   if (isMax && improvement > 3) {
-    // High improvement reasons
-    if (styleSynergy >= 1.2) {
-      reasons.push(
-        `Excellent style synergy with coach (${(styleSynergy * 100).toFixed(0)}%)`
-      )
-    }
-    if (traitMultiplier >= 1.2) {
-      const goodTraits = player.traits.filter((t) =>
-        [
-          PlayerTrait.HARD_WORKER,
-          PlayerTrait.QUICK_LEARNER,
-          PlayerTrait.PRODIGY
-        ].includes(t)
-      )
-      if (goodTraits.length > 0) {
-        reasons.push(
-          `Strong work ethic from traits: ${goodTraits.map((t) => t.replace('_', ' ')).join(', ')}`
-        )
-      }
-    }
-    if (isIndividualCoaching) {
-      reasons.push('Received individual coaching attention')
-    }
-    if (peerInfluence >= 1.03) {
-      reasons.push('Benefited from strong teammates as training partners')
-    }
-    if (diminishingReturns >= 0.8) {
-      reasons.push('Skill level allowed for rapid improvement')
-    }
-    if (facilitiesMultiplier >= 1.1) {
-      reasons.push('Well-funded school facilities enhanced training')
-    }
-    if (coachingMultiplier >= 0.8) {
-      reasons.push('Strong coaching guidance helped development')
-    }
-    // Check if skill is targeted by training focus
-    if (trainingFocus) {
-      const getSkillsForFocus = (focus: TrainingFocus): (keyof PlayerSkills)[] => {
-        const skillMap: Record<TrainingFocus, (keyof PlayerSkills)[]> = {
-          [TrainingFocus.FOREHAND]: ['forehand'],
-          [TrainingFocus.BACKHAND]: ['backhand'],
-          [TrainingFocus.FOOTWORK]: ['footwork'],
-          [TrainingFocus.SERVE]: ['serve'],
-          [TrainingFocus.RECEIVE]: ['receive'],
-          [TrainingFocus.SPIN]: ['spin'],
-          [TrainingFocus.PLACEMENT]: ['placement'],
-          [TrainingFocus.CONSISTENCY]: ['consistency'],
-          [TrainingFocus.MATCH_PLAY]: [
-            'forehand',
-            'backhand',
-            'footwork',
-            'serve',
-            'receive',
-            'spin',
-            'placement',
-            'consistency'
-          ],
-          [TrainingFocus.FUNDAMENTALS]: [
-            'forehand',
-            'backhand',
-            'footwork',
-            'serve',
-            'receive',
-            'spin',
-            'placement',
-            'consistency'
-          ],
-          [TrainingFocus.TOURNAMENT_PREP]: [
-            'forehand',
-            'backhand',
-            'footwork',
-            'serve',
-            'receive',
-            'spin',
-            'placement',
-            'consistency'
-          ]
-        }
-        return skillMap[focus] || []
-      }
-
-      const targetedSkills = getSkillsForFocus(trainingFocus)
-      if (targetedSkills.includes(skill)) {
-        reasons.push(`Focused training matched this skill area`)
-      }
-    }
+    analyzeHighImprovementReasons(
+      player,
+      skill,
+      improvement,
+      styleSynergy,
+      traitMultiplier,
+      peerInfluence,
+      diminishingReturns,
+      facilitiesMultiplier,
+      coachingMultiplier,
+      trainingFocus,
+      isIndividualCoaching,
+      reasons
+    )
   } else if (!isMax && improvement <= 1) {
     // Low improvement reasons
-    if (styleSynergy <= 0.9) {
-      if (styleSynergy <= 0.8) {
-        reasons.push(
-          `Poor style compatibility with coach (${(styleSynergy * 100).toFixed(0)}%)`
-        )
-      } else {
-        reasons.push(`Moderate style mismatch limited improvement`)
-      }
-    }
-    if (traitMultiplier <= 0.9) {
-      const badTraits = player.traits.filter((t) => [PlayerTrait.LAZY].includes(t))
-      if (badTraits.length > 0) {
-        reasons.push(
-          `Struggled due to trait: ${badTraits.map((t) => t.replace('_', ' ')).join(', ')}`
-        )
-      }
-    }
-    if (!isIndividualCoaching) {
-      reasons.push('Lacked individual coaching focus')
-    }
-    if (diminishingReturns <= 0.5) {
-      reasons.push('Skill level is high - improvement slowed by diminishing returns')
-    }
-    if (facilitiesMultiplier <= 0.9) {
-      reasons.push('Limited school facilities hindered training quality')
-    }
-    if (coachingMultiplier <= 0.65) {
-      reasons.push('Coaching effectiveness could be improved')
-    }
-    // Check if skill is NOT targeted by training focus
-    if (trainingFocus) {
-      const getSkillsForFocus = (focus: TrainingFocus): (keyof PlayerSkills)[] => {
-        const skillMap: Record<TrainingFocus, (keyof PlayerSkills)[]> = {
-          [TrainingFocus.FOREHAND]: ['forehand'],
-          [TrainingFocus.BACKHAND]: ['backhand'],
-          [TrainingFocus.FOOTWORK]: ['footwork'],
-          [TrainingFocus.SERVE]: ['serve'],
-          [TrainingFocus.RECEIVE]: ['receive'],
-          [TrainingFocus.SPIN]: ['spin'],
-          [TrainingFocus.PLACEMENT]: ['placement'],
-          [TrainingFocus.CONSISTENCY]: ['consistency'],
-          [TrainingFocus.MATCH_PLAY]: [
-            'forehand',
-            'backhand',
-            'footwork',
-            'serve',
-            'receive',
-            'spin',
-            'placement',
-            'consistency'
-          ],
-          [TrainingFocus.FUNDAMENTALS]: [
-            'forehand',
-            'backhand',
-            'footwork',
-            'serve',
-            'receive',
-            'spin',
-            'placement',
-            'consistency'
-          ],
-          [TrainingFocus.TOURNAMENT_PREP]: [
-            'forehand',
-            'backhand',
-            'footwork',
-            'serve',
-            'receive',
-            'spin',
-            'placement',
-            'consistency'
-          ]
-        }
-        return skillMap[focus] || []
-      }
-
-      const targetedSkills = getSkillsForFocus(trainingFocus)
-      if (!targetedSkills.includes(skill)) {
-        reasons.push(`Training focused on different skills`)
-      }
-    }
+    analyzeLowImprovementReasons(
+      player,
+      skill,
+      styleSynergy,
+      traitMultiplier,
+      diminishingReturns,
+      facilitiesMultiplier,
+      coachingMultiplier,
+      trainingFocus,
+      isIndividualCoaching,
+      reasons
+    )
   }
 
   // Default reason if no specific reasons found
@@ -324,7 +155,7 @@ function analyzeImprovementReason(
   return {
     player,
     skill,
-    skillLabel: skillLabels[skill],
+    skillLabel: SKILL_LABELS[skill],
     improvement,
     isMax,
     reasons,
@@ -443,22 +274,12 @@ export function getImprovementChartData(
       if (!oldSnapshot) return null
 
       const improvements = calculateSkillImprovement(oldSnapshot.skills, player.skills)
-      const skillLabels: Record<keyof PlayerSkills, string> = {
-        forehand: 'Forehand',
-        backhand: 'Backhand',
-        footwork: 'Footwork',
-        serve: 'Serve',
-        receive: 'Receive',
-        spin: 'Spin',
-        placement: 'Placement',
-        consistency: 'Consistency'
-      }
 
       const improvementList = Object.keys(improvements).map((key) => {
         const skillKey = key as keyof PlayerSkills
         return {
           skill: skillKey,
-          skillLabel: skillLabels[skillKey],
+          skillLabel: SKILL_LABELS[skillKey],
           improvement: improvements[skillKey] || 0
         }
       })
