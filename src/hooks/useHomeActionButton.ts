@@ -36,6 +36,7 @@ interface UseHomeActionButtonParams {
   changeScreen: (screen: Screens) => void
   setShowTimeProgressionDialog: (show: boolean) => void
   setPendingTimeProgression: (action: (() => void) | null) => void
+  roundRobinData?: any
 }
 
 export function useHomeActionButton({
@@ -57,7 +58,8 @@ export function useHomeActionButton({
   addEmail,
   changeScreen,
   setShowTimeProgressionDialog,
-  setPendingTimeProgression
+  setPendingTimeProgression,
+  roundRobinData
 }: UseHomeActionButtonParams) {
   return useMemo(() => {
     const currentPhase = season.phase as GamePhase
@@ -82,7 +84,7 @@ export function useHomeActionButton({
 
     // Intra-club round-robin phase button
     if (currentPhase === GamePhase.INTRA_CLUB) {
-      return getIntraClubActionButton(changeScreen)
+      return getIntraClubActionButton(changeScreen, roundRobinData)
     }
 
     // Continue button for other phases
@@ -144,6 +146,7 @@ export function useHomeActionButton({
     addEmail,
     changeScreen,
     setShowTimeProgressionDialog,
-    setPendingTimeProgression
+    setPendingTimeProgression,
+    roundRobinData
   ])
 }

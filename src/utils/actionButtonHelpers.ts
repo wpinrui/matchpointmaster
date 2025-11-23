@@ -44,10 +44,18 @@ export function getTrainingActionButton(
  * Get action button configuration for intra-club round-robin phase
  */
 export function getIntraClubActionButton(
-  changeScreen: (screen: Screens) => void
+  changeScreen: (screen: Screens) => void,
+  roundRobinData?: any
 ): ActionButtonConfig {
+  // Check if any tournament has started
+  const tournamentStarted = roundRobinData
+    ? Object.values(roundRobinData.teamResults || {}).some(
+        (result: any) => result !== null && result.tournamentStarted === true
+      )
+    : false
+
   return {
-    text: 'Start Round-Robin',
+    text: tournamentStarted ? 'Continue Round-Robin' : 'Start Round-Robin',
     action: () => changeScreen(Screens.ROUND_ROBIN)
   }
 }
