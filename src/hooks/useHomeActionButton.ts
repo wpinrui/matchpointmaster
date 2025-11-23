@@ -65,11 +65,21 @@ export function useHomeActionButton({
     const currentPhase = season.phase as GamePhase
     const currentPhaseString = season.phase
 
-    // If there are unread emails, show "Unread messages" button that goes to email screen
+    // If there are unread emails, show "Unread messages" button that goes to oldest unread email
     if (unreadEmails.length > 0) {
       return {
         text: 'Unread messages',
-        action: () => changeScreen(Screens.EMAIL)
+        action: () => {
+          // Find the least recent (oldest) unread email
+          const oldestUnreadEmail = [...unreadEmails].sort(
+            (a, b) => a.timestamp - b.timestamp
+          )[0]
+          if (oldestUnreadEmail) {
+            // Store the email ID in sessionStorage so EmailScreen can open it directly
+            sessionStorage.setItem('selectedEmailId', oldestUnreadEmail.id)
+          }
+          changeScreen(Screens.EMAIL)
+        }
       }
     }
 
@@ -130,7 +140,7 @@ export function useHomeActionButton({
   }, [
     season,
     draftCompleted,
-    unreadEmails.length,
+    unreadEmails,
     players,
     teamRoster,
     trainingPlan,

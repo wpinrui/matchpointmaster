@@ -18,7 +18,7 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     return [...emails].sort((a, b) => b.timestamp - a.timestamp)
   }, [emails])
 
-  // Initialize with first unread email, or first email if all are read
+  // Initialize with oldest unread email, or newest email if all are read
   // Also check if an email ID was passed from navigation (e.g., clicking email card on home screen)
   const getInitialEmailId = () => {
     // Check if an email ID was passed from navigation
@@ -31,8 +31,8 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       }
     }
 
-    // Otherwise, default to first unread email, or first email if all are read
-    const unread = emails.filter((e) => !e.read).sort((a, b) => b.timestamp - a.timestamp)
+    // Otherwise, default to oldest unread email, or newest email if all are read
+    const unread = emails.filter((e) => !e.read).sort((a, b) => a.timestamp - b.timestamp)
     if (unread.length > 0) {
       return unread[0].id
     }
@@ -63,18 +63,24 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
     }
   }
 
-  // Find next unread email - any other unread email besides the current one
+  // Find next unread email - the least recent (oldest) unread email
   const nextUnreadEmail = useMemo(() => {
-    if (!selectedEmailId) return null
+    if (!selectedEmailId) {
+      // If no email is selected, return the oldest unread email
+      const unreadSorted = emails
+        .filter((e) => !e.read)
+        .sort((a, b) => a.timestamp - b.timestamp)
+      return unreadSorted.length > 0 ? unreadSorted[0] : null
+    }
 
     // Get all emails that are unread and not the currently selected one
     // We check emails directly instead of unreadEmails to handle cases where
     // the current email was just marked as read but unreadEmails hasn't updated yet
     const otherUnreadEmails = emails
       .filter((e) => !e.read && e.id !== selectedEmailId)
-      .sort((a, b) => b.timestamp - a.timestamp)
+      .sort((a, b) => a.timestamp - b.timestamp)
 
-    // If there are other unread emails, return the first one (most recent)
+    // Return the oldest unread email (first in ascending timestamp order)
     return otherUnreadEmails.length > 0 ? otherUnreadEmails[0] : null
   }, [emails, selectedEmailId])
 
@@ -106,32 +112,42 @@ const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           marginBottom: theme.spacing.md
         }}
       >
-        <h1
-          style={{
-            fontFamily: theme.typography.fontFamily.heading,
-            fontSize: theme.typography.fontSize['3xl'],
-            fontWeight: theme.typography.fontWeight.extrabold,
-            background: theme.gradients.primary,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            margin: 0
-          }}
-        >
-          Inbox
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+          <h1
+            style={{
+              fontFamily: theme.typography.fontFamily.heading,
+              fontSize: theme.typography.fontSize['3xl'],
+              fontWeight: theme.typography.fontWeight.extrabold,
+              background: theme.gradients.primary,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: 0
+            }}
+          >
+            Inbox
+          </h1>
           {unreadEmails.length > 0 && (
             <span
               style={{
-                marginLeft: theme.spacing.sm,
-                fontSize: theme.typography.fontSize.lg,
-                color: theme.colors.primary.main,
-                fontWeight: theme.typography.fontWeight.bold
+                backgroundColor: theme.colors.primary.main,
+                color: theme.colors.primary.contrast,
+                borderRadius: '12px',
+                minWidth: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.bold,
+                padding: `0 ${theme.spacing.xs}`,
+                lineHeight: 1
               }}
             >
-              ({unreadEmails.length} unread)
+              {unreadEmails.length > 99 ? '99+' : unreadEmails.length}
             </span>
           )}
-        </h1>
+        </div>
         <GameButton variant="secondary" onClick={handleNextUnread} type="button">
           {nextUnreadEmail ? 'Next Unread' : 'Back to Home'}
         </GameButton>

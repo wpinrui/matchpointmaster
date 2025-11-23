@@ -1,6 +1,7 @@
 import React from 'react'
 import { theme } from '../../theme/theme'
 import { StyledFlex, StyledText } from '../../styles'
+import { MONTH_NAMES } from '../../utils/constants'
 
 interface TimelineItemProps {
   month: number
@@ -47,7 +48,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
               : theme.colors.text.primary
         }}
       >
-        Month {month}
+        {MONTH_NAMES[month - 1]}
       </StyledText>
       <StyledText
         size="base"

@@ -19,11 +19,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   changeScreen,
   children
 }) => {
-  const { season } = useSaveDataContext()
+  const { season, emails } = useSaveDataContext()
 
   // Check if we're in a training phase
   const isTrainingPhase =
     season.phase === GamePhase.TRAINING || season.phase === GamePhase.TRAINING_2
+
+  // Get unread email count
+  const unreadCount = useMemo(() => {
+    return emails.filter((e) => !e.read).length
+  }, [emails])
 
   // Build sidebar items conditionally
   const sidebarItems = useMemo(() => {
@@ -105,9 +110,33 @@ const MainLayout: React.FC<MainLayoutProps> = ({
             onClick={() => changeScreen(item.screen)}
             type="button"
             active={currentScreen === item.screen}
+            style={{ position: 'relative' }}
           >
             <span style={{ fontSize: theme.typography.fontSize.xl }}>{item.icon}</span>
             <span>{item.label}</span>
+            {item.screen === Screens.EMAIL && unreadCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  backgroundColor: theme.colors.primary.main,
+                  color: theme.colors.primary.contrast,
+                  borderRadius: '10px',
+                  minWidth: '20px',
+                  height: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: theme.typography.fontSize.xs,
+                  fontWeight: theme.typography.fontWeight.bold,
+                  padding: `0 ${theme.spacing.xs}`,
+                  lineHeight: 1
+                }}
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </StyledSidebarButton>
         ))}
       </StyledFlex>

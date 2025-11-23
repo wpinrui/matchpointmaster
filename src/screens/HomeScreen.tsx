@@ -190,7 +190,7 @@ const HomeScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
       >
         {/* Left Column - Email Preview (moved to left, widened) */}
         <EmailPreviewSection
-          unreadEmails={unreadEmails}
+          allEmails={emails}
           currentSeasonYear={season.year}
           currentSeasonMonth={season.month}
           onEmailClick={handleEmailClick}

@@ -1,7 +1,7 @@
 /**
  * Email preview section for home screen
  */
-import React from 'react'
+import React, { useMemo } from 'react'
 import GameButton from '../buttons/GameButton'
 import GameCard from '../cards/GameCard'
 import { EmailCard } from '../emails/EmailCard'
@@ -11,7 +11,7 @@ import { Screens } from '../../screen_manager/screens'
 import { StyledHeading, StyledText, StyledFlex } from '../../styles'
 
 interface EmailPreviewSectionProps {
-  unreadEmails: Email[]
+  allEmails: Email[]
   currentSeasonYear: number
   currentSeasonMonth: number
   onEmailClick: (email: Email) => void
@@ -19,12 +19,20 @@ interface EmailPreviewSectionProps {
 }
 
 export const EmailPreviewSection: React.FC<EmailPreviewSectionProps> = ({
-  unreadEmails,
+  allEmails,
   currentSeasonYear,
   currentSeasonMonth,
   onEmailClick,
   onChangeScreen
 }) => {
+  const unreadEmails = useMemo(() => {
+    return allEmails.filter((e) => !e.read)
+  }, [allEmails])
+
+  const sortedEmails = useMemo(() => {
+    return [...allEmails].sort((a, b) => b.timestamp - a.timestamp)
+  }, [allEmails])
+
   return (
     <StyledFlex
       direction="column"
@@ -36,18 +44,31 @@ export const EmailPreviewSection: React.FC<EmailPreviewSectionProps> = ({
       }}
     >
       <StyledFlex justify="space-between" align="center">
-        <StyledHeading size="h3" margin="0">
-          Inbox
+        <StyledFlex align="center" gap="sm">
+          <StyledHeading size="h3" margin="0">
+            Inbox
+          </StyledHeading>
           {unreadEmails.length > 0 && (
-            <StyledText
-              size="base"
-              weight="bold"
-              style={{ marginLeft: theme.spacing.sm, color: theme.colors.primary.main }}
+            <span
+              style={{
+                backgroundColor: theme.colors.primary.main,
+                color: theme.colors.primary.contrast,
+                borderRadius: '12px',
+                minWidth: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.bold,
+                padding: `0 ${theme.spacing.xs}`,
+                lineHeight: 1
+              }}
             >
-              ({unreadEmails.length})
-            </StyledText>
+              {unreadEmails.length > 99 ? '99+' : unreadEmails.length}
+            </span>
           )}
-        </StyledHeading>
+        </StyledFlex>
         <GameButton
           variant="secondary"
           size="sm"
@@ -58,7 +79,7 @@ export const EmailPreviewSection: React.FC<EmailPreviewSectionProps> = ({
         </GameButton>
       </StyledFlex>
 
-      {unreadEmails.length > 0 ? (
+      {sortedEmails.length > 0 ? (
         <StyledFlex
           direction="column"
           gap="sm"
@@ -67,7 +88,7 @@ export const EmailPreviewSection: React.FC<EmailPreviewSectionProps> = ({
             flex: 1
           }}
         >
-          {unreadEmails.slice(0, 5).map((email) => (
+          {sortedEmails.slice(0, 10).map((email) => (
             <EmailCard
               key={email.id}
               email={email}
@@ -76,14 +97,14 @@ export const EmailPreviewSection: React.FC<EmailPreviewSectionProps> = ({
               currentSeasonMonth={currentSeasonMonth}
             />
           ))}
-          {unreadEmails.length > 5 && (
+          {sortedEmails.length > 10 && (
             <StyledText
               size="sm"
               color="secondary"
               style={{ textAlign: 'center', padding: theme.spacing.md }}
             >
-              +{unreadEmails.length - 5} more unread email
-              {unreadEmails.length - 5 !== 1 ? 's' : ''}
+              +{sortedEmails.length - 10} more email
+              {sortedEmails.length - 10 !== 1 ? 's' : ''}
             </StyledText>
           )}
         </StyledFlex>
@@ -103,7 +124,7 @@ export const EmailPreviewSection: React.FC<EmailPreviewSectionProps> = ({
             color="secondary"
             style={{ margin: `0 0 ${theme.spacing.md} 0` }}
           >
-            No unread emails
+            No emails
           </StyledText>
           <StyledText
             size="sm"
