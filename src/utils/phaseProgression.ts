@@ -151,26 +151,24 @@ export function advanceToNextPhase(
 
   const { updateSeason, updateTrainingPlan, addEmail } = callbacks
 
-  // Process training progression if in a training phase
-  processTrainingProgression(params, callbacks)
-
-  // Calculate next phase early so we can use it for AI school logic
+  // Calculate next phase early
   const nextPhase = getNextPhase(currentPhase, currentMonth)
   const newYear = nextPhase.month === 1 ? currentYear + 1 : currentYear
 
-  // Process AI school training - reuse same logic as human player
-  let updatedAISchools = params.aiSchools
-  if (params.aiSchools && callbacks.updateAISchools) {
-    updatedAISchools = params.aiSchools.map((school) => {
-      // Initialize training plan if we're in training phase and don't have one yet (same as human player)
-      const isTrainingPhase =
-        currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2
-      
-      if (isTrainingPhase && !school.trainingPlan) {
-        console.log(
-          `[AI Training] Initializing training plan for ${school.name} (Phase: ${currentPhase}, Month: ${currentMonth})`
-        )
-        return initializeAISchoolTraining(
+  // Process training progression if in a training phase - SAME LOGIC FOR PLAYER AND AI
+  const isTrainingPhase =
+    currentPhase === GamePhase.TRAINING || currentPhase === GamePhase.TRAINING_2
+
+  // Process player's team training (existing logic)
+  processTrainingProgression(params, callbacks)
+
+  // Process AI school training - EXACT SAME LOGIC as player's team
+  if (params.aiSchools && callbacks.updateAISchools && isTrainingPhase) {
+    const updatedAISchools = params.aiSchools.map((school) => {
+      // First ensure we have a training plan for the CURRENT month (same as player's team does in TrainingScreen)
+      let schoolWithPlan = school
+      if (!school.trainingPlan || school.trainingPlan.month !== currentMonth) {
+        schoolWithPlan = initializeAISchoolTraining(
           school,
           currentYear,
           currentMonth,
@@ -178,45 +176,16 @@ export function advanceToNextPhase(
         )
       }
 
-      // Apply training if in a training phase and have a training plan (same condition as player's school)
-      if (
-        isTrainingPhase &&
-        school.trainingPlan &&
-        !school.trainingPlan.completed
-      ) {
-        console.log(
-          `[AI Training] Applying training to ${school.name} (Phase: ${currentPhase}, Month: ${currentMonth})`
+      // Then apply training - EXACT SAME CONDITION as player's team
+      if (schoolWithPlan.trainingPlan && !schoolWithPlan.trainingPlan.completed) {
+        const teamPlayers = schoolWithPlan.players.filter((p) =>
+          schoolWithPlan.teamRoster.includes(p.id)
         )
-        console.log(
-          `[AI Training] Training Plan: ${school.trainingPlan.teamFocus || 'None'}, Team Players: ${school.teamRoster.length}`
-        )
-        const teamPlayers = school.players.filter((p) => school.teamRoster.includes(p.id))
-        return applyAISchoolTraining(school, teamPlayers)
+        return applyAISchoolTraining(schoolWithPlan, teamPlayers)
       }
 
-      return school
+      return schoolWithPlan
     })
-
-    // Also handle initializing training plans for the next month if we're advancing within training phase
-    if (nextPhase.phase === GamePhase.TRAINING || nextPhase.phase === GamePhase.TRAINING_2) {
-      updatedAISchools = updatedAISchools.map((school) => {
-        // Check if we need a new training plan for the next month
-        // This handles advancing from month 2 to month 3, both in TRAINING phase
-        if (!school.trainingPlan || school.trainingPlan.month !== nextPhase.month) {
-          console.log(
-            `[AI Training] Initializing new training plan for ${school.name} - Month: ${nextPhase.month}, Year: ${newYear}`
-          )
-          return initializeAISchoolTraining(
-            school,
-            newYear,
-            nextPhase.month,
-            nextPhase.phase
-          )
-        }
-        return school
-      })
-    }
-
     callbacks.updateAISchools.set(updatedAISchools)
   }
 
@@ -236,14 +205,29 @@ export function advanceToNextPhase(
   }
 
   // If entering a new training month, reset completed flag and update month/year
+  // SAME LOGIC FOR PLAYER AND AI - initialize training plans when entering training phase
   if (
-    (nextPhase.phase === GamePhase.TRAINING ||
-      nextPhase.phase === GamePhase.TRAINING_2) &&
-    trainingPlan
+    nextPhase.phase === GamePhase.TRAINING ||
+    nextPhase.phase === GamePhase.TRAINING_2
   ) {
-    if (trainingPlan.month !== nextPhase.month || trainingPlan.year !== newYear) {
-      updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
-      updateTrainingPlan.setCompleted(false)
+    // Player's team: initialize/reset training plan for new month
+    if (trainingPlan) {
+      if (trainingPlan.month !== nextPhase.month || trainingPlan.year !== newYear) {
+        updateTrainingPlan.setMonthAndYear(nextPhase.month, newYear)
+        updateTrainingPlan.setCompleted(false)
+      }
+    }
+
+    // AI schools: initialize training plans when entering training phase (SAME as player's team)
+    if (params.aiSchools && callbacks.updateAISchools) {
+      const updatedAISchools = params.aiSchools.map((school) => {
+        // Initialize if entering training phase and don't have a plan, or if plan is for different month
+        if (!school.trainingPlan || school.trainingPlan.month !== nextPhase.month) {
+          return initializeAISchoolTraining(school, newYear, nextPhase.month, nextPhase.phase)
+        }
+        return school
+      })
+      callbacks.updateAISchools.set(updatedAISchools)
     }
   }
 
