@@ -119,12 +119,10 @@ export const StyledCard = styled.div<CardProps>`
     css`
       cursor: pointer;
       &:focus {
-        outline: 2px solid ${theme.colors.border.selection};
-        outline-offset: 2px;
+        outline: none;
       }
       &:focus-visible {
-        outline: 2px solid ${theme.colors.border.selection};
-        outline-offset: 2px;
+        outline: none;
       }
     `}
 

@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react'
-import { ScreenProps, Screens } from '../screen_manager/screens'
-import { useSaveDataContext } from '../services/savegame/SaveDataContext'
-import { theme } from '../theme/theme'
+import React, { useMemo, useState } from 'react'
+import GameButton from '../components/buttons/GameButton'
 import { EmailCard } from '../components/emails/EmailCard'
 import { EmailView } from '../components/emails/EmailView'
+import { ScreenProps, Screens } from '../screen_manager/screens'
+import { useSaveDataContext } from '../services/savegame/SaveDataContext'
 import { Email } from '../services/savegame/types'
-import GameButton from '../components/buttons/GameButton'
+import { theme } from '../theme/theme'
 
 const EmailScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
   const { emails, markEmailAsRead, season } = useSaveDataContext()
