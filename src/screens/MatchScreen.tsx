@@ -40,18 +40,12 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
           // Don't clear session storage here - it's needed for match result saving
           // It will be cleared after the match completes
         } else {
-          console.error('Could not find players for round-robin match:', {
-            player1Id: matchData.player1Id,
-            player2Id: matchData.player2Id,
-            availablePlayerIds: players.map((p) => p.id)
-          })
           // Fallback to test players if players not found
           const testPlayer1 = createTestPlayer('Player 1', 'test-player-1')
           const testPlayer2 = createTestPlayer('Player 2', 'test-player-2')
           setMatchPlayers([testPlayer1, testPlayer2])
         }
-      } catch (e) {
-        console.error('Error parsing round-robin match data:', e)
+      } catch {
         // Fallback to test players on error
         const testPlayer1 = createTestPlayer('Player 1', 'test-player-1')
         const testPlayer2 = createTestPlayer('Player 2', 'test-player-2')
@@ -111,8 +105,8 @@ const MatchScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             // Clear match state storage
             sessionStorage.removeItem('matchpointMaster_matchState')
             sessionStorage.removeItem('matchpointMaster_matchLogEvents')
-          } catch (e) {
-            console.error('Error saving round-robin match result:', e)
+          } catch {
+            // Silently handle match result save error
           }
         }
       }

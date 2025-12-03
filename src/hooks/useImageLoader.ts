@@ -50,11 +50,9 @@ export const useImageLoader = (path: string, isOpen: boolean) => {
         }
       })
 
-      console.log('Loaded images:', imageUrls.length, 'for path:', path)
       setImagePaths(imageUrls)
       setError(imageUrls.length === 0 ? 'No images found in this folder' : null)
-    } catch (err) {
-      console.error('Error loading images:', err)
+    } catch {
       setError('Failed to load images')
       setImagePaths([])
     }

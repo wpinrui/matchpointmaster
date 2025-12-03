@@ -37,8 +37,7 @@ export const useSaveData = () => {
       try {
         const data = await getCurrentSaveData()
         setSaveData(data)
-      } catch (error) {
-        console.error('Error loading initial save data:', error)
+      } catch {
         setSaveData(initialSaveData)
       } finally {
         setIsLoading(false)
@@ -50,8 +49,8 @@ export const useSaveData = () => {
   // Auto-save to current save slot whenever saveData changes
   useEffect(() => {
     if (currentSaveId && !isLoading) {
-      updateSaveSlot(currentSaveId, saveData).catch((error) => {
-        console.error('Error auto-saving:', error)
+      updateSaveSlot(currentSaveId, saveData).catch(() => {
+        // Silently handle auto-save error
       })
     }
   }, [saveData, currentSaveId, isLoading])
@@ -111,8 +110,7 @@ export const useSaveData = () => {
         success: true,
         message: 'Save exported successfully!'
       }
-    } catch (error) {
-      console.error('Error exporting save file:', error)
+    } catch {
       return {
         success: false,
         message: 'Failed to export save file. Please try again.'

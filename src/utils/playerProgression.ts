@@ -339,20 +339,6 @@ export function calculatePlayerProgression(
   // Random variance: ±10%
   const randomVariance = 0.9 + Math.random() * 0.2 // 0.9 to 1.1
 
-  // Debug logging
-  console.log(`[Progression] ${getPlayerFullName(player)}:`, {
-    focus,
-    isIndividualCoaching,
-    multipliers: {
-      styleSynergy,
-      traitMultiplier,
-      peerInfluence,
-      facilitiesMultiplier,
-      coachingMultiplier,
-      randomVariance
-    },
-    traits: player.traits
-  })
 
   // Calculate improvement for each skill
   const skillKeys: (keyof PlayerSkills)[] = [
@@ -404,27 +390,6 @@ export function calculatePlayerProgression(
     // Clamp improvement (can't go above 100, can't be negative)
     const newSkill = Math.min(100, Math.max(0, currentSkill + totalImprovement))
     const improvement = newSkill - currentSkill
-
-    // Debug logging for each skill
-    console.log(
-      `  ${skill}: ${currentSkill.toFixed(2)} → ${newSkill.toFixed(2)} (+${improvement.toFixed(2)})`,
-      {
-        baseImprovement,
-        diminishingReturnsMultiplier,
-        totalMultiplier:
-          styleSynergy *
-          traitMultiplier *
-          peerInfluence *
-          facilitiesMultiplier *
-          coachingMultiplier *
-          randomVariance,
-        breakdown: {
-          base: baseImprovement,
-          afterDiminishing: baseImprovement * diminishingReturnsMultiplier,
-          afterAllMultipliers: totalImprovement
-        }
-      }
-    )
 
     improvements[skill] = improvement // Return the delta
   })

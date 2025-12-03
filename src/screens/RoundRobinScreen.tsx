@@ -195,8 +195,7 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
             break // Found and processed the match
           }
         }
-      } catch (e) {
-        console.error('Error processing match result:', e)
+      } catch {
         // Clear invalid data
         sessionStorage.removeItem('roundRobinMatchCompleted')
         sessionStorage.removeItem('roundRobinMatchResult')
@@ -308,7 +307,6 @@ const RoundRobinScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
       // If we found missing matches, add them
       if (missingMatches.length > 0) {
-        console.warn(`Found ${missingMatches.length} missing matches, recovering...`)
         const updatedMatchResults = [...currentTeamResult.matchResults, ...missingMatches]
         const updatedStats = calculatePlayerStats(playerIds, updatedMatchResults)
 
@@ -986,10 +984,9 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
 
     const isCurrentMatchWatched = matchesToWatch.includes(currentMatchup.matchKey)
 
-    // If current match should be watched, pause and wait for user
+    // If current match should be watched, pause and wait for user to manually start via "Watch Match" button
     if (isCurrentMatchWatched) {
       setIsPlaying(false)
-      // TODO: Navigate to match screen
       return
     }
 

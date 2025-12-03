@@ -261,13 +261,6 @@ export const MatchInsights: React.FC<MatchInsightsProps> = ({
       .reduce((sum, a) => sum + a.count, 0)
     const totalPoints = logEvents.filter((e) => e.type === 'point').length
 
-    // Only return analysis if totals match (prevent showing incorrect data)
-    if (totalWon + totalLost !== totalPoints) {
-      console.warn(
-        `Point count mismatch: ${totalWon} won + ${totalLost} lost = ${totalWon + totalLost}, but total points = ${totalPoints}`
-      )
-    }
-
     return analysis.filter((a) => a.count > 0)
   }, [logEvents, perspective])
 

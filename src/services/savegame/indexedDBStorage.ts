@@ -19,16 +19,10 @@ let dbPromise: Promise<IDBDatabase> | null = null
 async function requestPersistentStorage(): Promise<void> {
   if ('storage' in navigator && 'persist' in navigator.storage) {
     try {
-      const isPersistent = await navigator.storage.persist()
-      if (isPersistent) {
-        console.log('Persistent storage granted - save data will not be evicted')
-      } else {
-        console.warn(
-          'Persistent storage denied - save data may be evicted if storage is low'
-        )
-      }
-    } catch (error) {
-      console.warn('Error requesting persistent storage:', error)
+      await navigator.storage.persist()
+      // Persistent storage request handled silently
+    } catch {
+      // Silently handle persistent storage request failure
     }
   }
 }
@@ -41,8 +35,7 @@ export async function isPersistentStorageGranted(): Promise<boolean> {
   if ('storage' in navigator && 'persisted' in navigator.storage) {
     try {
       return await navigator.storage.persisted()
-    } catch (error) {
-      console.warn('Error checking persistent storage status:', error)
+    } catch {
       return false
     }
   }
@@ -118,8 +111,7 @@ export async function getMetadata(key: string): Promise<string | null> {
         reject(new Error(`Failed to get metadata: ${request.error?.message}`))
       }
     })
-  } catch (error) {
-    console.error('Error getting metadata:', error)
+  } catch {
     return null
   }
 }
@@ -144,7 +136,6 @@ export async function setMetadata(key: string, value: string): Promise<void> {
       }
     })
   } catch (error) {
-    console.error('Error setting metadata:', error)
     throw error
   }
 }
@@ -169,7 +160,6 @@ export async function deleteMetadata(key: string): Promise<void> {
       }
     })
   } catch (error) {
-    console.error('Error deleting metadata:', error)
     throw error
   }
 }
@@ -193,8 +183,7 @@ export async function getAllSaveSlots<T>(): Promise<T[]> {
         reject(new Error(`Failed to get save slots: ${request.error?.message}`))
       }
     })
-  } catch (error) {
-    console.error('Error getting save slots:', error)
+  } catch {
     return []
   }
 }
@@ -219,8 +208,7 @@ export async function getSaveSlot<T>(id: string): Promise<T | null> {
         reject(new Error(`Failed to get save slot: ${request.error?.message}`))
       }
     })
-  } catch (error) {
-    console.error('Error getting save slot:', error)
+  } catch {
     return null
   }
 }
@@ -245,7 +233,6 @@ export async function saveSaveSlot<T extends { id: string }>(slot: T): Promise<v
       }
     })
   } catch (error) {
-    console.error('Error saving save slot:', error)
     throw error
   }
 }
@@ -270,7 +257,6 @@ export async function deleteSaveSlot(id: string): Promise<void> {
       }
     })
   } catch (error) {
-    console.error('Error deleting save slot:', error)
     throw error
   }
 }
@@ -295,7 +281,6 @@ export async function clearAllSaveSlots(): Promise<void> {
       }
     })
   } catch (error) {
-    console.error('Error clearing save slots:', error)
     throw error
   }
 }

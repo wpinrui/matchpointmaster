@@ -141,8 +141,7 @@ export const generateRandomFace = (
 
     const avatar = createAvatar(avataaars, options)
     return avatar.toDataUri()
-  } catch (error) {
-    console.error('Error generating face:', error)
+  } catch {
     return ''
   }
 }

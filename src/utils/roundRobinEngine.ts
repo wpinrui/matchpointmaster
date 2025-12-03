@@ -11,8 +11,8 @@ import {
 
 import { initializeMatch, simulateRally, type MatchState } from './matchEngine'
 
-const MAX_GAMES_WATCHED = 3 // Hardcoded limit for now
-// TODO: In future, make this variable based on coaching attributes or badges
+/** Maximum games that can be watched per tournament. Could be made configurable based on coaching attributes or badges. */
+const MAX_GAMES_WATCHED = 3
 
 /**
  * Simulate a best-of-5 game match between two players
@@ -140,7 +140,6 @@ export function runRoundRobinTournament(
     const player2 = playerMap.get(player2Id)
 
     if (!player1 || !player2) {
-      console.error(`Player not found: ${player1Id} or ${player2Id}`)
       continue
     }
 

@@ -29,8 +29,7 @@ const CURRENT_SAVE_ID_KEY = 'matchpointMaster_currentSaveId'
 export const getAllSaveSlots = async (): Promise<SaveSlot[]> => {
   try {
     return await getAllSaveSlotsFromDB<SaveSlot>()
-  } catch (error) {
-    console.error('Error loading save slots:', error)
+  } catch {
     return []
   }
 }
@@ -41,8 +40,7 @@ export const getAllSaveSlots = async (): Promise<SaveSlot[]> => {
 export const getSaveSlot = async (id: string): Promise<SaveSlot | null> => {
   try {
     return await getSaveSlotFromDB<SaveSlot>(id)
-  } catch (error) {
-    console.error('Error getting save slot:', error)
+  } catch {
     return null
   }
 }
@@ -97,8 +95,7 @@ export const deleteSaveSlot = async (id: string): Promise<void> => {
 export const getCurrentSaveId = (): string | null => {
   try {
     return localStorage.getItem(CURRENT_SAVE_ID_KEY)
-  } catch (error) {
-    console.error('Error getting current save ID:', error)
+  } catch {
     return null
   }
 }
@@ -113,8 +110,8 @@ export const setCurrentSaveId = (id: string | null): void => {
     } else {
       localStorage.removeItem(CURRENT_SAVE_ID_KEY)
     }
-  } catch (error) {
-    console.error('Error setting current save ID:', error)
+  } catch {
+    // Silently handle localStorage error
   }
 }
 
@@ -124,8 +121,8 @@ export const setCurrentSaveId = (id: string | null): void => {
 export const clearCurrentSaveId = (): void => {
   try {
     localStorage.removeItem(CURRENT_SAVE_ID_KEY)
-  } catch (error) {
-    console.error('Error clearing current save ID:', error)
+  } catch {
+    // Silently handle localStorage error
   }
 }
 
@@ -172,8 +169,7 @@ export const importSaveSlotFromJson = async (json: string): Promise<SaveSlot | n
       return slot
     }
     return null
-  } catch (error) {
-    console.error('Error importing save slot:', error)
+  } catch {
     return null
   }
 }

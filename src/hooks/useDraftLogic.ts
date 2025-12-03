@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { Gender } from '../services/savegame/types'
+import { Gender, Player, ManagerStats } from '../services/savegame/types'
 import { generatePlayer, IntakeQuality } from '../utils/playerGeneration'
 import {
   attractivenessToIntakeQuality,
@@ -12,14 +12,14 @@ import {
 interface UseDraftLogicParams {
   season: { phase: string; month: number; year: number }
   draftCompleted: boolean
-  players: any[]
-  manager: { stats?: any }
+  players: Player[]
+  manager: { stats?: ManagerStats }
   school: {
-    reputationHistory?: any[]
+    reputationHistory?: number[]
     funding?: number
     teamType: 'boys' | 'girls' | 'both'
   }
-  updatePlayers: { set: (players: any[]) => void }
+  updatePlayers: { set: (players: Player[]) => void }
 }
 
 export function useDraftLogic({

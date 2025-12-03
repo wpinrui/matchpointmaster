@@ -14,29 +14,37 @@ import {
   type PhaseProgressionParams,
   type PhaseProgressionCallbacks
 } from '../utils/phaseProgression'
-import { Email } from '../services/savegame/types'
+import {
+  Email,
+  Player,
+  TrainingPlan,
+  SkillSnapshot,
+  AISchool,
+  RoundRobinData,
+  SaveData
+} from '../services/savegame/types'
 
 interface UseHomeActionButtonParams {
   season: { phase: string; month: number; year: number }
   draftCompleted: boolean
   unreadEmails: Email[]
-  players: any[]
+  players: Player[]
   teamRoster: string[]
-  trainingPlan: any
-  skillSnapshots: any[]
-  aiSchools: any[]
-  manager: any
-  school: any
-  updateSeason: any
-  updatePlayers: any
-  updateTrainingPlan: any
-  updateSkillSnapshots: any
-  updateAISchools: any
-  addEmail: any
+  trainingPlan: TrainingPlan | null
+  skillSnapshots: SkillSnapshot[]
+  aiSchools: AISchool[]
+  manager: SaveData['manager']
+  school: SaveData['school']
+  updateSeason: PhaseProgressionCallbacks['updateSeason']
+  updatePlayers: PhaseProgressionCallbacks['updatePlayers']
+  updateTrainingPlan: PhaseProgressionCallbacks['updateTrainingPlan']
+  updateSkillSnapshots: PhaseProgressionCallbacks['updateSkillSnapshots']
+  updateAISchools: PhaseProgressionCallbacks['updateAISchools']
+  addEmail: PhaseProgressionCallbacks['addEmail']
   changeScreen: (screen: Screens) => void
   setShowTimeProgressionDialog: (show: boolean) => void
   setPendingTimeProgression: (action: (() => void) | null) => void
-  roundRobinData?: any
+  roundRobinData?: RoundRobinData | null
 }
 
 export function useHomeActionButton({

@@ -74,8 +74,7 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
         setMessageDialogVariant('danger')
         setShowMessageDialog(true)
       }
-    } catch (error) {
-      console.error('Error importing save:', error)
+    } catch {
       setMessageDialogTitle('Import Failed')
       setMessageDialogMessage('Failed to import save file. Please check the file format.')
       setMessageDialogVariant('danger')
@@ -85,8 +84,7 @@ const SaveManagerScreen: React.FC<ScreenProps> = ({ changeScreen }) => {
 
   const { fileInputRef, handleImport, handleFileChange } = useFileImport({
     onImport: handleFileImport,
-    onError: (error) => {
-      console.error('Error importing save:', error)
+    onError: () => {
       setMessageDialogTitle('Import Failed')
       setMessageDialogMessage('Failed to import save file. Please check the file format.')
       setMessageDialogVariant('danger')

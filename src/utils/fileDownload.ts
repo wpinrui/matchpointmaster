@@ -17,7 +17,6 @@ export function downloadJsonFile(json: string, filename: string): void {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
   } catch (error) {
-    console.error('Error downloading file:', error)
     throw error
   }
 }
