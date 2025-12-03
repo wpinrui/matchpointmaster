@@ -14,6 +14,42 @@ import {
 import { getPlayerFullName } from './playerGeneration'
 
 /**
+ * Style synergy multipliers - affect how well a coach can train players with different play styles.
+ * Exact style match allows the coach to share specific techniques and strategies directly.
+ * Similar styles share underlying principles. Opposite styles require the coach to teach
+ * outside their expertise, reducing training effectiveness.
+ */
+const STYLE_SYNERGY = {
+  /** Coach and player share identical play style - maximum knowledge transfer */
+  EXACT_MATCH: 1.3,
+  /** Play styles share similar principles (e.g., both aggressive) */
+  SIMILAR_STYLE: 1.1,
+  /** Play styles are fundamentally opposed (e.g., attacker vs defender) */
+  OPPOSITE_STYLE: 0.75,
+  /** No particular synergy or conflict */
+  NEUTRAL: 1.0
+} as const
+
+/**
+ * Trait multipliers - how player traits affect training effectiveness.
+ * These represent innate characteristics that make players learn faster or slower.
+ */
+const TRAIT_MULTIPLIERS = {
+  /** Dedicated practice habits yield consistent improvement */
+  HARD_WORKER: 0.15,
+  /** Raw talent provides slight edge but may lead to inconsistency */
+  NATURAL_TALENT: 0.1,
+  /** Absorbs coaching quickly and applies it immediately */
+  QUICK_LEARNER: 0.2,
+  /** Once-in-a-generation talent with exceptional growth potential */
+  PRODIGY: 0.3,
+  /** Inconsistent effort reduces training gains */
+  LAZY: -0.15,
+  /** Occasional missed training due to injuries */
+  INJURY_PRONE: -0.05
+} as const
+
+/**
  * Style synergy groups - similar play styles
  */
 const styleGroups: Record<PlayStyle, PlayStyle[]> = {
@@ -74,23 +110,19 @@ export function calculateStyleSynergy(
   managerPlayStyle: PlayStyle,
   playerPlayStyle: PlayStyle
 ): number {
-  // Exact match
   if (managerPlayStyle === playerPlayStyle) {
-    return 1.3
+    return STYLE_SYNERGY.EXACT_MATCH
   }
 
-  // Similar styles (same group)
   if (styleGroups[managerPlayStyle]?.includes(playerPlayStyle)) {
-    return 1.1 // Moderate bonus for similar styles
+    return STYLE_SYNERGY.SIMILAR_STYLE
   }
 
-  // Opposite styles
   if (oppositeStyles[managerPlayStyle]?.includes(playerPlayStyle)) {
-    return 0.75 // Penalty for opposite styles
+    return STYLE_SYNERGY.OPPOSITE_STYLE
   }
 
-  // Neutral - no synergy bonus or penalty
-  return 1.0
+  return STYLE_SYNERGY.NEUTRAL
 }
 
 /**
@@ -102,22 +134,22 @@ export function calculateTraitMultiplier(traits: PlayerTrait[]): number {
   traits.forEach((trait) => {
     switch (trait) {
       case PlayerTrait.HARD_WORKER:
-        multiplier += 0.15 // +15% training effectiveness
+        multiplier += TRAIT_MULTIPLIERS.HARD_WORKER
         break
       case PlayerTrait.NATURAL_TALENT:
-        multiplier += 0.1 // +10% but may have consistency issues
+        multiplier += TRAIT_MULTIPLIERS.NATURAL_TALENT
         break
       case PlayerTrait.QUICK_LEARNER:
-        multiplier += 0.2 // +20% faster improvement
+        multiplier += TRAIT_MULTIPLIERS.QUICK_LEARNER
         break
       case PlayerTrait.PRODIGY:
-        multiplier += 0.3 // +30% exceptional talent
+        multiplier += TRAIT_MULTIPLIERS.PRODIGY
         break
       case PlayerTrait.LAZY:
-        multiplier -= 0.15 // -15% training effectiveness
+        multiplier += TRAIT_MULTIPLIERS.LAZY
         break
       case PlayerTrait.INJURY_PRONE:
-        multiplier -= 0.05 // -5% occasional missed training
+        multiplier += TRAIT_MULTIPLIERS.INJURY_PRONE
         break
       // Other traits like UNDERDOG, RESILIENT, VULNERABLE affect performance more than training
       // so they don't directly modify training effectiveness

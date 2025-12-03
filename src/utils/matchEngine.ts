@@ -21,6 +21,38 @@ import { checkPointLoss, checkPointWin } from './match/matchAnalysis'
 export type { MatchState, PlayerPosition, RallyEvent } from './match/matchTypes'
 
 /**
+ * Match engine constants - error chances are tuned to produce realistic match outcomes
+ * where skilled players make fewer unforced errors and consistency matters significantly.
+ */
+
+/** Base error multiplier for serve consistency (squared to penalize low consistency more heavily) */
+const SERVE_CONSISTENCY_ERROR_MULTIPLIER = 0.08
+
+/** Additional error chance based on serve skill quality */
+const SERVE_QUALITY_ERROR_MULTIPLIER = 0.04
+
+/** Maximum possible serve error chance (prevents unrealistic error rates) */
+const MAX_SERVE_ERROR_CHANCE = 0.12
+
+/** Base error multiplier for receive consistency */
+const RECEIVE_CONSISTENCY_ERROR_MULTIPLIER = 0.12
+
+/** Penalty applied when receive R1/R2 values are poor */
+const RECEIVE_QUALITY_ERROR_MULTIPLIER = 0.08
+
+/** Maximum possible receive error chance */
+const MAX_RECEIVE_ERROR_CHANCE = 0.20
+
+/** Base error multiplier during rallies */
+const RALLY_CONSISTENCY_ERROR_MULTIPLIER = 0.05
+
+/** Penalty applied when rally R1/R2 values are poor */
+const RALLY_QUALITY_ERROR_MULTIPLIER = 0.08
+
+/** Maximum possible rally error chance */
+const MAX_RALLY_ERROR_CHANCE = 0.15
+
+/**
  * Simulate a single rally using new R1/R2 mechanics
  */
 export function simulateRally(
@@ -46,11 +78,11 @@ export function simulateRally(
   const serverModifiers = getEquipmentModifiers(server.forehandRubber)
   const receiverModifiers = getEquipmentModifiers(receiver.forehandRubber)
 
-  // Consistency check before serve
+  // Consistency check before serve - low consistency players make more unforced errors
   const serveConsistencyRatio = server.skills.consistency / 100
-  const serveErrorChance = Math.pow(1 - serveConsistencyRatio, 2) * 0.08 // Max 8% error chance (tuned down from 10%)
-  const serveQualityPenalty = (1 - server.skills.serve / 100) * 0.04 // Up to 4% additional (tuned down from 5%)
-  const totalServeErrorChance = Math.min(0.12, serveErrorChance + serveQualityPenalty) // Capped at 12% (down from 15%)
+  const serveErrorChance = Math.pow(1 - serveConsistencyRatio, 2) * SERVE_CONSISTENCY_ERROR_MULTIPLIER
+  const serveQualityPenalty = (1 - server.skills.serve / 100) * SERVE_QUALITY_ERROR_MULTIPLIER
+  const totalServeErrorChance = Math.min(MAX_SERVE_ERROR_CHANCE, serveErrorChance + serveQualityPenalty)
 
   if (Math.random() < totalServeErrorChance) {
     const serverName = server.shortName || server.firstName
@@ -137,14 +169,11 @@ export function simulateRally(
     }
   }
 
-  // Consistency check on receiver's return
+  // Consistency check on receiver's return - harder when R1/R2 values are poor
   const receiveConsistencyRatio = receiver.skills.consistency / 100
-  const receiveErrorChance = Math.pow(1 - receiveConsistencyRatio, 2) * 0.12 // Max 12% error chance (tuned down from 15%)
-  const receiveQualityPenalty = (1 - (serveR1 + serveR2) / 200) * 0.08 // Penalty based on poor R1/R2 (tuned down from 10%)
-  const totalReceiveErrorChance = Math.min(
-    0.2,
-    receiveErrorChance + receiveQualityPenalty
-  ) // Capped at 20% (down from 25%)
+  const receiveErrorChance = Math.pow(1 - receiveConsistencyRatio, 2) * RECEIVE_CONSISTENCY_ERROR_MULTIPLIER
+  const receiveQualityPenalty = (1 - (serveR1 + serveR2) / 200) * RECEIVE_QUALITY_ERROR_MULTIPLIER
+  const totalReceiveErrorChance = Math.min(MAX_RECEIVE_ERROR_CHANCE, receiveErrorChance + receiveQualityPenalty)
 
   if (Math.random() < totalReceiveErrorChance) {
     const serverName = server.shortName || server.firstName
@@ -213,11 +242,11 @@ export function simulateRally(
     )
     const opponentModifiers = getEquipmentModifiers(opponent.forehandRubber)
 
-    // Consistency check before hit
+    // Consistency check before hit - poor previous shots increase error chance
     const hitterConsistencyRatio = hitter.skills.consistency / 100
-    const hitterErrorChance = Math.pow(1 - hitterConsistencyRatio, 2) * 0.12 // Max 12% error chance (tuned down from 15%)
-    const bonusPenalty = (1 - cumulativeR1R2Bonus / 50) * 0.04 // Penalty if previous shot was poor (tuned down from 5%)
-    const totalHitterErrorChance = Math.min(0.2, hitterErrorChance + bonusPenalty) // Capped at 20% (down from 25%)
+    const hitterErrorChance = Math.pow(1 - hitterConsistencyRatio, 2) * RECEIVE_CONSISTENCY_ERROR_MULTIPLIER
+    const bonusPenalty = (1 - cumulativeR1R2Bonus / 50) * SERVE_QUALITY_ERROR_MULTIPLIER
+    const totalHitterErrorChance = Math.min(MAX_RECEIVE_ERROR_CHANCE, hitterErrorChance + bonusPenalty)
 
     if (Math.random() < totalHitterErrorChance) {
       const hitterName = hitter.shortName || hitter.firstName

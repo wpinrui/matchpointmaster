@@ -1255,20 +1255,18 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
             <GameButton
               variant="secondary"
               onClick={() => {
-                // Skip to next watched match
-                // Simulate all matches in between
-                let index = currentMatchIndex
-                while (index < nextWatchedMatchIndex) {
-                  const matchup = orderedMatchups[index]
-                  const p1 = playerMap.get(matchup.player1Id)
-                  const p2 = playerMap.get(matchup.player2Id)
-                  if (p1 && p2) {
-                    const matchResult = simulateMatch(p1, p2)
-                    // Call onMatchComplete for each match - it now uses functional updates
-                    // so each call will use the latest state from the previous update
-                    onMatchComplete(matchResult, index + 1)
+                // Skip to next watched match by simulating all matches in between
+                let matchIndex = currentMatchIndex
+                while (matchIndex < nextWatchedMatchIndex) {
+                  const matchup = orderedMatchups[matchIndex]
+                  const player1 = playerMap.get(matchup.player1Id)
+                  const player2 = playerMap.get(matchup.player2Id)
+                  if (player1 && player2) {
+                    const matchResult = simulateMatch(player1, player2)
+                    // Uses functional state updates so each call sees latest state
+                    onMatchComplete(matchResult, matchIndex + 1)
                   }
-                  index++
+                  matchIndex++
                 }
                 // Then skip to the next watched match index
                 onSkipToNextWatched(nextWatchedMatchIndex)
@@ -1348,15 +1346,15 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
               gap: theme.spacing.xs
             }}
           >
-            {orderedMatchups.map((matchup, index) => {
-              const p1 = playerMap.get(matchup.player1Id)
-              const p2 = playerMap.get(matchup.player2Id)
-              if (!p1 || !p2) return null
+            {orderedMatchups.map((matchup, matchIndex) => {
+              const player1 = playerMap.get(matchup.player1Id)
+              const player2 = playerMap.get(matchup.player2Id)
+              if (!player1 || !player2) return null
 
-              const isPast = index < currentMatchIndex
-              const isCurrent = index === currentMatchIndex
-              const isFuture = index > currentMatchIndex
-              const matchResult = teamResults.matchResults[index]
+              const isPast = matchIndex < currentMatchIndex
+              const isCurrent = matchIndex === currentMatchIndex
+              const isFuture = matchIndex > currentMatchIndex
+              const matchResult = teamResults.matchResults[matchIndex]
               const isWatched = matchesToWatch.includes(matchup.matchKey)
 
               return (
@@ -1390,7 +1388,7 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
                         marginRight: theme.spacing.sm
                       }}
                     >
-                      #{index + 1}
+                      #{matchIndex + 1}
                     </span>
                     <span
                       style={{
@@ -1400,7 +1398,7 @@ const TournamentSimulationView: React.FC<TournamentSimulationViewProps> = ({
                         color: theme.colors.text.primary
                       }}
                     >
-                      {p1.shortName || p1.firstName} vs {p2.shortName || p2.firstName}
+                      {player1.shortName || player1.firstName} vs {player2.shortName || player2.firstName}
                     </span>
                     {isWatched && (
                       <span

@@ -10,6 +10,30 @@ import {
   SkillSnapshot
 } from '../services/savegame/types'
 
+/** Human-readable labels for each skill type */
+export const SKILL_LABELS: Record<keyof PlayerSkills, string> = {
+  forehand: 'Forehand',
+  backhand: 'Backhand',
+  footwork: 'Footwork',
+  serve: 'Serve',
+  receive: 'Receive',
+  spin: 'Spin',
+  placement: 'Placement',
+  consistency: 'Consistency'
+} as const
+
+/** All skill keys for iteration */
+export const SKILL_KEYS: (keyof PlayerSkills)[] = [
+  'forehand',
+  'backhand',
+  'footwork',
+  'serve',
+  'receive',
+  'spin',
+  'placement',
+  'consistency'
+] as const
+
 /**
  * Training recommendation based on team analysis
  */
@@ -33,22 +57,11 @@ export type WeakestSkill = {
  */
 export function getWeakestSkill(player: Player): WeakestSkill | null {
   const skills = player.skills
-  const skillLabels: Record<keyof PlayerSkills, string> = {
-    forehand: 'Forehand',
-    backhand: 'Backhand',
-    footwork: 'Footwork',
-    serve: 'Serve',
-    receive: 'Receive',
-    spin: 'Spin',
-    placement: 'Placement',
-    consistency: 'Consistency'
-  }
 
   let weakest: keyof PlayerSkills = 'forehand'
   let lowestValue = skills.forehand
 
-  Object.keys(skills).forEach((key) => {
-    const skillKey = key as keyof PlayerSkills
+  SKILL_KEYS.forEach((skillKey) => {
     if (skills[skillKey] < lowestValue) {
       lowestValue = skills[skillKey]
       weakest = skillKey
@@ -58,7 +71,7 @@ export function getWeakestSkill(player: Player): WeakestSkill | null {
   return {
     skill: weakest,
     value: lowestValue,
-    label: skillLabels[weakest]
+    label: SKILL_LABELS[weakest]
   }
 }
 
@@ -67,22 +80,11 @@ export function getWeakestSkill(player: Player): WeakestSkill | null {
  */
 export function getStrongestSkill(player: Player): WeakestSkill | null {
   const skills = player.skills
-  const skillLabels: Record<keyof PlayerSkills, string> = {
-    forehand: 'Forehand',
-    backhand: 'Backhand',
-    footwork: 'Footwork',
-    serve: 'Serve',
-    receive: 'Receive',
-    spin: 'Spin',
-    placement: 'Placement',
-    consistency: 'Consistency'
-  }
 
   let strongest: keyof PlayerSkills = 'forehand'
   let highestValue = skills.forehand
 
-  Object.keys(skills).forEach((key) => {
-    const skillKey = key as keyof PlayerSkills
+  SKILL_KEYS.forEach((skillKey) => {
     if (skills[skillKey] > highestValue) {
       highestValue = skills[skillKey]
       strongest = skillKey
@@ -92,7 +94,7 @@ export function getStrongestSkill(player: Player): WeakestSkill | null {
   return {
     skill: strongest,
     value: highestValue,
-    label: skillLabels[strongest]
+    label: SKILL_LABELS[strongest]
   }
 }
 
@@ -118,32 +120,10 @@ export function getTeamWeakestSkill(players: Player[]): {
 } | null {
   if (players.length === 0) return null
 
-  const skillKeys: (keyof PlayerSkills)[] = [
-    'forehand',
-    'backhand',
-    'footwork',
-    'serve',
-    'receive',
-    'spin',
-    'placement',
-    'consistency'
-  ]
-
-  const skillLabels: Record<keyof PlayerSkills, string> = {
-    forehand: 'Forehand',
-    backhand: 'Backhand',
-    footwork: 'Footwork',
-    serve: 'Serve',
-    receive: 'Receive',
-    spin: 'Spin',
-    placement: 'Placement',
-    consistency: 'Consistency'
-  }
-
   let weakest: keyof PlayerSkills = 'forehand'
   let lowestAverage = calculateTeamAverageSkill(players, 'forehand')
 
-  skillKeys.forEach((skillKey) => {
+  SKILL_KEYS.forEach((skillKey) => {
     const avg = calculateTeamAverageSkill(players, skillKey)
     if (avg < lowestAverage) {
       lowestAverage = avg
@@ -154,7 +134,7 @@ export function getTeamWeakestSkill(players: Player[]): {
   return {
     skill: weakest,
     average: lowestAverage,
-    label: skillLabels[weakest]
+    label: SKILL_LABELS[weakest]
   }
 }
 
@@ -190,8 +170,8 @@ export function getTrainingRecommendations(
   }
 
   // Check for players with very weak fundamentals
-  const playersWithWeakFundamentals = players.filter((p) => {
-    const weakest = getWeakestSkill(p)
+  const playersWithWeakFundamentals = players.filter((player) => {
+    const weakest = getWeakestSkill(player)
     return weakest && weakest.value < 40
   })
 
@@ -205,28 +185,16 @@ export function getTrainingRecommendations(
 
   // Recommend match play if skills are balanced
   const avgSkills = players.reduce(
-    (acc, p) => {
-      Object.keys(p.skills).forEach((key) => {
-        const skillKey = key as keyof PlayerSkills
-        acc[skillKey] = (acc[skillKey] || 0) + p.skills[skillKey]
+    (acc, player) => {
+      SKILL_KEYS.forEach((skillKey) => {
+        acc[skillKey] = (acc[skillKey] || 0) + player.skills[skillKey]
       })
       return acc
     },
     {} as Record<keyof PlayerSkills, number>
   )
 
-  const skillKeys: (keyof PlayerSkills)[] = [
-    'forehand',
-    'backhand',
-    'footwork',
-    'serve',
-    'receive',
-    'spin',
-    'placement',
-    'consistency'
-  ]
-
-  const averages = skillKeys.map((key) => avgSkills[key] / players.length)
+  const averages = SKILL_KEYS.map((key) => avgSkills[key] / players.length)
   const minAvg = Math.min(...averages)
   const maxAvg = Math.max(...averages)
 
@@ -250,19 +218,9 @@ export function calculateSkillImprovement(
   newSkills: PlayerSkills
 ): Partial<PlayerSkills> {
   const improvements: Partial<PlayerSkills> = {}
-  const skillKeys: (keyof PlayerSkills)[] = [
-    'forehand',
-    'backhand',
-    'footwork',
-    'serve',
-    'receive',
-    'spin',
-    'placement',
-    'consistency'
-  ]
 
-  skillKeys.forEach((key) => {
-    improvements[key] = Math.floor(newSkills[key]) - Math.floor(oldSkills[key])
+  SKILL_KEYS.forEach((skillKey) => {
+    improvements[skillKey] = Math.floor(newSkills[skillKey]) - Math.floor(oldSkills[skillKey])
   })
 
   return improvements
@@ -280,22 +238,11 @@ export function getMostImprovedSkill(
   label: string
 } | null {
   const improvements = calculateSkillImprovement(oldSkills, newSkills)
-  const skillLabels: Record<keyof PlayerSkills, string> = {
-    forehand: 'Forehand',
-    backhand: 'Backhand',
-    footwork: 'Footwork',
-    serve: 'Serve',
-    receive: 'Receive',
-    spin: 'Spin',
-    placement: 'Placement',
-    consistency: 'Consistency'
-  }
 
   let mostImproved: keyof PlayerSkills | null = null
   let maxImprovement = -Infinity
 
-  Object.keys(improvements).forEach((key) => {
-    const skillKey = key as keyof PlayerSkills
+  SKILL_KEYS.forEach((skillKey) => {
     const improvement = improvements[skillKey] || 0
     if (improvement > maxImprovement) {
       maxImprovement = improvement
@@ -308,7 +255,7 @@ export function getMostImprovedSkill(
   return {
     skill: mostImproved,
     improvement: maxImprovement,
-    label: skillLabels[mostImproved]
+    label: SKILL_LABELS[mostImproved]
   }
 }
 
@@ -322,23 +269,13 @@ export function calculateTeamTotalImprovement(
   let totalImprovement = 0
 
   newPlayers.forEach((player) => {
-    const oldSnapshot = oldSnapshots.find((s) => s.playerId === player.id)
+    const oldSnapshot = oldSnapshots.find((snapshot) => snapshot.playerId === player.id)
     if (!oldSnapshot) return
 
     const improvements = calculateSkillImprovement(oldSnapshot.skills, player.skills)
-    const skillKeys: (keyof PlayerSkills)[] = [
-      'forehand',
-      'backhand',
-      'footwork',
-      'serve',
-      'receive',
-      'spin',
-      'placement',
-      'consistency'
-    ]
 
-    skillKeys.forEach((key) => {
-      totalImprovement += improvements[key] || 0
+    SKILL_KEYS.forEach((skillKey) => {
+      totalImprovement += improvements[skillKey] || 0
     })
   })
 
@@ -358,23 +295,13 @@ export function getTopImprovers(
 }> {
   const improvers = newPlayers
     .map((player) => {
-      const oldSnapshot = oldSnapshots.find((s) => s.playerId === player.id)
+      const oldSnapshot = oldSnapshots.find((snapshot) => snapshot.playerId === player.id)
       if (!oldSnapshot) return null
 
       const improvements = calculateSkillImprovement(oldSnapshot.skills, player.skills)
-      const skillKeys: (keyof PlayerSkills)[] = [
-        'forehand',
-        'backhand',
-        'footwork',
-        'serve',
-        'receive',
-        'spin',
-        'placement',
-        'consistency'
-      ]
 
-      const totalImprovement = skillKeys.reduce(
-        (sum, key) => sum + (improvements[key] || 0),
+      const totalImprovement = SKILL_KEYS.reduce(
+        (sum, skillKey) => sum + (improvements[skillKey] || 0),
         0
       )
 
