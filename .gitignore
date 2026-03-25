@@ -18,5 +18,9 @@ yarn-error.log*
 # caches
 *.cache
 
-# styling 
+# styling
 .prettierrc.json
+
+# claude agent system
+.claude/
+.agent/
