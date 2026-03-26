@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Home from '../screens/Home'
 import HomeScreen from '../screens/HomeScreen'
 import LoadScreen from '../screens/LoadScreen'
 import NewGameScreen from '../screens/new_game/NewGameScreen'
