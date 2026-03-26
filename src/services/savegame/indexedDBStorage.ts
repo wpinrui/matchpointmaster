@@ -111,7 +111,8 @@ export async function getMetadata(key: string): Promise<string | null> {
         reject(new Error(`Failed to get metadata: ${request.error?.message}`))
       }
     })
-  } catch {
+  } catch (error) {
+    console.error('Failed to get metadata:', error)
     return null
   }
 }
@@ -175,7 +176,8 @@ export async function getAllSaveSlots<T>(): Promise<T[]> {
         reject(new Error(`Failed to get save slots: ${request.error?.message}`))
       }
     })
-  } catch {
+  } catch (error) {
+    console.error('Failed to get save slots:', error)
     return []
   }
 }
@@ -200,7 +202,8 @@ export async function getSaveSlot<T>(id: string): Promise<T | null> {
         reject(new Error(`Failed to get save slot: ${request.error?.message}`))
       }
     })
-  } catch {
+  } catch (error) {
+    console.error('Failed to get save slot:', error)
     return null
   }
 }
