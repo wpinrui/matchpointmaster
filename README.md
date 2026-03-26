@@ -73,4 +73,4 @@ Player face generation enhanced with hair color based on racial categories.
 **Next Steps**: Implement tournament systems (Intra-club Round-Robin, Zonal, National), match simulation, and psychology system.
 
 ### 26 March 2026
-Fixed dev server and production build. Removed 6 useless try/catch wrappers blocking Vite's ESLint plugin and removed redundant Bootstrap CDN references from `index.html`. Created `GDD.md` consolidating all scattered documentation into a single authoritative game design document. Retired `agent.md` and trimmed `README.md` — coding conventions migrated to `.claude/` instruction files.
+Fixed dev server and production build. Removed 6 useless try/catch wrappers blocking Vite's ESLint plugin and removed redundant Bootstrap CDN references from `index.html`. Created `GDD.md` consolidating all scattered documentation into a single authoritative game design document. Retired `agent.md` and trimmed `README.md` — coding conventions migrated to `.claude/` instruction files. Removed 5 unused dependencies (react-router-dom, axios, react-redux, redux-persist, mui), deleted dead code (`Home.tsx`), and standardized on npm (deleted `yarn.lock`).
