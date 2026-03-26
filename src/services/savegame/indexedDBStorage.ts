@@ -120,48 +120,40 @@ export async function getMetadata(key: string): Promise<string | null> {
  * Set a value in the metadata store
  */
 export async function setMetadata(key: string, value: string): Promise<void> {
-  try {
-    const db = await openDB()
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([METADATA_STORE], 'readwrite')
-      const store = transaction.objectStore(METADATA_STORE)
-      const request = store.put({ key, value })
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([METADATA_STORE], 'readwrite')
+    const store = transaction.objectStore(METADATA_STORE)
+    const request = store.put({ key, value })
 
-      request.onsuccess = () => {
-        resolve()
-      }
+    request.onsuccess = () => {
+      resolve()
+    }
 
-      request.onerror = () => {
-        reject(new Error(`Failed to set metadata: ${request.error?.message}`))
-      }
-    })
-  } catch (error) {
-    throw error
-  }
+    request.onerror = () => {
+      reject(new Error(`Failed to set metadata: ${request.error?.message}`))
+    }
+  })
 }
 
 /**
  * Delete a value from the metadata store
  */
 export async function deleteMetadata(key: string): Promise<void> {
-  try {
-    const db = await openDB()
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([METADATA_STORE], 'readwrite')
-      const store = transaction.objectStore(METADATA_STORE)
-      const request = store.delete(key)
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([METADATA_STORE], 'readwrite')
+    const store = transaction.objectStore(METADATA_STORE)
+    const request = store.delete(key)
 
-      request.onsuccess = () => {
-        resolve()
-      }
+    request.onsuccess = () => {
+      resolve()
+    }
 
-      request.onerror = () => {
-        reject(new Error(`Failed to delete metadata: ${request.error?.message}`))
-      }
-    })
-  } catch (error) {
-    throw error
-  }
+    request.onerror = () => {
+      reject(new Error(`Failed to delete metadata: ${request.error?.message}`))
+    }
+  })
 }
 
 /**
@@ -217,70 +209,58 @@ export async function getSaveSlot<T>(id: string): Promise<T | null> {
  * Save a save slot to IndexedDB
  */
 export async function saveSaveSlot<T extends { id: string }>(slot: T): Promise<void> {
-  try {
-    const db = await openDB()
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([SAVE_SLOTS_STORE], 'readwrite')
-      const store = transaction.objectStore(SAVE_SLOTS_STORE)
-      const request = store.put(slot)
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([SAVE_SLOTS_STORE], 'readwrite')
+    const store = transaction.objectStore(SAVE_SLOTS_STORE)
+    const request = store.put(slot)
 
-      request.onsuccess = () => {
-        resolve()
-      }
+    request.onsuccess = () => {
+      resolve()
+    }
 
-      request.onerror = () => {
-        reject(new Error(`Failed to save save slot: ${request.error?.message}`))
-      }
-    })
-  } catch (error) {
-    throw error
-  }
+    request.onerror = () => {
+      reject(new Error(`Failed to save save slot: ${request.error?.message}`))
+    }
+  })
 }
 
 /**
  * Delete a save slot from IndexedDB
  */
 export async function deleteSaveSlot(id: string): Promise<void> {
-  try {
-    const db = await openDB()
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([SAVE_SLOTS_STORE], 'readwrite')
-      const store = transaction.objectStore(SAVE_SLOTS_STORE)
-      const request = store.delete(id)
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([SAVE_SLOTS_STORE], 'readwrite')
+    const store = transaction.objectStore(SAVE_SLOTS_STORE)
+    const request = store.delete(id)
 
-      request.onsuccess = () => {
-        resolve()
-      }
+    request.onsuccess = () => {
+      resolve()
+    }
 
-      request.onerror = () => {
-        reject(new Error(`Failed to delete save slot: ${request.error?.message}`))
-      }
-    })
-  } catch (error) {
-    throw error
-  }
+    request.onerror = () => {
+      reject(new Error(`Failed to delete save slot: ${request.error?.message}`))
+    }
+  })
 }
 
 /**
  * Clear all save slots (useful for testing or reset)
  */
 export async function clearAllSaveSlots(): Promise<void> {
-  try {
-    const db = await openDB()
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([SAVE_SLOTS_STORE], 'readwrite')
-      const store = transaction.objectStore(SAVE_SLOTS_STORE)
-      const request = store.clear()
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([SAVE_SLOTS_STORE], 'readwrite')
+    const store = transaction.objectStore(SAVE_SLOTS_STORE)
+    const request = store.clear()
 
-      request.onsuccess = () => {
-        resolve()
-      }
+    request.onsuccess = () => {
+      resolve()
+    }
 
-      request.onerror = () => {
-        reject(new Error(`Failed to clear save slots: ${request.error?.message}`))
-      }
-    })
-  } catch (error) {
-    throw error
-  }
+    request.onerror = () => {
+      reject(new Error(`Failed to clear save slots: ${request.error?.message}`))
+    }
+  })
 }
